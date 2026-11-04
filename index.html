@@ -99,651 +99,925 @@ td strong{font-weight:650}
 .profile-stat strong{display:block;font-size:18px;margin-top:6px}
 .customer-name{color:var(--blue);font-weight:700;cursor:pointer;background:none;border:0;padding:0;text-align:left}
 .customer-name:hover{text-decoration:underline}
+/* QUOTE BUILDER */
+.modal.wide{max-width:860px}
+.qrow{display:grid;grid-template-columns:105px 1fr 70px 100px 90px 32px;gap:8px;align-items:center;margin-bottom:8px}
+.qrow.head{font-size:10px;color:#8993a3;font-weight:700}
+.qline{text-align:right;font-weight:650;font-size:12px}
+.qremove{border:0;background:#fff1f0;color:var(--red);border-radius:6px;height:34px;width:32px}
+.qtotals{margin:14px 0 6px auto;width:290px;font-size:12px}
+.qtotals div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)}
+.qtotals .grand{font-size:15px;font-weight:800;border:0}
+.vatbox{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:12px;flex-wrap:wrap}
+.vatbox input[type=checkbox]{width:auto}
+.vatbox input[type=number]{width:80px}
+.section-label{font-size:12px;font-weight:750;margin:16px 0 8px}
 @media(max-width:1050px){.main{padding:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:750px){.sidebar{width:190px}.main{margin-left:190px;width:calc(100% - 190px);padding:20px 15px}.section-grid,.detail-layout{grid-template-columns:1fr}}
 @media(max-width:560px){.sidebar{display:none}.main{margin:0;width:100%}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar{gap:8px}.grid{gap:8px}.metric{font-size:22px}.profile-stats{grid-template-columns:1fr}}
+@media(max-width:560px){.qrow{grid-template-columns:1fr 1fr}.qrow.head{display:none}.qtotals{width:100%}}
 </style>
 </head>
 <body>
-
 <aside class="sidebar">
- <div class="brand">trade<span>flow</span></div>
- <div class="nav-label">WORKSPACE</div>
- <button class="nav active" data-page="overview"><span class="ico">▦</span> Overview</button>
- <button class="nav" data-page="enquiries"><span class="ico">✉</span> Enquiries</button>
- <button class="nav" data-page="customers"><span class="ico">♙</span> Customers</button>
- <button class="nav" data-page="quotes"><span class="ico">▤</span> Quotes</button>
- <button class="nav" data-page="jobs"><span class="ico">🔧</span> Jobs</button>
- <button class="nav" data-page="calendar"><span class="ico">▦</span> Calendar</button>
- <button class="nav" data-page="followups"><span class="ico">↗</span> Follow-ups</button>
- <div class="nav-label">BUSINESS</div>
- <button class="nav" data-page="revenue"><span class="ico">£</span> Revenue</button>
- <button class="nav" data-page="website"><span class="ico">◎</span> Website Management</button>
- <button class="nav" data-page="assistant"><span class="ico">✧</span> AI Assistant</button>
- <div class="nav-label">ACCOUNT</div>
- <button class="nav" data-page="settings"><span class="ico">⚙</span> Settings</button>
+<div class="brand">trade<span>flow</span></div>
+<div class="nav-label">WORKSPACE</div>
+<button class="nav active" data-page="overview"><span class="ico">▦</span> Overview</button>
+<button class="nav" data-page="enquiries"><span class="ico">✉</span> Enquiries</button>
+<button class="nav" data-page="customers"><span class="ico">♙</span> Customers</button>
+<button class="nav" data-page="quotes"><span class="ico">▤</span> Quotes</button>
+<button class="nav" data-page="jobs"><span class="ico">🔧</span> Jobs</button>
+<button class="nav" data-page="calendar"><span class="ico">▦</span> Calendar</button>
+<button class="nav" data-page="followups"><span class="ico">↗</span> Follow-ups</button>
+<div class="nav-label">BUSINESS</div>
+<button class="nav" data-page="revenue"><span class="ico">£</span> Revenue</button>
+<button class="nav" data-page="website"><span class="ico">◎</span> Website Management</button>
+<button class="nav" data-page="assistant"><span class="ico">✧</span> AI Assistant</button>
+<div class="nav-label">ACCOUNT</div>
+<button class="nav" data-page="settings"><span class="ico">⚙</span> Settings</button>
 </aside>
-
 <main class="main">
 <header class="topbar">
- <div><div class="eyebrow">BUSINESS WORKSPACE / <span id="crumb">OVERVIEW</span></div><h1 id="heading">Good morning 👋</h1></div>
- <div class="topright"><button class="primary" onclick="openAdd()">+ Add new</button><div class="avatar">T</div></div>
+<div><div class="eyebrow">BUSINESS WORKSPACE / <span id="crumb">OVERVIEW</span></div><h1 id="heading">Good morning 👋</h1></div>
+<div class="topright"><button class="primary" onclick="openAdd()">+ Add new</button><div class="avatar">T</div></div>
 </header>
-
 <section class="page active" id="overview">
- <div class="muted">Here's what's happening with your business today.</div>
- <div class="grid">
-  <div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="mEnquiries">0</div><div class="metric-note">Enquiries to review</div></div>
-  <div class="card"><div class="metric-label">Active jobs</div><div class="metric" id="mJobs">0</div><div class="metric-note">Currently underway</div></div>
-  <div class="card"><div class="metric-label">Projected revenue</div><div class="metric" id="mRevenue">£0</div><div class="metric-note">From active jobs</div></div>
-  <div class="card"><div class="metric-label">Outstanding payments</div><div class="metric" id="mOutstanding">£0</div><div class="metric-note">Awaiting payment</div></div>
- </div>
- <div class="section-grid">
-  <div class="card"><div class="card-title">Today's priorities</div><div id="priorities"></div></div>
-  <div class="card"><div class="card-title">Upcoming follow-ups</div><div id="upcomingOverview"></div></div>
- </div>
- <div class="card"><div class="card-title">Recent enquiries <button class="link" onclick="showPage('enquiries')">View all →</button></div><div class="table-wrap" id="recentRows"></div></div>
+<div class="muted">Here's what's happening with your business today.</div>
+<div class="grid">
+<div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="mEnquiries">0</div><div class="metric-note">Enquiries to review</div></div>
+<div class="card"><div class="metric-label">Active jobs</div><div class="metric" id="mJobs">0</div><div class="metric-note">Currently underway</div></div>
+<div class="card"><div class="metric-label">Projected revenue</div><div class="metric" id="mRevenue">£0</div><div class="metric-note">From active jobs</div></div>
+<div class="card"><div class="metric-label">Outstanding payments</div><div class="metric" id="mOutstanding">£0</div><div class="metric-note">Awaiting payment</div></div>
+</div>
+<div class="section-grid">
+<div class="card"><div class="card-title">Today's priorities</div><div id="priorities"></div></div>
+<div class="card"><div class="card-title">Upcoming follow-ups</div><div id="upcomingOverview"></div></div>
+</div>
+<div class="card"><div class="card-title">Recent enquiries <button class="link" onclick="showPage('enquiries')">View all →</button></div><div class="table-wrap" id="recentRows"></div></div>
 </section>
-
 <section class="page" id="enquiries">
- <div class="page-intro">Keep every opportunity organised, follow up at the right time and turn enquiries into paying work.</div>
- <div class="grid">
-  <div class="card"><div class="metric-label">Total enquiries</div><div class="metric" id="enquiryTotal">0</div></div>
-  <div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="enquiryNew">0</div></div>
-  <div class="card"><div class="metric-label">Quotes sent</div><div class="metric" id="enquiryQuoted">0</div></div>
-  <div class="card"><div class="metric-label">Potential value</div><div class="metric" id="enquiryValue">£0</div></div>
- </div>
- <div class="toolbar"><div class="toolbar-left"><span class="muted">All customer leads</span></div><button class="primary" onclick="openAdd('enquiries')">+ New enquiry</button></div>
- <div class="panel">
-  <div class="toolbar"><div class="toolbar-left">
-   <input class="search" id="enquirySearch" placeholder="Search name, service, email..." oninput="renderEnquiries()">
-   <select id="enquiryFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All statuses</option><option>New</option><option>Contacted</option><option>Quote Sent</option><option>Won</option><option>Lost</option></select>
-   <select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>
-  </div></div>
-  <div class="table-wrap" id="enquiriesTable"></div>
- </div>
- <div id="enquiryDetail" style="display:none;margin-top:18px"></div>
+<div class="page-intro">Keep every opportunity organised, follow up at the right time and turn enquiries into paying work.</div>
+<div class="grid">
+<div class="card"><div class="metric-label">Total enquiries</div><div class="metric" id="enquiryTotal">0</div></div>
+<div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="enquiryNew">0</div></div>
+<div class="card"><div class="metric-label">Quotes sent</div><div class="metric" id="enquiryQuoted">0</div></div>
+<div class="card"><div class="metric-label">Potential value</div><div class="metric" id="enquiryValue">£0</div></div>
+</div>
+<div class="toolbar"><div class="toolbar-left"><span class="muted">All customer leads</span></div><button class="primary" onclick="openAdd('enquiries')">+ New enquiry</button></div>
+<div class="panel">
+<div class="toolbar"><div class="toolbar-left">
+<input class="search" id="enquirySearch" placeholder="Search name, service, email..." oninput="renderEnquiries()">
+<select id="enquiryFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All statuses</option><option>New</option><option>Contacted</option><option>Quote Sent</option><option>Won</option><option>Lost</option></select>
+<select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>
+</div></div>
+<div class="table-wrap" id="enquiriesTable"></div>
+</div>
+<div id="enquiryDetail" style="display:none;margin-top:18px"></div>
 </section>
-
 <section class="page" id="customers">
- <div class="page-intro">Your customer database. Keep contact details, work history, payments and conversations together.</div>
- <div class="grid">
-  <div class="card"><div class="metric-label">Total customers</div><div class="metric" id="customerTotal">0</div></div>
-  <div class="card"><div class="metric-label">Customers with jobs</div><div class="metric" id="customerActive">0</div></div>
-  <div class="card"><div class="metric-label">Completed job value</div><div class="metric" id="customerLifetime">£0</div></div>
-  <div class="card"><div class="metric-label">Outstanding balances</div><div class="metric" id="customerOutstanding">£0</div></div>
- </div>
- <div class="toolbar">
-  <div class="toolbar-left"><input class="search" id="customerSearch" placeholder="Search customers..." oninput="renderCustomers()"></div>
-  <button class="primary" onclick="openAdd('customers')">+ Add customer</button>
- </div>
- <div class="panel"><div class="table-wrap" id="customersTable"></div></div>
- <div id="customerDetail" style="display:none;margin-top:18px"></div>
+<div class="page-intro">Your customer database. Keep contact details, work history, payments and conversations together.</div>
+<div class="grid">
+<div class="card"><div class="metric-label">Total customers</div><div class="metric" id="customerTotal">0</div></div>
+<div class="card"><div class="metric-label">Customers with jobs</div><div class="metric" id="customerActive">0</div></div>
+<div class="card"><div class="metric-label">Completed job value</div><div class="metric" id="customerLifetime">£0</div></div>
+<div class="card"><div class="metric-label">Outstanding balances</div><div class="metric" id="customerOutstanding">£0</div></div>
+</div>
+<div class="toolbar">
+<div class="toolbar-left"><input class="search" id="customerSearch" placeholder="Search customers..." oninput="renderCustomers()"></div>
+<button class="primary" onclick="openAdd('customers')">+ Add customer</button>
+</div>
+<div class="panel"><div class="table-wrap" id="customersTable"></div></div>
+<div id="customerDetail" style="display:none;margin-top:18px"></div>
 </section>
-
 <section class="page" id="quotes">
- <div class="toolbar"><span class="muted">Create and manage customer quotes.</span><button class="primary" onclick="openAdd('quotes')">+ Create quote</button></div>
- <div class="panel"><div class="table-wrap" id="quotesTable"></div></div>
+<div class="page-intro">Build itemised quotes, send them to customers and turn accepted quotes into jobs.</div>
+<div class="grid">
+<div class="card"><div class="metric-label">Total quoted value</div><div class="metric" id="quoteTotalValue">£0</div><div class="metric-note" id="quoteTotalNote"></div></div>
+<div class="card"><div class="metric-label">Awaiting response</div><div class="metric" id="quoteAwaiting">0</div><div class="metric-note" id="quoteAwaitingNote"></div></div>
+<div class="card"><div class="metric-label">Accepted quotes</div><div class="metric" id="quoteAccepted">0</div></div>
+<div class="card"><div class="metric-label">Accepted quote value</div><div class="metric" id="quoteAcceptedValue">£0</div></div>
+</div>
+<div class="toolbar"><span class="muted">Create and manage customer quotes.</span><button class="primary" onclick="openAdd('quotes')">+ Create quote</button></div>
+<div class="panel">
+<div class="toolbar"><div class="toolbar-left">
+<input class="search" id="quoteSearch" placeholder="Search quote number, customer, work..." oninput="renderQuotes()">
+<select id="quoteFilter" onchange="renderQuotes()" style="width:150px"><option value="">All statuses</option><option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option><option>Expired</option></select>
+</div></div>
+<div class="table-wrap" id="quotesTable"></div>
+</div>
 </section>
-
 <section class="page" id="jobs">
- <div class="toolbar"><span class="muted">Track work, completion and payments.</span><button class="primary" onclick="openAdd('jobs')">+ Add job</button></div>
- <div class="panel"><div class="table-wrap" id="jobsTable"></div></div>
+<div class="toolbar"><span class="muted">Track work, completion and payments.</span><button class="primary" onclick="openAdd('jobs')">+ Add job</button></div>
+<div class="panel"><div class="table-wrap" id="jobsTable"></div></div>
 </section>
-
 <section class="page" id="calendar">
- <div class="toolbar"><span class="muted">Your appointments and work schedule.</span><button class="primary" onclick="openAdd('calendar')">+ Add event</button></div>
- <div class="panel"><div class="card-title" id="monthTitle"></div><div class="calendar" id="calendarGrid"></div></div>
+<div class="toolbar"><span class="muted">Your appointments and work schedule.</span><button class="primary" onclick="openAdd('calendar')">+ Add event</button></div>
+<div class="panel"><div class="card-title" id="monthTitle"></div><div class="calendar" id="calendarGrid"></div></div>
 </section>
-
 <section class="page" id="followups">
- <div class="toolbar"><span class="muted">Never let an enquiry or customer go forgotten.</span><button class="primary" onclick="openAdd('followups')">+ Add follow-up</button></div>
- <div class="panel"><div class="table-wrap" id="followupsTable"></div></div>
+<div class="toolbar"><span class="muted">Never let an enquiry or customer go forgotten.</span><button class="primary" onclick="openAdd('followups')">+ Add follow-up</button></div>
+<div class="panel"><div class="table-wrap" id="followupsTable"></div></div>
 </section>
-
 <section class="page" id="revenue">
- <div class="grid">
-  <div class="card"><div class="metric-label">Completed job revenue</div><div class="metric" id="completedRevenue">£0</div></div>
-  <div class="card"><div class="metric-label">Active job value</div><div class="metric" id="activeRevenue">£0</div></div>
-  <div class="card"><div class="metric-label">Payments received</div><div class="metric" id="receivedRevenue">£0</div></div>
-  <div class="card"><div class="metric-label">Outstanding</div><div class="metric" id="outstandingRevenue">£0</div></div>
- </div>
- <div class="panel"><div class="card-title">Revenue overview</div><div class="muted">Figures are calculated from your recorded jobs. Add real jobs and payment details to populate this area.</div><div class="chart" id="bars"></div></div>
+<div class="grid">
+<div class="card"><div class="metric-label">Completed job revenue</div><div class="metric" id="completedRevenue">£0</div></div>
+<div class="card"><div class="metric-label">Active job value</div><div class="metric" id="activeRevenue">£0</div></div>
+<div class="card"><div class="metric-label">Payments received</div><div class="metric" id="receivedRevenue">£0</div></div>
+<div class="card"><div class="metric-label">Outstanding</div><div class="metric" id="outstandingRevenue">£0</div></div>
+</div>
+<div class="panel"><div class="card-title">Revenue overview</div><div class="muted">Figures are calculated from your recorded jobs. Add real jobs and payment details to populate this area.</div><div class="chart" id="bars"></div></div>
 </section>
-
 <section class="page" id="website">
- <div class="panel"><div class="card-title">Your business website</div><p class="muted">Manage the business details displayed on your public website.</p>
-  <div class="field">Business name<input id="siteName" value="Your Business Name"></div>
-  <div class="field">Short description<textarea id="siteDescription">Professional, reliable service for your home and business.</textarea></div>
-  <div class="field">Phone number<input id="sitePhone" placeholder="Your contact number"></div>
-  <div class="field">Email address<input id="siteEmail" placeholder="Your business email"></div>
-  <div class="field">Services<textarea id="siteServices" placeholder="List your services"></textarea></div>
-  <button class="primary" onclick="saveWebsite()">Save website details</button><div id="siteSaved" class="muted" style="margin-top:10px"></div>
- </div>
+<div class="panel"><div class="card-title">Your business website</div><p class="muted">Manage the business details displayed on your public website.</p>
+<div class="field">Business name<input id="siteName" value="Your Business Name"></div>
+<div class="field">Short description<textarea id="siteDescription">Professional, reliable service for your home and business.</textarea></div>
+<div class="field">Phone number<input id="sitePhone" placeholder="Your contact number"></div>
+<div class="field">Email address<input id="siteEmail" placeholder="Your business email"></div>
+<div class="field">Services<textarea id="siteServices" placeholder="List your services"></textarea></div>
+<button class="primary" onclick="saveWebsite()">Save website details</button><div id="siteSaved" class="muted" style="margin-top:10px"></div>
+</div>
 </section>
-
 <section class="page" id="assistant">
- <div class="panel"><div class="card-title">✧ Your business assistant</div><p class="muted">Ask questions about managing your business. This demonstration uses preset responses and does not connect to live AI.</p>
-  <div id="chat" class="message">Hello! I'm your Tradeflow assistant demo. Ask me about follow-ups, quotes, jobs or revenue.</div>
-  <div class="toolbar"><input id="chatInput" placeholder="Ask your assistant something..." onkeydown="if(event.key==='Enter')askAI()"><button class="primary" onclick="askAI()">Send</button></div>
-  <div class="muted">Try: "Who needs following up?" · "How do I manage quotes?" · "How much is outstanding?"</div>
- </div>
+<div class="panel"><div class="card-title">✧ Your business assistant</div><p class="muted">Ask questions about managing your business. This demonstration uses preset responses and does not connect to live AI.</p>
+<div id="chat" class="message">Hello! I'm your Tradeflow assistant demo. Ask me about follow-ups, quotes, jobs or revenue.</div>
+<div class="toolbar"><input id="chatInput" placeholder="Ask your assistant something..." onkeydown="if(event.key==='Enter')askAI()"><button class="primary" onclick="askAI()">Send</button></div>
+<div class="muted">Try: "Who needs following up?" · "How do I manage quotes?" · "How much is outstanding?"</div>
+</div>
 </section>
-
 <section class="page" id="settings">
- <div class="panel"><div class="card-title">Business settings</div>
-  <div class="field">Business name<input id="settingName" value="Your Business Name"></div>
-  <div class="field">Business type<select id="settingType"><option>Plumbing</option><option>Electrical</option><option>Building</option><option>Cleaning</option><option>Landscaping</option><option>Heating</option><option>Other service business</option></select></div>
-  <div class="field">Currency<select id="settingCurrency"><option value="GBP">GBP (£)</option><option value="EUR">EUR (€)</option><option value="USD">USD ($)</option></select></div>
-  <div class="field">VAT registered?<select id="settingVat"><option>No</option><option>Yes</option></select></div>
-  <button class="primary" onclick="saveSettings()">Save settings</button>
-  <div class="notice">This prototype stores information in this browser. It does not yet provide separate staff accounts, cloud synchronisation or secure multi-business data storage.</div>
- </div>
+<div class="panel"><div class="card-title">Business settings</div>
+<div class="field">Business name<input id="settingName" value="Your Business Name"></div>
+<div class="field">Business type<select id="settingType"><option>Plumbing</option><option>Electrical</option><option>Building</option><option>Cleaning</option><option>Landscaping</option><option>Heating</option><option>Other service business</option></select></div>
+<div class="field">Currency<select id="settingCurrency"><option value="GBP">GBP (£)</option><option value="EUR">EUR (€)</option><option value="USD">USD ($)</option></select></div>
+<div class="field">VAT registered?<select id="settingVat"><option>No</option><option>Yes</option></select></div>
+<button class="primary" onclick="saveSettings()">Save settings</button>
+<div class="notice">This prototype stores information in this browser. It does not yet provide separate staff accounts, cloud synchronisation or secure multi-business data storage.</div>
+</div>
 </section>
 </main>
-
 <div class="modal-backdrop" id="modal">
- <div class="modal">
-  <div class="modal-head"><div class="modal-title" id="modalTitle">Add record</div><button class="secondary" onclick="closeModal()">Close</button></div>
-  <form id="recordForm"><div id="formFields" class="form-grid"></div><div class="toolbar"><span class="muted" id="formHint"></span><button class="primary" type="submit">Save record</button></div></form>
- </div>
+<div class="modal">
+<div class="modal-head"><div class="modal-title" id="modalTitle">Add record</div><button class="secondary" onclick="closeModal()">Close</button></div>
+<form id="recordForm"><div id="formFields" class="form-grid"></div><div class="toolbar"><span class="muted" id="formHint"></span><button class="primary" type="submit">Save record</button></div></form>
 </div>
-
+</div>
+<div class="modal-backdrop" id="quoteModal">
+<div class="modal wide">
+<div class="modal-head"><div class="modal-title" id="quoteModalTitle">Create quote</div><button class="secondary" type="button" onclick="closeQuote()">Close</button></div>
+<div class="form-grid">
+<label class="field">Customer<select id="qCustomer" onchange="toggleNewCustomer()"></select></label>
+<label class="field">Description of work<input id="qService" placeholder="e.g. Bathroom renovation"></label>
+</div>
+<div id="qNewBox" class="form-grid" style="display:none">
+<label class="field">New customer name<input id="qNewName"></label>
+<label class="field">Phone number<input id="qNewPhone" type="tel"></label>
+<label class="field full">Email address<input id="qNewEmail" type="email"></label>
+</div>
+<div class="form-grid" style="grid-template-columns:1fr 1fr 1fr">
+<label class="field">Quote date<input id="qDate" type="date"></label>
+<label class="field">Valid until<input id="qValid" type="date"></label>
+<label class="field">Status<select id="qStatus"><option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option><option>Expired</option></select></label>
+</div>
+<div class="section-label">Items</div>
+<div class="qrow head"><div>Type</div><div>Description</div><div>Qty</div><div>Unit price</div><div style="text-align:right">Total</div><div></div></div>
+<div id="qItems"></div>
+<button class="secondary" type="button" onclick="qAddItem()">+ Add item</button>
+<div class="vatbox"><label style="display:flex;align-items:center;gap:6px"><input type="checkbox" id="qVatOn" onchange="updateQuoteTotals()"> Add VAT</label><span>VAT rate %</span><input type="number" id="qVatRate" min="0" step="0.1" value="20" oninput="updateQuoteTotals()"></div>
+<div class="qtotals"><div><span>Subtotal</span><span id="qSub">£0</span></div><div id="qVatRow"><span id="qVatLabel">VAT</span><span id="qVat">£0</span></div><div class="grand"><span>Total</span><span id="qTotal">£0</span></div></div>
+<label class="field">Notes for the customer<textarea id="qNotes" placeholder="Anything the customer should know about this quote"></textarea></label>
+<label class="field">Terms<textarea id="qTerms"></textarea></label>
+<div class="toolbar"><span class="muted">You can print, email or convert this quote to a job after saving.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeQuote()">Cancel</button><button class="primary" type="button" onclick="saveQuote()">Save quote</button></div></div>
+</div>
+</div>
 <script>
 const $=id=>document.getElementById(id);
 const today=()=>new Date().toISOString().slice(0,10);
 const makeId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-
 const initialData={
- enquiries:[
-  {id:makeId(),name:"James Wilson",service:"Bathroom renovation",date:today(),status:"New",priority:"High",value:2400,phone:"07123 456789",email:"james@example.com",source:"Website",notes:"Interested in a full bathroom renovation.",history:[],followup:""},
-  {id:makeId(),name:"Sarah Thompson",service:"Leaking tap",date:today(),status:"Contacted",priority:"Normal",value:150,phone:"07123 456780",email:"sarah@example.com",source:"Phone",notes:"Asked for a call back.",history:[],followup:""},
-  {id:makeId(),name:"David Brown",service:"Boiler installation",date:today(),status:"Quote Sent",priority:"High",value:1800,phone:"07123 456781",email:"david@example.com",source:"Referral",notes:"Quote sent, waiting for response.",history:[],followup:""},
-  {id:makeId(),name:"Emma Jones",service:"Kitchen plumbing",date:today(),status:"New",priority:"Normal",value:950,phone:"07123 456782",email:"emma@example.com",source:"Website",notes:"",history:[],followup:""}
- ],
- customers:[
-  {id:makeId(),name:"James Wilson",phone:"07123 456789",email:"james@example.com",notes:""},
-  {id:makeId(),name:"Sarah Thompson",phone:"07123 456780",email:"sarah@example.com",notes:""},
-  {id:makeId(),name:"David Brown",phone:"07123 456781",email:"david@example.com",notes:""}
- ],
- quotes:[
-  {id:makeId(),name:"James Wilson",service:"Bathroom renovation",value:2400,status:"Draft",date:today()},
-  {id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Sent",date:today()}
- ],
- jobs:[
-  {id:makeId(),name:"Sarah Thompson",service:"Tap replacement",value:150,status:"In progress",payment:"Paid",paid:150,start:today(),completion:""},
-  {id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Upcoming",payment:"Unpaid",paid:0,start:today(),completion:""}
- ],
- followups:[
-  {id:makeId(),name:"James Wilson",service:"Follow up on enquiry",date:today(),status:"Pending"},
-  {id:makeId(),name:"David Brown",service:"Check quote response",date:today(),status:"Pending"}
- ],
- events:[]
+enquiries:[
+{id:makeId(),name:"James Wilson",service:"Bathroom renovation",date:today(),status:"New",priority:"High",value:2400,phone:"07123 456789",email:"james@example.com",source:"Website",notes:"Interested in a full bathroom renovation.",history:[],followup:""},
+{id:makeId(),name:"Sarah Thompson",service:"Leaking tap",date:today(),status:"Contacted",priority:"Normal",value:150,phone:"07123 456780",email:"sarah@example.com",source:"Phone",notes:"Asked for a call back.",history:[],followup:""},
+{id:makeId(),name:"David Brown",service:"Boiler installation",date:today(),status:"Quote Sent",priority:"High",value:1800,phone:"07123 456781",email:"david@example.com",source:"Referral",notes:"Quote sent, waiting for response.",history:[],followup:""},
+{id:makeId(),name:"Emma Jones",service:"Kitchen plumbing",date:today(),status:"New",priority:"Normal",value:950,phone:"07123 456782",email:"emma@example.com",source:"Website",notes:"",history:[],followup:""}
+],
+customers:[
+{id:makeId(),name:"James Wilson",phone:"07123 456789",email:"james@example.com",notes:""},
+{id:makeId(),name:"Sarah Thompson",phone:"07123 456780",email:"sarah@example.com",notes:""},
+{id:makeId(),name:"David Brown",phone:"07123 456781",email:"david@example.com",notes:""}
+],
+quotes:[
+{id:makeId(),name:"James Wilson",service:"Bathroom renovation",value:2400,status:"Draft",date:today()},
+{id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Sent",date:today()}
+],
+jobs:[
+{id:makeId(),name:"Sarah Thompson",service:"Tap replacement",value:150,status:"In progress",payment:"Paid",paid:150,start:today(),completion:""},
+{id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Upcoming",payment:"Unpaid",paid:0,start:today(),completion:""}
+],
+followups:[
+{id:makeId(),name:"James Wilson",service:"Follow up on enquiry",date:today(),status:"Pending"},
+{id:makeId(),name:"David Brown",service:"Check quote response",date:today(),status:"Pending"}
+],
+events:[]
 };
-
 let data;
 try{
- const saved=JSON.parse(localStorage.getItem("tradeflowData"));
- data=saved&&typeof saved==="object"?saved:initialData;
+const saved=JSON.parse(localStorage.getItem("tradeflowData"));
+data=saved&&typeof saved==="object"?saved:initialData;
 }catch(e){data=initialData}
-
 ["enquiries","customers","quotes","jobs","followups","events"].forEach(k=>{
- if(!Array.isArray(data[k]))data[k]=initialData[k]||[];
+if(!Array.isArray(data[k]))data[k]=initialData[k]||[];
 });
-
 data.enquiries.forEach(e=>{
- e.id=e.id||makeId();e.priority=e.priority||"Normal";
- e.history=Array.isArray(e.history)?e.history:[];
- e.notes=e.notes||"";e.source=e.source||"Other";
- e.phone=e.phone||"";e.email=e.email||"";
- e.followup=e.followup||"";e.value=Number(e.value)||0;
+e.id=e.id||makeId();e.priority=e.priority||"Normal";
+e.history=Array.isArray(e.history)?e.history:[];
+e.notes=e.notes||"";e.source=e.source||"Other";
+e.phone=e.phone||"";e.email=e.email||"";
+e.followup=e.followup||"";e.value=Number(e.value)||0;
 });
 data.customers.forEach(c=>{
- c.id=c.id||makeId();c.address=c.address||"";
- c.postcode=c.postcode||"";c.notes=c.notes||"";
- c.history=Array.isArray(c.history)?c.history:[];
+c.id=c.id||makeId();c.address=c.address||"";
+c.postcode=c.postcode||"";c.notes=c.notes||"";
+c.history=Array.isArray(c.history)?c.history:[];
 });
 data.quotes.forEach(x=>x.id=x.id||makeId());
 data.jobs.forEach(x=>{x.id=x.id||makeId();x.paid=Number(x.paid)||0});
 data.followups.forEach(x=>x.id=x.id||makeId());
 data.events.forEach(x=>x.id=x.id||makeId());
-
 function save(){localStorage.setItem("tradeflowData",JSON.stringify(data))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function money(v){
- let symbol=({GBP:"£",EUR:"€",USD:"$"})[localStorage.getItem("tradeflowCurrency")||"GBP"];
- return symbol+Number(v||0).toLocaleString("en-GB",{minimumFractionDigits:0,maximumFractionDigits:2});
+let symbol=({GBP:"£",EUR:"€",USD:"$"})[localStorage.getItem("tradeflowCurrency")||"GBP"];
+return symbol+Number(v||0).toLocaleString("en-GB",{minimumFractionDigits:0,maximumFractionDigits:2});
 }
 function tag(s){
- let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":
- ["Urgent","Overdue","Lost","Rejected"].includes(s)?"red":
- ["New","Pending","Unpaid","Quote Sent"].includes(s)?"orange":"";
- return `<span class="tag ${c}">${esc(s||"—")}</span>`;
+let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":
+["Urgent","Overdue","Lost","Rejected"].includes(s)?"red":
+["New","Pending","Unpaid","Quote Sent"].includes(s)?"orange":
+["Draft","Expired"].includes(s)?"grey":"";
+return `<span class="tag ${c}">${esc(s||"—")}</span>`;
 }
 function showPage(id){
- document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
- $(id).classList.add("active");
- document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
- $("heading").textContent=({overview:"Good morning 👋",enquiries:"Enquiries",customers:"Customers",quotes:"Quotes",jobs:"Jobs",calendar:"Calendar",followups:"Follow-ups",revenue:"Revenue",website:"Website Management",assistant:"AI Assistant",settings:"Settings"})[id];
- $("crumb").textContent=id.toUpperCase();
- if(id==="enquiries")renderEnquiries();
- if(id==="customers")renderCustomers();
- if(["quotes","jobs","followups"].includes(id))renderTable(id);
- if(id==="calendar")renderCalendar();
- if(id==="revenue")renderRevenue();
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+$(id).classList.add("active");
+document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
+$("heading").textContent=({overview:"Good morning 👋",enquiries:"Enquiries",customers:"Customers",quotes:"Quotes",jobs:"Jobs",calendar:"Calendar",followups:"Follow-ups",revenue:"Revenue",website:"Website Management",assistant:"AI Assistant",settings:"Settings"})[id];
+$("crumb").textContent=id.toUpperCase();
+if(id==="enquiries")renderEnquiries();
+if(id==="customers")renderCustomers();
+if(["quotes","jobs","followups"].includes(id))renderTable(id);
+if(id==="calendar")renderCalendar();
+if(id==="revenue")renderRevenue();
 }
 document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>showPage(n.dataset.page)));
-
 /* ENQUIRIES */
 function renderEnquiries(){
- const q=($("enquirySearch")?.value||"").toLowerCase();
- const st=$("enquiryFilter")?.value||"";
- const pr=$("enquiryPriorityFilter")?.value||"";
- const rows=data.enquiries.filter(e=>(!st||e.status===st)&&(!pr||e.priority===pr)&&[e.name,e.service,e.email,e.phone,e.source].join(" ").toLowerCase().includes(q));
- $("enquiryTotal").textContent=data.enquiries.length;
- $("enquiryNew").textContent=data.enquiries.filter(e=>e.status==="New").length;
- $("enquiryQuoted").textContent=data.enquiries.filter(e=>e.status==="Quote Sent").length;
- $("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(e.status)).reduce((s,e)=>s+Number(e.value||0),0));
- if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match your search. Try changing your filters or add a new enquiry.</div>';return}
- $("enquiriesTable").innerHTML=`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>EST. VALUE</th><th>STATUS</th><th>PRIORITY</th><th>FOLLOW-UP</th><th></th></tr></thead><tbody>${rows.map(e=>`<tr><td><strong>${esc(e.name)}</strong><div class="muted">${esc(e.phone||e.email||"No contact details")}</div></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td>${tag(e.priority)}</td><td>${e.followup?esc(e.followup):'<span class="muted">Not set</span>'}</td><td><button class="action" onclick="openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`;
+const q=($("enquirySearch")?.value||"").toLowerCase();
+const st=$("enquiryFilter")?.value||"";
+const pr=$("enquiryPriorityFilter")?.value||"";
+const rows=data.enquiries.filter(e=>(!st||e.status===st)&&(!pr||e.priority===pr)&&[e.name,e.service,e.email,e.phone,e.source].join(" ").toLowerCase().includes(q));
+$("enquiryTotal").textContent=data.enquiries.length;
+$("enquiryNew").textContent=data.enquiries.filter(e=>e.status==="New").length;
+$("enquiryQuoted").textContent=data.enquiries.filter(e=>e.status==="Quote Sent").length;
+$("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(e.status)).reduce((s,e)=>s+Number(e.value||0),0));
+if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match your search. Try changing your filters or add a new enquiry.</div>';return}
+$("enquiriesTable").innerHTML=`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>EST. VALUE</th><th>STATUS</th><th>PRIORITY</th><th>FOLLOW-UP</th><th></th></tr></thead><tbody>${rows.map(e=>`<tr><td><strong>${esc(e.name)}</strong><div class="muted">${esc(e.phone||e.email||"No contact details")}</div></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td>${tag(e.priority)}</td><td>${e.followup?esc(e.followup):'<span class="muted">Not set</span>'}</td><td><button class="action" onclick="openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`;
 }
 let selectedEnquiry=null;
 function openEnquiry(id){
- selectedEnquiry=id;
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- $("enquiryDetail").style.display="block";
- $("enquiryDetail").innerHTML=`
- <div class="detail-heading"><div><div class="eyebrow">ENQUIRY RECORD</div><div class="detail-name">${esc(e.name)}</div><div class="muted">${esc(e.service)} · Added ${esc(e.date||"Date not set")}</div></div><div class="actions"><button class="secondary" onclick="editEnquiry('${e.id}')">Edit details</button><button class="secondary" onclick="closeEnquiry()">Close</button></div></div>
- <div class="detail-layout"><div>
-  <div class="detail-card"><h3>Enquiry information</h3>
-   <div class="detail-line"><span class="muted">Phone</span><strong>${esc(e.phone||"Not provided")}</strong></div>
-   <div class="detail-line"><span class="muted">Email</span><strong>${esc(e.email||"Not provided")}</strong></div>
-   <div class="detail-line"><span class="muted">Lead source</span><strong>${esc(e.source||"Other")}</strong></div>
-   <div class="detail-line"><span class="muted">Estimated value</span><strong>${money(e.value)}</strong></div>
-   <div class="detail-line"><span class="muted">Priority</span>${tag(e.priority)}</div>
-   <div class="detail-line"><span class="muted">Status</span>${tag(e.status)}</div>
-   <div class="detail-line"><span class="muted">Follow-up date</span><strong>${esc(e.followup||"Not scheduled")}</strong></div>
-   <hr><div class="muted">Enquiry notes</div><p style="font-size:12px;line-height:1.6">${esc(e.notes||"No notes added yet.")}</p>
-  </div>
-  <div class="detail-card"><div class="split"><h3>Contact history</h3><button class="primary" onclick="addHistory('${e.id}')">+ Log contact</button></div>
-   ${e.history.length?e.history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Log calls, emails or messages here.</div>'}
-  </div>
- </div>
- <div>
-  <div class="detail-card"><h3>Update enquiry status</h3>
-   <div class="field">Status<select onchange="changeEnquiryField('${e.id}','status',this.value)">${["New","Contacted","Quote Sent","Won","Lost"].map(s=>`<option ${e.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
-   <div class="field">Priority<select onchange="changeEnquiryField('${e.id}','priority',this.value)">${["Low","Normal","High","Urgent"].map(s=>`<option ${e.priority===s?"selected":""}>${s}</option>`).join("")}</select></div>
-   <div class="field">Follow-up date<input type="date" value="${esc(e.followup)}" onchange="changeEnquiryField('${e.id}','followup',this.value)"></div>
-  </div>
-  <div class="detail-card"><h3>Convert enquiry</h3><p class="muted">Move this lead into the next stage without entering the details again.</p>
-   <button class="primary" style="width:100%;margin:5px 0" onclick="convertCustomer('${e.id}')">Convert to customer</button>
-   <button class="secondary" style="width:100%;margin:5px 0" onclick="convertJob('${e.id}')">Convert to job</button>
-   <div class="notice">Converting to a job also creates a customer record if one doesn't already exist.</div>
-  </div>
-  <button class="danger" onclick="deleteEnquiry('${e.id}')">Delete this enquiry</button>
- </div></div>`;
- $("enquiryDetail").scrollIntoView({behavior:"smooth",block:"start"});
+selectedEnquiry=id;
+const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+$("enquiryDetail").style.display="block";
+$("enquiryDetail").innerHTML=`
+<div class="detail-heading"><div><div class="eyebrow">ENQUIRY RECORD</div><div class="detail-name">${esc(e.name)}</div><div class="muted">${esc(e.service)} · Added ${esc(e.date||"Date not set")}</div></div><div class="actions"><button class="secondary" onclick="editEnquiry('${e.id}')">Edit details</button><button class="secondary" onclick="closeEnquiry()">Close</button></div></div>
+<div class="detail-layout"><div>
+<div class="detail-card"><h3>Enquiry information</h3>
+<div class="detail-line"><span class="muted">Phone</span><strong>${esc(e.phone||"Not provided")}</strong></div>
+<div class="detail-line"><span class="muted">Email</span><strong>${esc(e.email||"Not provided")}</strong></div>
+<div class="detail-line"><span class="muted">Lead source</span><strong>${esc(e.source||"Other")}</strong></div>
+<div class="detail-line"><span class="muted">Estimated value</span><strong>${money(e.value)}</strong></div>
+<div class="detail-line"><span class="muted">Priority</span>${tag(e.priority)}</div>
+<div class="detail-line"><span class="muted">Status</span>${tag(e.status)}</div>
+<div class="detail-line"><span class="muted">Follow-up date</span><strong>${esc(e.followup||"Not scheduled")}</strong></div>
+<hr><div class="muted">Enquiry notes</div><p style="font-size:12px;line-height:1.6">${esc(e.notes||"No notes added yet.")}</p>
+</div>
+<div class="detail-card"><div class="split"><h3>Contact history</h3><button class="primary" onclick="addHistory('${e.id}')">+ Log contact</button></div>
+${e.history.length?e.history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Log calls, emails or messages here.</div>'}
+</div>
+</div>
+<div>
+<div class="detail-card"><h3>Update enquiry status</h3>
+<div class="field">Status<select onchange="changeEnquiryField('${e.id}','status',this.value)">${["New","Contacted","Quote Sent","Won","Lost"].map(s=>`<option ${e.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
+<div class="field">Priority<select onchange="changeEnquiryField('${e.id}','priority',this.value)">${["Low","Normal","High","Urgent"].map(s=>`<option ${e.priority===s?"selected":""}>${s}</option>`).join("")}</select></div>
+<div class="field">Follow-up date<input type="date" value="${esc(e.followup)}" onchange="changeEnquiryField('${e.id}','followup',this.value)"></div>
+</div>
+<div class="detail-card"><h3>Convert enquiry</h3><p class="muted">Move this lead into the next stage without entering the details again.</p>
+<button class="primary" style="width:100%;margin:5px 0" onclick="convertCustomer('${e.id}')">Convert to customer</button>
+<button class="secondary" style="width:100%;margin:5px 0" onclick="convertJob('${e.id}')">Convert to job</button>
+<div class="notice">Converting to a job also creates a customer record if one doesn't already exist.</div>
+</div>
+<button class="danger" onclick="deleteEnquiry('${e.id}')">Delete this enquiry</button>
+</div></div>`;
+$("enquiryDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function closeEnquiry(){$("enquiryDetail").style.display="none";selectedEnquiry=null}
 function changeEnquiryField(id,key,value){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- e[key]=value;save();renderEnquiries();openEnquiry(id);updateDashboard();
+const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+e[key]=value;save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
 function editEnquiry(id){const e=data.enquiries.find(x=>x.id===id);if(e)openForm("enquiries",e)}
 function addHistory(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
- const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
- const note=prompt("What happened?");if(note===null)return;
- e.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
- e.status=e.status==="New"?"Contacted":e.status;
- save();renderEnquiries();openEnquiry(id);updateDashboard();
+const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
+const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
+const note=prompt("What happened?");if(note===null)return;
+e.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
+e.status=e.status==="New"?"Contacted":e.status;
+save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
 function findOrCreateCustomer(e){
- let c=data.customers.find(x=>x.email&&e.email&&x.email.toLowerCase()===e.email.toLowerCase());
- if(!c)c=data.customers.find(x=>x.phone&&e.phone&&x.phone===e.phone);
- if(!c){
-  c={id:makeId(),name:e.name,phone:e.phone||"",email:e.email||"",address:"",postcode:"",notes:"Created from enquiry: "+e.service,history:[]};
-  data.customers.push(c);
- }
- return c;
+let c=data.customers.find(x=>x.email&&e.email&&x.email.toLowerCase()===e.email.toLowerCase());
+if(!c)c=data.customers.find(x=>x.phone&&e.phone&&x.phone===e.phone);
+if(!c){
+c={id:makeId(),name:e.name,phone:e.phone||"",email:e.email||"",address:"",postcode:"",notes:"Created from enquiry: "+e.service,history:[]};
+data.customers.push(c);
+}
+return c;
 }
 function convertCustomer(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- const c=findOrCreateCustomer(e);
- e.status="Won";e.convertedCustomerId=c.id;
- save();renderEnquiries();openEnquiry(id);updateDashboard();
- alert("Customer record created or matched successfully.");
+const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+const c=findOrCreateCustomer(e);
+e.status="Won";e.convertedCustomerId=c.id;
+save();renderEnquiries();openEnquiry(id);updateDashboard();
+alert("Customer record created or matched successfully.");
 }
 function convertJob(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- const c=findOrCreateCustomer(e);
- const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Upcoming",payment:"Unpaid",paid:0,start:"",completion:"",customerId:c.id,sourceEnquiryId:e.id};
- data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;
- save();renderEnquiries();openEnquiry(id);updateDashboard();
- alert("Job created successfully. You can find it in the Jobs section.");
+const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+const c=findOrCreateCustomer(e);
+const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Upcoming",payment:"Unpaid",paid:0,start:"",completion:"",customerId:c.id,sourceEnquiryId:e.id};
+data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;
+save();renderEnquiries();openEnquiry(id);updateDashboard();
+alert("Job created successfully. You can find it in the Jobs section.");
 }
 function deleteEnquiry(id){
- if(!confirm("Are you sure you want to permanently delete this enquiry?"))return;
- data.enquiries=data.enquiries.filter(e=>e.id!==id);
- save();closeEnquiry();renderEnquiries();updateDashboard();
+if(!confirm("Are you sure you want to permanently delete this enquiry?"))return;
+data.enquiries=data.enquiries.filter(e=>e.id!==id);
+save();closeEnquiry();renderEnquiries();updateDashboard();
 }
-
 /* CUSTOMERS */
 let selectedCustomer=null;
 function customerRecords(customer,type){
- return data[type].filter(r=>{
-  if(r.customerId)return r.customerId===customer.id;
-  return String(r.name||"").trim().toLowerCase()===String(customer.name||"").trim().toLowerCase();
- });
+return data[type].filter(r=>{
+if(r.customerId)return r.customerId===customer.id;
+return String(r.name||"").trim().toLowerCase()===String(customer.name||"").trim().toLowerCase();
+});
 }
 function customerStats(c){
- const jobs=customerRecords(c,"jobs");
- const quotes=customerRecords(c,"quotes");
- const enquiries=customerRecords(c,"enquiries");
- const lifetime=jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
- const outstanding=jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
- return {jobs,quotes,enquiries,lifetime,outstanding};
+const jobs=customerRecords(c,"jobs");
+const quotes=customerRecords(c,"quotes");
+const enquiries=customerRecords(c,"enquiries");
+const lifetime=jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
+const outstanding=jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
+return {jobs,quotes,enquiries,lifetime,outstanding};
 }
 function renderCustomers(){
- const q=($("customerSearch")?.value||"").toLowerCase();
- const rows=data.customers.filter(c=>[c.name,c.phone,c.email,c.address,c.postcode,c.notes].join(" ").toLowerCase().includes(q));
- const allStats=data.customers.map(customerStats);
- $("customerTotal").textContent=data.customers.length;
- $("customerActive").textContent=allStats.filter(s=>s.jobs.some(j=>j.status!=="Completed")).length;
- $("customerLifetime").textContent=money(allStats.reduce((s,x)=>s+x.lifetime,0));
- $("customerOutstanding").textContent=money(allStats.reduce((s,x)=>s+x.outstanding,0));
- if(!rows.length){
-  $("customersTable").innerHTML='<div class="empty">No customers found. Add your first customer to get started.</div>';
-  return;
- }
- $("customersTable").innerHTML=`<table><thead><tr><th>CUSTOMER</th><th>CONTACT DETAILS</th><th>JOBS</th><th>COMPLETED VALUE</th><th>OUTSTANDING</th><th>ACTIONS</th></tr></thead><tbody>
- ${rows.map(c=>{
-  const s=customerStats(c);
-  return `<tr>
-   <td><button class="customer-name" onclick="openCustomer('${c.id}')">${esc(c.name)}</button><div class="muted">${esc(c.address||"Address not added")}</div></td>
-   <td>${esc(c.phone||"No phone")}<div class="muted">${esc(c.email||"No email")}</div></td>
-   <td>${s.jobs.length}</td><td>${money(s.lifetime)}</td><td>${money(s.outstanding)}</td>
-   <td><div class="actions"><button class="action" onclick="openCustomer('${c.id}')">Open</button><button class="action" onclick="editRecord('customers','${c.id}')">Edit</button></div></td>
-  </tr>`;
- }).join("")}
- </tbody></table>`;
+const q=($("customerSearch")?.value||"").toLowerCase();
+const rows=data.customers.filter(c=>[c.name,c.phone,c.email,c.address,c.postcode,c.notes].join(" ").toLowerCase().includes(q));
+const allStats=data.customers.map(customerStats);
+$("customerTotal").textContent=data.customers.length;
+$("customerActive").textContent=allStats.filter(s=>s.jobs.some(j=>j.status!=="Completed")).length;
+$("customerLifetime").textContent=money(allStats.reduce((s,x)=>s+x.lifetime,0));
+$("customerOutstanding").textContent=money(allStats.reduce((s,x)=>s+x.outstanding,0));
+if(!rows.length){
+$("customersTable").innerHTML='<div class="empty">No customers found. Add your first customer to get started.</div>';
+return;
+}
+$("customersTable").innerHTML=`<table><thead><tr><th>CUSTOMER</th><th>CONTACT DETAILS</th><th>JOBS</th><th>COMPLETED VALUE</th><th>OUTSTANDING</th><th>ACTIONS</th></tr></thead><tbody>
+${rows.map(c=>{
+const s=customerStats(c);
+return `<tr>
+<td><button class="customer-name" onclick="openCustomer('${c.id}')">${esc(c.name)}</button><div class="muted">${esc(c.address||"Address not added")}</div></td>
+<td>${esc(c.phone||"No phone")}<div class="muted">${esc(c.email||"No email")}</div></td>
+<td>${s.jobs.length}</td><td>${money(s.lifetime)}</td><td>${money(s.outstanding)}</td>
+<td><div class="actions"><button class="action" onclick="openCustomer('${c.id}')">Open</button><button class="action" onclick="editRecord('customers','${c.id}')">Edit</button></div></td>
+</tr>`;
+}).join("")}
+</tbody></table>`;
 }
 function openCustomer(id){
- selectedCustomer=id;
- const c=data.customers.find(x=>x.id===id);if(!c)return;
- const s=customerStats(c);
- const history=Array.isArray(c.history)?c.history:[];
- $("customerDetail").style.display="block";
- $("customerDetail").innerHTML=`
- <div class="detail-heading">
-  <div><div class="eyebrow">CUSTOMER PROFILE</div><div class="detail-name">${esc(c.name)}</div><div class="muted">Customer since ${esc(c.createdAt||"Date not recorded")}</div></div>
-  <div class="actions"><button class="secondary" onclick="editRecord('customers','${c.id}')">Edit customer</button><button class="secondary" onclick="closeCustomer()">Close</button></div>
- </div>
- <div class="profile-stats">
-  <div class="profile-stat"><span class="muted">Completed job value</span><strong>${money(s.lifetime)}</strong></div>
-  <div class="profile-stat"><span class="muted">Outstanding balance</span><strong>${money(s.outstanding)}</strong></div>
-  <div class="profile-stat"><span class="muted">Total jobs</span><strong>${s.jobs.length}</strong></div>
- </div>
- <div class="detail-layout">
-  <div>
-   <div class="detail-card"><h3>Contact information</h3>
-    <div class="detail-line"><span class="muted">Phone</span><strong>${esc(c.phone||"Not provided")}</strong></div>
-    <div class="detail-line"><span class="muted">Email</span><strong>${esc(c.email||"Not provided")}</strong></div>
-    <div class="detail-line"><span class="muted">Address</span><strong>${esc(c.address||"Not provided")}</strong></div>
-    <div class="detail-line"><span class="muted">Postcode</span><strong>${esc(c.postcode||"Not provided")}</strong></div>
-    <hr><div class="muted">Customer notes</div><p style="font-size:12px;line-height:1.6">${esc(c.notes||"No notes added yet.")}</p>
-   </div>
-   <div class="detail-card"><h3>Jobs and work history</h3>
-    ${s.jobs.length?`<table><thead><tr><th>JOB</th><th>STATUS</th><th>VALUE</th><th>PAID</th></tr></thead><tbody>${s.jobs.map(j=>`<tr><td>${esc(j.service||"Job")}</td><td>${tag(j.status)}</td><td>${money(j.value)}</td><td>${money(j.paid)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No jobs linked to this customer yet.</div>'}
-   </div>
-   <div class="detail-card"><h3>Quotes</h3>
-    ${s.quotes.length?`<table><thead><tr><th>DESCRIPTION</th><th>STATUS</th><th>VALUE</th><th>DATE</th></tr></thead><tbody>${s.quotes.map(q=>`<tr><td>${esc(q.service||"Quote")}</td><td>${tag(q.status)}</td><td>${money(q.value)}</td><td>${esc(q.date||"—")}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No quotes linked to this customer yet.</div>'}
-   </div>
-   <div class="detail-card"><h3>Related enquiries</h3>
-    ${s.enquiries.length?`<table><thead><tr><th>SERVICE</th><th>STATUS</th><th>VALUE</th></tr></thead><tbody>${s.enquiries.map(e=>`<tr><td>${esc(e.service)}</td><td>${tag(e.status)}</td><td>${money(e.value)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries linked to this customer.</div>'}
-   </div>
-  </div>
-  <div>
-   <div class="detail-card"><h3>Quick actions</h3>
-    <p class="muted">Create new records already linked to this customer.</p>
-    <div class="quick-actions">
-     <button class="primary" onclick="customerAction('quotes','${c.id}')">+ Create quote</button>
-     <button class="primary" onclick="customerAction('jobs','${c.id}')">+ Add job</button>
-     <button class="secondary" onclick="customerAction('followups','${c.id}')">+ Add follow-up</button>
-    </div>
-   </div>
-   <div class="detail-card"><div class="split"><h3>Communication history</h3><button class="primary" onclick="addCustomerHistory('${c.id}')">+ Log contact</button></div>
-    ${history.length?history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Record phone calls, emails and messages here.</div>'}
-   </div>
-   <div class="detail-card"><h3>Customer account</h3>
-    <div class="detail-line"><span class="muted">Completed jobs</span><strong>${s.jobs.filter(j=>j.status==="Completed").length}</strong></div>
-    <div class="detail-line"><span class="muted">Active jobs</span><strong>${s.jobs.filter(j=>j.status!=="Completed").length}</strong></div>
-    <div class="detail-line"><span class="muted">Quotes issued</span><strong>${s.quotes.length}</strong></div>
-   </div>
-   <button class="danger" onclick="deleteCustomer('${c.id}')">Delete customer</button>
-  </div>
- </div>`;
- $("customerDetail").scrollIntoView({behavior:"smooth",block:"start"});
+selectedCustomer=id;
+const c=data.customers.find(x=>x.id===id);if(!c)return;
+const s=customerStats(c);
+const history=Array.isArray(c.history)?c.history:[];
+$("customerDetail").style.display="block";
+$("customerDetail").innerHTML=`
+<div class="detail-heading">
+<div><div class="eyebrow">CUSTOMER PROFILE</div><div class="detail-name">${esc(c.name)}</div><div class="muted">Customer since ${esc(c.createdAt||"Date not recorded")}</div></div>
+<div class="actions"><button class="secondary" onclick="editRecord('customers','${c.id}')">Edit customer</button><button class="secondary" onclick="closeCustomer()">Close</button></div>
+</div>
+<div class="profile-stats">
+<div class="profile-stat"><span class="muted">Completed job value</span><strong>${money(s.lifetime)}</strong></div>
+<div class="profile-stat"><span class="muted">Outstanding balance</span><strong>${money(s.outstanding)}</strong></div>
+<div class="profile-stat"><span class="muted">Total jobs</span><strong>${s.jobs.length}</strong></div>
+</div>
+<div class="detail-layout">
+<div>
+<div class="detail-card"><h3>Contact information</h3>
+<div class="detail-line"><span class="muted">Phone</span><strong>${esc(c.phone||"Not provided")}</strong></div>
+<div class="detail-line"><span class="muted">Email</span><strong>${esc(c.email||"Not provided")}</strong></div>
+<div class="detail-line"><span class="muted">Address</span><strong>${esc(c.address||"Not provided")}</strong></div>
+<div class="detail-line"><span class="muted">Postcode</span><strong>${esc(c.postcode||"Not provided")}</strong></div>
+<hr><div class="muted">Customer notes</div><p style="font-size:12px;line-height:1.6">${esc(c.notes||"No notes added yet.")}</p>
+</div>
+<div class="detail-card"><h3>Jobs and work history</h3>
+${s.jobs.length?`<table><thead><tr><th>JOB</th><th>STATUS</th><th>VALUE</th><th>PAID</th></tr></thead><tbody>${s.jobs.map(j=>`<tr><td>${esc(j.service||"Job")}</td><td>${tag(j.status)}</td><td>${money(j.value)}</td><td>${money(j.paid)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No jobs linked to this customer yet.</div>'}
+</div>
+<div class="detail-card"><h3>Quotes</h3>
+${s.quotes.length?`<table><thead><tr><th>DESCRIPTION</th><th>STATUS</th><th>VALUE</th><th>DATE</th></tr></thead><tbody>${s.quotes.map(q=>`<tr><td>${esc(q.service||"Quote")}</td><td>${tag(q.status)}</td><td>${money(q.value)}</td><td>${esc(q.date||"—")}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No quotes linked to this customer yet.</div>'}
+</div>
+<div class="detail-card"><h3>Related enquiries</h3>
+${s.enquiries.length?`<table><thead><tr><th>SERVICE</th><th>STATUS</th><th>VALUE</th></tr></thead><tbody>${s.enquiries.map(e=>`<tr><td>${esc(e.service)}</td><td>${tag(e.status)}</td><td>${money(e.value)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries linked to this customer.</div>'}
+</div>
+</div>
+<div>
+<div class="detail-card"><h3>Quick actions</h3>
+<p class="muted">Create new records already linked to this customer.</p>
+<div class="quick-actions">
+<button class="primary" onclick="customerAction('quotes','${c.id}')">+ Create quote</button>
+<button class="primary" onclick="customerAction('jobs','${c.id}')">+ Add job</button>
+<button class="secondary" onclick="customerAction('followups','${c.id}')">+ Add follow-up</button>
+</div>
+</div>
+<div class="detail-card"><div class="split"><h3>Communication history</h3><button class="primary" onclick="addCustomerHistory('${c.id}')">+ Log contact</button></div>
+${history.length?history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Record phone calls, emails and messages here.</div>'}
+</div>
+<div class="detail-card"><h3>Customer account</h3>
+<div class="detail-line"><span class="muted">Completed jobs</span><strong>${s.jobs.filter(j=>j.status==="Completed").length}</strong></div>
+<div class="detail-line"><span class="muted">Active jobs</span><strong>${s.jobs.filter(j=>j.status!=="Completed").length}</strong></div>
+<div class="detail-line"><span class="muted">Quotes issued</span><strong>${s.quotes.length}</strong></div>
+</div>
+<button class="danger" onclick="deleteCustomer('${c.id}')">Delete customer</button>
+</div>
+</div>`;
+$("customerDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function closeCustomer(){$("customerDetail").style.display="none";selectedCustomer=null}
 function addCustomerHistory(id){
- const c=data.customers.find(x=>x.id===id);if(!c)return;
- const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
- const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
- const note=prompt("What happened?");if(note===null)return;
- c.history=c.history||[];
- c.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
- save();openCustomer(id);
+const c=data.customers.find(x=>x.id===id);if(!c)return;
+const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
+const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
+const note=prompt("What happened?");if(note===null)return;
+c.history=c.history||[];
+c.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
+save();openCustomer(id);
 }
 function deleteCustomer(id){
- const c=data.customers.find(x=>x.id===id);if(!c)return;
- if(!confirm("Delete "+c.name+" from your customer list? Linked jobs, quotes and enquiries will not be deleted."))return;
- data.customers=data.customers.filter(x=>x.id!==id);
- save();closeCustomer();renderCustomers();updateDashboard();
+const c=data.customers.find(x=>x.id===id);if(!c)return;
+if(!confirm("Delete "+c.name+" from your customer list? Linked jobs, quotes and enquiries will not be deleted."))return;
+data.customers=data.customers.filter(x=>x.id!==id);
+save();closeCustomer();renderCustomers();updateDashboard();
 }
 let pendingCustomerId=null;
 function customerAction(type,id){
- pendingCustomerId=id;
- openForm(type,null);
+pendingCustomerId=id;
+openForm(type,null);
 }
-
 /* ADD AND EDIT FORMS */
 const schemas={
- enquiries:[
-  ["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["service","Service required","text"],["value","Estimated value (£)","number"],["date","Date received","date"],["source","How did they contact you?","select",["Website","Phone","Email","WhatsApp","Referral","Social media","Other"]],["status","Status","select",["New","Contacted","Quote Sent","Won","Lost"]],["priority","Priority","select",["Low","Normal","High","Urgent"]],["followup","Follow-up date","date"],["notes","Enquiry notes","textarea"]
- ],
- customers:[
-  ["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["address","Street address","text"],["postcode","Postcode","text"],["notes","Customer notes","textarea"]
- ],
- quotes:[
-  ["name","Customer name","text"],["service","Description of work","text"],["value","Quote value (£)","number"],["status","Status","select",["Draft","Sent","Accepted","Rejected","Expired"]],["date","Quote date","date"]
- ],
- jobs:[
-  ["name","Customer name","text"],["service","Job description","text"],["value","Agreed price (£)","number"],["status","Job status","select",["Upcoming","In progress","On hold","Completed"]],["payment","Payment status","select",["Unpaid","Partially paid","Paid"]],["paid","Amount paid (£)","number"],["start","Start date","date"],["completion","Expected completion date","date"]
- ],
- followups:[
-  ["name","Customer name","text"],["service","Follow-up task","text"],["date","Due date","date"],["status","Status","select",["Pending","Completed","Overdue"]]
- ],
- calendar:[
-  ["name","Event title","text"],["service","Details","text"],["date","Date","date"]
- ]
+enquiries:[
+["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["service","Service required","text"],["value","Estimated value (£)","number"],["date","Date received","date"],["source","How did they contact you?","select",["Website","Phone","Email","WhatsApp","Referral","Social media","Other"]],["status","Status","select",["New","Contacted","Quote Sent","Won","Lost"]],["priority","Priority","select",["Low","Normal","High","Urgent"]],["followup","Follow-up date","date"],["notes","Enquiry notes","textarea"]
+],
+customers:[
+["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["address","Street address","text"],["postcode","Postcode","text"],["notes","Customer notes","textarea"]
+],
+quotes:[
+["name","Customer name","text"],["service","Description of work","text"],["value","Quote value (£)","number"],["status","Status","select",["Draft","Sent","Accepted","Rejected","Expired"]],["date","Quote date","date"]
+],
+jobs:[
+["name","Customer name","text"],["service","Job description","text"],["value","Agreed price (£)","number"],["status","Job status","select",["Upcoming","In progress","On hold","Completed"]],["payment","Payment status","select",["Unpaid","Partially paid","Paid"]],["paid","Amount paid (£)","number"],["start","Start date","date"],["completion","Expected completion date","date"]
+],
+followups:[
+["name","Customer name","text"],["service","Follow-up task","text"],["date","Due date","date"],["status","Status","select",["Pending","Completed","Overdue"]]
+],
+calendar:[
+["name","Event title","text"],["service","Details","text"],["date","Date","date"]
+]
 };
-
 let editingId=null,editingType=null;
 function openAdd(type="enquiries"){openForm(type,null)}
 function openForm(type,record){
- editingType=type;editingId=record?.id||null;
- const linkedCustomer=pendingCustomerId?data.customers.find(c=>c.id===pendingCustomerId):null;
- $("modalTitle").textContent=(record?"Edit ":"Add ")+(type==="calendar"?"event":type==="enquiries"?"enquiry":type.slice(0,-1));
- $("formHint").textContent=type==="enquiries"?"You can add contact history and update this enquiry after saving.":linkedCustomer?"This record will be linked to "+linkedCustomer.name+".":"";
- $("formFields").innerHTML=schemas[type].map(([key,label,kind,opts])=>{
-  let val=record?.[key]??(linkedCustomer&&key==="name"?linkedCustomer.name:key==="date"&&type!=="calendar"?today():key==="status"?(type==="enquiries"?"New":type==="jobs"?"Upcoming":"Pending"):key==="priority"?"Normal":"");
-  let input=kind==="textarea"?`<textarea name="${key}">${esc(val)}</textarea>`:
-   kind==="select"?`<select name="${key}">${opts.map(o=>`<option ${val===o?"selected":""}>${o}</option>`).join("")}</select>`:
-   `<input name="${key}" type="${kind}" value="${esc(val)}" ${key==="name"||key==="service"?"required":""} ${kind==="number"?'min="0" step="0.01"':""}>`;
-  return `<label class="field ${kind==="textarea"||key==="service"||key==="notes"||key==="address"?"full":""}">${label}${input}</label>`;
- }).join("");
- $("modal").style.display="flex";
+if(type==="quotes"){openQuote(record?record.id:null);return}
+editingType=type;editingId=record?.id||null;
+const linkedCustomer=pendingCustomerId?data.customers.find(c=>c.id===pendingCustomerId):null;
+$("modalTitle").textContent=(record?"Edit ":"Add ")+(type==="calendar"?"event":type==="enquiries"?"enquiry":type.slice(0,-1));
+$("formHint").textContent=type==="enquiries"?"You can add contact history and update this enquiry after saving.":linkedCustomer?"This record will be linked to "+linkedCustomer.name+".":"";
+$("formFields").innerHTML=schemas[type].map(([key,label,kind,opts])=>{
+let val=record?.[key]??(linkedCustomer&&key==="name"?linkedCustomer.name:key==="date"&&type!=="calendar"?today():key==="status"?(type==="enquiries"?"New":type==="jobs"?"Upcoming":"Pending"):key==="priority"?"Normal":"");
+let input=kind==="textarea"?`<textarea name="${key}">${esc(val)}</textarea>`:
+kind==="select"?`<select name="${key}">${opts.map(o=>`<option ${val===o?"selected":""}>${o}</option>`).join("")}</select>`:
+`<input name="${key}" type="${kind}" value="${esc(val)}" ${key==="name"||key==="service"?"required":""} ${kind==="number"?'min="0" step="0.01"':""}>`;
+return `<label class="field ${kind==="textarea"||key==="service"||key==="notes"||key==="address"?"full":""}">${label}${input}</label>`;
+}).join("");
+$("modal").style.display="flex";
 }
 function closeModal(){
- $("modal").style.display="none";editingId=null;editingType=null;pendingCustomerId=null;
+$("modal").style.display="none";editingId=null;editingType=null;pendingCustomerId=null;
 }
 $("recordForm").addEventListener("submit",ev=>{
- ev.preventDefault();
- const form=new FormData(ev.target);
- let r=Object.fromEntries(form.entries());
- let type=editingType;
- ["value","paid"].forEach(k=>{if(r[k]!==undefined)r[k]=Number(r[k])||0});
- if(type==="calendar"){
-  r.id=makeId();data.events.push(r);save();closeModal();renderCalendar();return;
- }
- if(type==="customers"){
-  const duplicate=data.customers.find(c=>c.id!==editingId&&((r.email&&c.email&&c.email.toLowerCase()===r.email.toLowerCase())||(r.phone&&c.phone&&c.phone===r.phone)));
-  if(duplicate){
-   alert("A customer with this email address or phone number already exists. Open the existing customer record instead.");
-   return;
-  }
- }
- if(editingId){
-  const old=data[type].find(x=>x.id===editingId);
-  if(old)Object.assign(old,r);
- }else{
-  r.id=makeId();
-  if(type==="enquiries"){r.history=[];r.convertedCustomerId="";r.convertedJobId=""}
-  if(type==="customers"){r.history=[];r.createdAt=today()}
-  if(pendingCustomerId&&type!=="customers")r.customerId=pendingCustomerId;
-  data[type].unshift(r);
- }
- const savedId=editingId;
- const customerId=type==="customers"?(savedId||r.id):pendingCustomerId;
- save();closeModal();
- if(type==="enquiries"){renderEnquiries();if(savedId)openEnquiry(savedId)}
- else if(type==="customers"){
-  renderCustomers();
-  if(customerId)openCustomer(customerId);
- }else{
-  renderTable(type);
-  if(type==="quotes"||type==="jobs"||type==="followups"){
-   if(customerId&&$("customerDetail").style.display!=="none")openCustomer(customerId);
-  }
- }
- updateDashboard();
+ev.preventDefault();
+const form=new FormData(ev.target);
+let r=Object.fromEntries(form.entries());
+let type=editingType;
+["value","paid"].forEach(k=>{if(r[k]!==undefined)r[k]=Number(r[k])||0});
+if(type==="calendar"){
+r.id=makeId();data.events.push(r);save();closeModal();renderCalendar();return;
+}
+if(type==="customers"){
+const duplicate=data.customers.find(c=>c.id!==editingId&&((r.email&&c.email&&c.email.toLowerCase()===r.email.toLowerCase())||(r.phone&&c.phone&&c.phone===r.phone)));
+if(duplicate){
+alert("A customer with this email address or phone number already exists. Open the existing customer record instead.");
+return;
+}
+}
+if(editingId){
+const old=data[type].find(x=>x.id===editingId);
+if(old)Object.assign(old,r);
+}else{
+r.id=makeId();
+if(type==="enquiries"){r.history=[];r.convertedCustomerId="";r.convertedJobId=""}
+if(type==="customers"){r.history=[];r.createdAt=today()}
+if(pendingCustomerId&&type!=="customers")r.customerId=pendingCustomerId;
+data[type].unshift(r);
+}
+const savedId=editingId;
+const customerId=type==="customers"?(savedId||r.id):pendingCustomerId;
+save();closeModal();
+if(type==="enquiries"){renderEnquiries();if(savedId)openEnquiry(savedId)}
+else if(type==="customers"){
+renderCustomers();
+if(customerId)openCustomer(customerId);
+}else{
+renderTable(type);
+if(type==="quotes"||type==="jobs"||type==="followups"){
+if(customerId&&$("customerDetail").style.display!=="none")openCustomer(customerId);
+}
+}
+updateDashboard();
 });
-
 /* TABLES */
 function renderTable(type,filter=""){
- const rows=data[type].filter(r=>Object.values(r).join(" ").toLowerCase().includes(filter.toLowerCase()));
- const cols={quotes:["name","service","value","status","date"],jobs:["name","service","value","status","payment"],followups:["name","service","date","status"]}[type];
- if(!rows.length){$(type+"Table").innerHTML='<div class="empty">No records yet. Add your first record above.</div>';return}
- $(type+"Table").innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")}<th>ACTIONS</th></tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${c==="value"?money(r[c]):["status","payment"].includes(c)?tag(r[c]):esc(r[c]||"—")}</td>`).join("")}<td><div class="actions"><button class="action" onclick="editRecord('${type}','${r.id}')">Edit</button><button class="action" onclick="removeRecord('${type}','${r.id}')">Delete</button></div></td></tr>`).join("")}</tbody></table>`;
+if(type==="quotes"){renderQuotes();return}
+const rows=data[type].filter(r=>Object.values(r).join(" ").toLowerCase().includes(filter.toLowerCase()));
+const cols={quotes:["name","service","value","status","date"],jobs:["name","service","value","status","payment"],followups:["name","service","date","status"]}[type];
+if(!rows.length){$(type+"Table").innerHTML='<div class="empty">No records yet. Add your first record above.</div>';return}
+$(type+"Table").innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")}<th>ACTIONS</th></tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${c==="value"?money(r[c]):["status","payment"].includes(c)?tag(r[c]):esc(r[c]||"—")}</td>`).join("")}<td><div class="actions"><button class="action" onclick="editRecord('${type}','${r.id}')">Edit</button><button class="action" onclick="removeRecord('${type}','${r.id}')">Delete</button></div></td></tr>`).join("")}</tbody></table>`;
 }
 function editRecord(type,id){
- const r=data[type].find(x=>x.id===id);
- if(r)openForm(type,r);
+const r=data[type].find(x=>x.id===id);
+if(r)openForm(type,r);
 }
 function removeRecord(type,id){
- if(!confirm("Delete this record?"))return;
- data[type]=data[type].filter(r=>r.id!==id);
- save();renderTable(type);updateDashboard();
+if(!confirm("Delete this record?"))return;
+data[type]=data[type].filter(r=>r.id!==id);
+save();renderTable(type);updateDashboard();
 }
-
+/* QUOTES */
+const QUOTE_TERMS="Payment is due within 14 days of completion unless agreed otherwise. This quote is valid until the date shown. Any extra work will be agreed with you before it is carried out.";
+let qItems=[],qEditingId=null;
+function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function fmtDate(s){
+if(!s)return "";
+const d=new Date(s+"T00:00:00");
+return isNaN(d)?s:d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+}
+function calcQuote(items,vatOn,vatRate){
+const subtotal=Math.round(items.reduce((s,i)=>s+(Number(i.qty)||0)*(Number(i.price)||0),0)*100)/100;
+const rate=Number(vatRate)||0;
+const vat=vatOn?Math.round(subtotal*rate)/100:0;
+return {subtotal,vat,total:Math.round((subtotal+vat)*100)/100};
+}
+function nextQuoteNumber(){
+const nums=data.quotes.map(q=>parseInt(String(q.number||"").replace(/\D/g,""))||0);
+return "Q-"+String(Math.max(0,...nums)+1).padStart(4,"0");
+}
+function normQuote(q){
+q.id=q.id||makeId();
+if(!Array.isArray(q.items)||!q.items.length){
+q.items=[{type:"Other",desc:q.service||"Work",qty:1,price:Number(q.value)||0}];
+q.vatOn=false;
+}
+q.vatOn=!!q.vatOn;
+q.vatRate=(q.vatRate===undefined||q.vatRate==="")?20:(Number(q.vatRate)||0);
+q.notes=q.notes||"";
+q.terms=q.terms===undefined?QUOTE_TERMS:q.terms;
+q.validUntil=q.validUntil||"";
+q.date=q.date||today();
+q.status=q.status||"Draft";
+q.convertedJobId=q.convertedJobId||"";
+const t=calcQuote(q.items,q.vatOn,q.vatRate);
+q.subtotal=t.subtotal;q.vat=t.vat;q.value=t.total;
+}
+function prepareQuotes(){
+data.quotes.forEach(normQuote);
+for(let i=data.quotes.length-1;i>=0;i--){
+if(!data.quotes[i].number)data.quotes[i].number=nextQuoteNumber();
+}
+}
+function quoteCustomer(q){
+return data.customers.find(c=>c.id===q.customerId)||data.customers.find(c=>String(c.name||"").trim().toLowerCase()===String(q.name||"").trim().toLowerCase())||null;
+}
+function renderQuotes(){
+const qs=($("quoteSearch")?.value||"").toLowerCase();
+const st=$("quoteFilter")?.value||"";
+const all=data.quotes;
+const sum=arr=>arr.reduce((s,q)=>s+Number(q.value||0),0);
+const sent=all.filter(q=>q.status==="Sent");
+const acc=all.filter(q=>q.status==="Accepted");
+$("quoteTotalValue").textContent=money(sum(all));
+$("quoteTotalNote").textContent=all.length+" quote"+(all.length===1?"":"s")+" created";
+$("quoteAwaiting").textContent=sent.length;
+$("quoteAwaitingNote").textContent=money(sum(sent))+" waiting";
+$("quoteAccepted").textContent=acc.length;
+$("quoteAcceptedValue").textContent=money(sum(acc));
+const rows=all.filter(q=>(!st||q.status===st)&&[q.number,q.name,q.service,q.status].join(" ").toLowerCase().includes(qs));
+if(!rows.length){
+$("quotesTable").innerHTML='<div class="empty">No quotes found. Click "+ Create quote" to build your first one.</div>';
+return;
+}
+$("quotesTable").innerHTML=`<table><thead><tr><th>QUOTE</th><th>CUSTOMER</th><th>WORK</th><th>VALID UNTIL</th><th>TOTAL</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>${rows.map(q=>{
+const past=q.validUntil&&q.validUntil<today()&&["Draft","Sent"].includes(q.status);
+const valid=q.validUntil?(past?`<span style="color:var(--red)">${esc(q.validUntil)} (past)</span>`:esc(q.validUntil)):"—";
+const jobExists=q.convertedJobId&&data.jobs.some(j=>j.id===q.convertedJobId);
+const convert=q.status==="Accepted"?(jobExists?'<span class="muted small">Job created</span>':`<button class="action" onclick="quoteToJob('${q.id}')">Convert to job</button>`):"";
+return `<tr><td><strong>${esc(q.number)}</strong><div class="muted">${esc(q.date)}</div></td><td>${esc(q.name)}</td><td>${esc(q.service)}</td><td>${valid}</td><td><strong>${money(q.value)}</strong></td><td>${tag(q.status)}</td><td><div class="actions"><button class="action" onclick="openQuote('${q.id}')">Edit</button><button class="action" onclick="printQuote('${q.id}')">Print / PDF</button><button class="action" onclick="emailQuote('${q.id}')">Email</button>${convert}<button class="action" onclick="removeRecord('quotes','${q.id}')">Delete</button></div></td></tr>`;
+}).join("")}</tbody></table>`;
+}
+function vatDefault(){
+try{const s=JSON.parse(localStorage.getItem("tradeflowSettings")||"{}")||{};return s.vat==="Yes"}catch(e){return false}
+}
+function openQuote(id){
+const q=id?data.quotes.find(x=>x.id===id):null;
+qEditingId=q?q.id:null;
+const cust=q?quoteCustomer(q):(pendingCustomerId?data.customers.find(c=>c.id===pendingCustomerId):null);
+$("quoteModalTitle").textContent=q?"Edit quote "+q.number:"Create quote";
+$("qCustomer").innerHTML='<option value="">— Select a customer —</option>'+data.customers.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("")+'<option value="__new">+ New customer</option>';
+if(cust)$("qCustomer").value=cust.id;
+else if(q)$("qCustomer").value="__new";
+else $("qCustomer").value="";
+$("qNewName").value=(q&&!cust)?q.name:"";
+$("qNewPhone").value="";$("qNewEmail").value="";
+toggleNewCustomer();
+$("qService").value=q?q.service:"";
+$("qDate").value=q?q.date:today();
+$("qValid").value=q?q.validUntil:addDays(30);
+$("qStatus").value=q?q.status:"Draft";
+qItems=q?q.items.map(i=>({...i})):[{type:"Labour",desc:"",qty:1,price:0}];
+$("qVatOn").checked=q?q.vatOn:vatDefault();
+$("qVatRate").value=q?q.vatRate:20;
+$("qNotes").value=q?q.notes:"";
+$("qTerms").value=q?q.terms:QUOTE_TERMS;
+renderQItems();
+$("quoteModal").style.display="flex";
+}
+function closeQuote(){
+$("quoteModal").style.display="none";qEditingId=null;pendingCustomerId=null;
+}
+function toggleNewCustomer(){
+$("qNewBox").style.display=$("qCustomer").value==="__new"?"grid":"none";
+}
+function renderQItems(){
+$("qItems").innerHTML=qItems.map((it,i)=>`<div class="qrow"><select onchange="qItemChange(${i},'type',this.value)">${["Labour","Materials","Other"].map(t=>`<option ${it.type===t?"selected":""}>${t}</option>`).join("")}</select><input value="${esc(it.desc)}" placeholder="Description" oninput="qItemChange(${i},'desc',this.value)"><input type="number" min="0" step="any" value="${esc(it.qty)}" oninput="qItemChange(${i},'qty',this.value)"><input type="number" min="0" step="0.01" value="${esc(it.price||"")}" placeholder="0.00" oninput="qItemChange(${i},'price',this.value)"><div class="qline" id="qLine${i}">${money((Number(it.qty)||0)*(Number(it.price)||0))}</div><button type="button" class="qremove" onclick="qRemoveItem(${i})" title="Remove this item">✕</button></div>`).join("");
+updateQuoteTotals();
+}
+function qItemChange(i,key,value){
+if(!qItems[i])return;
+qItems[i][key]=value;
+if(key==="qty"||key==="price"){
+const el=$("qLine"+i);
+if(el)el.textContent=money((Number(qItems[i].qty)||0)*(Number(qItems[i].price)||0));
+}
+updateQuoteTotals();
+}
+function qAddItem(){
+qItems.push({type:"Materials",desc:"",qty:1,price:0});
+renderQItems();
+}
+function qRemoveItem(i){
+if(qItems.length>1)qItems.splice(i,1);
+else qItems=[{type:"Labour",desc:"",qty:1,price:0}];
+renderQItems();
+}
+function updateQuoteTotals(){
+const on=$("qVatOn").checked,rate=$("qVatRate").value;
+const t=calcQuote(qItems,on,rate);
+$("qSub").textContent=money(t.subtotal);
+$("qVatLabel").textContent="VAT ("+(Number(rate)||0)+"%)";
+$("qVat").textContent=money(t.vat);
+$("qVatRow").style.display=on?"flex":"none";
+$("qTotal").textContent=money(t.total);
+}
+function saveQuote(){
+const items=qItems.filter(i=>String(i.desc||"").trim()).map(i=>({type:i.type,desc:String(i.desc).trim(),qty:Number(i.qty)||0,price:Number(i.price)||0}));
+if(!items.length){alert("Please add at least one item with a description.");return}
+const cid=$("qCustomer").value;
+let cust=null;
+if(cid==="__new"){
+const nm=$("qNewName").value.trim();
+if(!nm){alert("Please type the new customer's name.");return}
+const before=data.customers.length;
+cust=findOrCreateCustomer({name:nm,phone:$("qNewPhone").value.trim(),email:$("qNewEmail").value.trim(),service:"quote"});
+if(data.customers.length>before){cust.notes="Created from a quote";cust.createdAt=today()}
+}else if(cid){
+cust=data.customers.find(c=>c.id===cid);
+}
+if(!cust){alert("Please choose a customer, or choose + New customer.");return}
+const vatOn=$("qVatOn").checked;
+const vatRate=Number($("qVatRate").value)||0;
+const t=calcQuote(items,vatOn,vatRate);
+const fields={
+name:cust.name,customerId:cust.id,
+service:$("qService").value.trim()||items[0].desc,
+date:$("qDate").value||today(),
+validUntil:$("qValid").value,
+status:$("qStatus").value,
+items,vatOn,vatRate,
+subtotal:t.subtotal,vat:t.vat,value:t.total,
+notes:$("qNotes").value.trim(),
+terms:$("qTerms").value.trim()
+};
+if(qEditingId){
+const old=data.quotes.find(x=>x.id===qEditingId);
+if(old)Object.assign(old,fields);
+}else{
+data.quotes.unshift(Object.assign({id:makeId(),number:nextQuoteNumber(),convertedJobId:""},fields));
+}
+save();closeQuote();renderQuotes();updateDashboard();
+if(selectedCustomer&&$("customers").classList.contains("active"))openCustomer(selectedCustomer);
+}
+function bizInfo(){
+let s={},w={};
+try{s=JSON.parse(localStorage.getItem("tradeflowSettings")||"{}")||{}}catch(e){}
+try{w=JSON.parse(localStorage.getItem("tradeflowWebsite")||"{}")||{}}catch(e){}
+return {name:s.name||w.name||"Your Business Name",phone:w.phone||"",email:w.email||""};
+}
+function quoteHtml(q){
+const b=bizInfo();
+const c=quoteCustomer(q)||{name:q.name};
+const rows=q.items.map(i=>`<tr><td>${esc(i.type)}</td><td>${esc(i.desc)}</td><td class="r">${esc(i.qty)}</td><td class="r">${money(i.price)}</td><td class="r">${money(i.qty*i.price)}</td></tr>`).join("");
+return `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Quote ${esc(q.number)}</title><style>
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#202b40;margin:40px;font-size:13px;line-height:1.5}
+h1{margin:0;font-size:26px;color:#3269df}
+.top{display:flex;justify-content:space-between;gap:30px;margin-bottom:30px}
+.small{color:#778397;font-size:12px}
+table{width:100%;border-collapse:collapse;margin-top:20px}
+th{text-align:left;font-size:11px;color:#778397;border-bottom:2px solid #e8edf4;padding:8px}
+td{padding:9px 8px;border-bottom:1px solid #e8edf4}
+.r{text-align:right}
+.totals{margin:20px 0 0 auto;width:260px}
+.totals div{display:flex;justify-content:space-between;padding:5px 0}
+.totals .grand{font-size:17px;font-weight:800;border-top:2px solid #202b40;margin-top:6px;padding-top:9px}
+h3{font-size:13px;margin:28px 0 6px}
+.pre{white-space:pre-wrap}
+</style></head><body>
+<div class="top"><div><h1>${esc(b.name)}</h1><div class="small">${esc(b.phone)}${b.phone&&b.email?" · ":""}${esc(b.email)}</div></div>
+<div style="text-align:right"><div style="font-size:20px;font-weight:800">QUOTE</div><div class="small">${esc(q.number)}</div><div class="small">Date: ${esc(fmtDate(q.date))}</div>${q.validUntil?`<div class="small">Valid until: ${esc(fmtDate(q.validUntil))}</div>`:""}</div></div>
+<div class="small">PREPARED FOR</div><div style="font-weight:700;font-size:15px">${esc(c.name)}</div>
+<div class="small">${esc(c.address||"")}${c.address&&c.postcode?", ":""}${esc(c.postcode||"")}</div>
+<div class="small">${esc(c.phone||"")}${c.phone&&c.email?" · ":""}${esc(c.email||"")}</div>
+<h3>Work: ${esc(q.service)}</h3>
+<table><thead><tr><th>TYPE</th><th>DESCRIPTION</th><th class="r">QTY</th><th class="r">UNIT PRICE</th><th class="r">TOTAL</th></tr></thead><tbody>${rows}</tbody></table>
+<div class="totals"><div><span>Subtotal</span><span>${money(q.subtotal)}</span></div>${q.vatOn?`<div><span>VAT (${esc(q.vatRate)}%)</span><span>${money(q.vat)}</span></div>`:""}<div class="grand"><span>Total</span><span>${money(q.value)}</span></div></div>
+${q.notes?`<h3>Notes</h3><div class="pre">${esc(q.notes)}</div>`:""}
+${q.terms?`<h3>Terms</h3><div class="pre small">${esc(q.terms)}</div>`:""}
+</body></html>`;
+}
+function printQuote(id){
+const q=data.quotes.find(x=>x.id===id);if(!q)return;
+const w=window.open("","_blank");
+if(!w){alert("Safari blocked the quote window. Please allow pop-ups for this site and try again.");return}
+w.document.write(quoteHtml(q));
+w.document.close();
+w.focus();
+setTimeout(()=>{try{w.print()}catch(e){}},500);
+}
+function emailQuote(id){
+const q=data.quotes.find(x=>x.id===id);if(!q)return;
+const c=quoteCustomer(q);
+const b=bizInfo();
+const to=c&&c.email?c.email:"";
+if(!to)alert("This customer has no email address saved, so you will need to type it in your email app.");
+const lines=q.items.map(i=>"- "+i.desc+" ("+i.qty+" x "+money(i.price)+") = "+money(i.qty*i.price)).join("\n");
+const body="Hi "+(c?c.name:q.name)+",\n\nThank you for your enquiry. Here is quote "+q.number+" for: "+q.service+"\n\n"+lines+"\n\nSubtotal: "+money(q.subtotal)+(q.vatOn?"\nVAT ("+q.vatRate+"%): "+money(q.vat):"")+"\nTotal: "+money(q.value)+(q.validUntil?"\n\nThis quote is valid until "+fmtDate(q.validUntil)+".":"")+(q.notes?"\n\n"+q.notes:"")+"\n\nPlease reply to accept this quote or ask any questions.\n\nKind regards,\n"+b.name;
+window.location.href="mailto:"+to+"?subject="+encodeURIComponent("Quote "+q.number+" from "+b.name)+"&body="+encodeURIComponent(body);
+if(q.status==="Draft"){
+setTimeout(()=>{
+if(confirm("Mark quote "+q.number+" as Sent?")){q.status="Sent";save();renderQuotes();updateDashboard()}
+},800);
+}
+}
+function quoteToJob(id){
+const q=data.quotes.find(x=>x.id===id);if(!q)return;
+if(q.status!=="Accepted"){alert("Only accepted quotes can be converted into jobs.");return}
+if(q.convertedJobId&&data.jobs.some(j=>j.id===q.convertedJobId)){alert("This quote has already been converted into a job.");return}
+let c=quoteCustomer(q);
+if(!c)c=findOrCreateCustomer({name:q.name,phone:"",email:"",service:q.service});
+const job={id:makeId(),name:c.name,service:q.service,value:Number(q.value)||0,status:"Upcoming",payment:"Unpaid",paid:0,start:"",completion:"",customerId:c.id,sourceQuoteId:q.id};
+data.jobs.push(job);
+q.convertedJobId=job.id;q.customerId=c.id;
+save();renderQuotes();updateDashboard();
+alert("Job created. You can find it in the Jobs section.");
+}
 /* DASHBOARD */
 function updateDashboard(){
- $("mEnquiries").textContent=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).length;
- $("mJobs").textContent=data.jobs.filter(j=>j.status!=="Completed").length;
- $("mRevenue").textContent=money(data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0));
- $("mOutstanding").textContent=money(data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0));
- $("priorities").innerHTML=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).slice(0,5).map(e=>`<div class="priority"><span>${esc(e.name)} · ${esc(e.service)}</span>${tag(e.priority)}</div>`).join("")||'<div class="empty">No open enquiries. Nice work!</div>';
- $("upcomingOverview").innerHTML=data.followups.filter(f=>f.status!=="Completed").slice(0,5).map(f=>`<div class="priority"><span>${esc(f.name)} · ${esc(f.service)}</span><span class="muted">${esc(f.date)}</span></div>`).join("")||'<div class="empty">No outstanding follow-ups.</div>';
- $("recentRows").innerHTML=data.enquiries.slice(0,5).length?`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead><tbody>${data.enquiries.slice(0,5).map(e=>`<tr><td><strong>${esc(e.name)}</strong></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td><button class="action" onclick="showPage('enquiries');openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries yet.</div>';
- renderEnquiries();
+$("mEnquiries").textContent=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).length;
+$("mJobs").textContent=data.jobs.filter(j=>j.status!=="Completed").length;
+$("mRevenue").textContent=money(data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0));
+$("mOutstanding").textContent=money(data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0));
+$("priorities").innerHTML=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).slice(0,5).map(e=>`<div class="priority"><span>${esc(e.name)} · ${esc(e.service)}</span>${tag(e.priority)}</div>`).join("")||'<div class="empty">No open enquiries. Nice work!</div>';
+$("upcomingOverview").innerHTML=data.followups.filter(f=>f.status!=="Completed").slice(0,5).map(f=>`<div class="priority"><span>${esc(f.name)} · ${esc(f.service)}</span><span class="muted">${esc(f.date)}</span></div>`).join("")||'<div class="empty">No outstanding follow-ups.</div>';
+$("recentRows").innerHTML=data.enquiries.slice(0,5).length?`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead><tbody>${data.enquiries.slice(0,5).map(e=>`<tr><td><strong>${esc(e.name)}</strong></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td><button class="action" onclick="showPage('enquiries');openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries yet.</div>';
+renderEnquiries();
+renderQuotes();
 }
-
 /* CALENDAR */
 function renderCalendar(){
- const now=new Date(),year=now.getFullYear(),month=now.getMonth(),first=new Date(year,month,1).getDay(),days=new Date(year,month+1,0).getDate();
- $("monthTitle").textContent=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
- let html=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="muted">${x}</div>`).join("");
- for(let i=0;i<first;i++)html+="<div></div>";
- for(let i=1;i<=days;i++){
-  let date=`${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
-  let ev=data.events.filter(e=>e.date===date);
-  let jobs=data.jobs.filter(j=>j.start===date);
-  html+=`<div class="day ${i===now.getDate()?"today":""}">${i}${ev.map(e=>`<small>${esc(e.name)}</small>`).join("")}${jobs.map(j=>`<small>Job: ${esc(j.name)}</small>`).join("")}</div>`;
- }
- $("calendarGrid").innerHTML=html;
+const now=new Date(),year=now.getFullYear(),month=now.getMonth(),first=new Date(year,month,1).getDay(),days=new Date(year,month+1,0).getDate();
+$("monthTitle").textContent=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
+let html=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="muted">${x}</div>`).join("");
+for(let i=0;i<first;i++)html+="<div></div>";
+for(let i=1;i<=days;i++){
+let date=`${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
+let ev=data.events.filter(e=>e.date===date);
+let jobs=data.jobs.filter(j=>j.start===date);
+html+=`<div class="day ${i===now.getDate()?"today":""}">${i}${ev.map(e=>`<small>${esc(e.name)}</small>`).join("")}${jobs.map(j=>`<small>Job: ${esc(j.name)}</small>`).join("")}</div>`;
 }
-
+$("calendarGrid").innerHTML=html;
+}
 /* REVENUE */
 function renderRevenue(){
- const completed=data.jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
- const active=data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0);
- const received=data.jobs.reduce((s,j)=>s+Number(j.paid||0),0);
- const outstanding=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
- $("completedRevenue").textContent=money(completed);
- $("activeRevenue").textContent=money(active);
- $("receivedRevenue").textContent=money(received);
- $("outstandingRevenue").textContent=money(outstanding);
- $("bars").innerHTML=[0,0,0,0,0,0,0,0,0,0,0,0].map((v,i)=>`<div class="bar-wrap"><div class="bar" style="height:${v||3}%"></div><small class="muted">${["J","F","M","A","M","J","J","A","S","O","N","D"][i]}</small></div>`).join("");
+const completed=data.jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
+const active=data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0);
+const received=data.jobs.reduce((s,j)=>s+Number(j.paid||0),0);
+const outstanding=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
+$("completedRevenue").textContent=money(completed);
+$("activeRevenue").textContent=money(active);
+$("receivedRevenue").textContent=money(received);
+$("outstandingRevenue").textContent=money(outstanding);
+$("bars").innerHTML=[0,0,0,0,0,0,0,0,0,0,0,0].map((v,i)=>`<div class="bar-wrap"><div class="bar" style="height:${v||3}%"></div><small class="muted">${["J","F","M","A","M","J","J","A","S","O","N","D"][i]}</small></div>`).join("");
 }
-
 /* WEBSITE AND SETTINGS */
 function saveWebsite(){
- const obj={name:$("siteName").value,description:$("siteDescription").value,phone:$("sitePhone").value,email:$("siteEmail").value,services:$("siteServices").value};
- localStorage.setItem("tradeflowWebsite",JSON.stringify(obj));
- $("siteSaved").textContent="Website details saved in this browser.";
+const obj={name:$("siteName").value,description:$("siteDescription").value,phone:$("sitePhone").value,email:$("siteEmail").value,services:$("siteServices").value};
+localStorage.setItem("tradeflowWebsite",JSON.stringify(obj));
+$("siteSaved").textContent="Website details saved in this browser.";
 }
 function saveSettings(){
- localStorage.setItem("tradeflowCurrency",$("settingCurrency").value);
- localStorage.setItem("tradeflowSettings",JSON.stringify({name:$("settingName").value,type:$("settingType").value,vat:$("settingVat").value}));
- updateDashboard();renderCustomers();alert("Settings saved in this browser.");
+localStorage.setItem("tradeflowCurrency",$("settingCurrency").value);
+localStorage.setItem("tradeflowSettings",JSON.stringify({name:$("settingName").value,type:$("settingType").value,vat:$("settingVat").value}));
+updateDashboard();renderCustomers();alert("Settings saved in this browser.");
 }
-
 /* DEMONSTRATION ASSISTANT */
 function askAI(){
- const input=$("chatInput"),q=input.value.trim();if(!q)return;
- const lower=q.toLowerCase();
- let a="I can help you organise your business. This is currently a demonstration assistant and doesn't connect to a live AI service.";
- if(/follow|contact|chase/i.test(lower)){
-  const open=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status));
-  a=open.length?`You currently have ${open.length} open enquiries: ${open.map(e=>e.name+" ("+e.status+")").join(", ")}. Review these and set a follow-up date for each.`:"You have no open enquiries at the moment.";
- }else if(/quote/i.test(lower)){
-  a=`You currently have ${data.quotes.length} quote records. Make sure every quote has a clear description, amount and status. Follow up on quotes that are still awaiting a decision.`;
- }else if(/job/i.test(lower)){
-  a=`You have ${data.jobs.length} jobs recorded, including ${data.jobs.filter(j=>j.status==="Completed").length} completed jobs. Keep job dates, progress and payment records up to date.`;
- }else if(/revenue|money|sales|outstanding/i.test(lower)){
-  const due=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
-  a=`Based on your recorded jobs, the outstanding balance is ${money(due)}. This is calculated from job values less payments recorded.`;
- }
- $("chat").innerHTML+=`<div style="margin-top:12px"><strong>You:</strong> ${esc(q)}</div><div class="message">${esc(a)}</div>`;
- input.value="";
+const input=$("chatInput"),q=input.value.trim();if(!q)return;
+const lower=q.toLowerCase();
+let a="I can help you organise your business. This is currently a demonstration assistant and doesn't connect to a live AI service.";
+if(/follow|contact|chase/i.test(lower)){
+const open=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status));
+a=open.length?`You currently have ${open.length} open enquiries: ${open.map(e=>e.name+" ("+e.status+")").join(", ")}. Review these and set a follow-up date for each.`:"You have no open enquiries at the moment.";
+}else if(/quote/i.test(lower)){
+a=`You currently have ${data.quotes.length} quote records. Make sure every quote has a clear description, amount and status. Follow up on quotes that are still awaiting a decision.`;
+}else if(/job/i.test(lower)){
+a=`You have ${data.jobs.length} jobs recorded, including ${data.jobs.filter(j=>j.status==="Completed").length} completed jobs. Keep job dates, progress and payment records up to date.`;
+}else if(/revenue|money|sales|outstanding/i.test(lower)){
+const due=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
+a=`Based on your recorded jobs, the outstanding balance is ${money(due)}. This is calculated from job values less payments recorded.`;
 }
-
+$("chat").innerHTML+=`<div style="margin-top:12px"><strong>You:</strong> ${esc(q)}</div><div class="message">${esc(a)}</div>`;
+input.value="";
+}
 /* LOAD SAVED SETTINGS */
 function loadSavedDetails(){
- try{
-  const w=JSON.parse(localStorage.getItem("tradeflowWebsite")||"null");
-  if(w){
-   $("siteName").value=w.name||"";
-   $("siteDescription").value=w.description||"";
-   $("sitePhone").value=w.phone||"";
-   $("siteEmail").value=w.email||"";
-   $("siteServices").value=w.services||"";
-  }
- }catch(e){}
- try{
-  const s=JSON.parse(localStorage.getItem("tradeflowSettings")||"null");
-  if(s){
-   $("settingName").value=s.name||"";
-   $("settingType").value=s.type||"Plumbing";
-   $("settingVat").value=s.vat||"No";
-  }
- }catch(e){}
- $("settingCurrency").value=localStorage.getItem("tradeflowCurrency")||"GBP";
+try{
+const w=JSON.parse(localStorage.getItem("tradeflowWebsite")||"null");
+if(w){
+$("siteName").value=w.name||"";
+$("siteDescription").value=w.description||"";
+$("sitePhone").value=w.phone||"";
+$("siteEmail").value=w.email||"";
+$("siteServices").value=w.services||"";
+}
+}catch(e){}
+try{
+const s=JSON.parse(localStorage.getItem("tradeflowSettings")||"null");
+if(s){
+$("settingName").value=s.name||"";
+$("settingType").value=s.type||"Plumbing";
+$("settingVat").value=s.vat||"No";
+}
+}catch(e){}
+$("settingCurrency").value=localStorage.getItem("tradeflowCurrency")||"GBP";
 }
 function boot(){
- save();loadSavedDetails();updateDashboard();renderCustomers();renderCalendar();renderRevenue();
+prepareQuotes();save();loadSavedDetails();updateDashboard();renderCustomers();renderCalendar();renderRevenue();
 }
 boot();
 </script>
