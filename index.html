@@ -1,467 +1,87 @@
-
-<!DOCTYPE html>
-<html lang="en">
+<h<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+tml>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Tradeflow | Business Management</title>
-<style>
-:root{--blue:#3269df;--blue-light:#edf3ff;--ink:#202b40;--muted:#778397;--bg:#f5f7fb;--line:#e8edf4;--white:#fff;--green:#16875e;--red:#cf5656;--orange:#c47b22;--shadow:0 3px 15px #18233808}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;font-size:14px}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-.sidebar{position:fixed;inset:0 auto 0 0;width:245px;background:white;border-right:1px solid var(--line);padding:24px 15px;overflow-y:auto;z-index:5}
-.brand{font-size:24px;font-weight:850;letter-spacing:-1.3px;padding:5px 12px 28px}
-.brand span{color:var(--blue)}
-.nav-label{font-size:10px;color:#a1aaba;font-weight:800;letter-spacing:1.3px;padding:15px 12px 8px}
-.nav{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:3px 0;border-radius:8px;color:#657186;font-size:13px;cursor:pointer;border:0;background:none;width:100%;text-align:left}
-.nav:hover,.nav.active{background:var(--blue-light);color:var(--blue);font-weight:700}
-.nav .ico{width:19px;text-align:center;font-size:16px}
-.main{margin-left:245px;width:calc(100% - 245px);padding:30px 38px 65px;max-width:1700px}
-.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}
-.eyebrow{font-size:11px;color:var(--muted);margin-bottom:6px;letter-spacing:.5px}
-h1{font-size:26px;margin:0;letter-spacing:-.8px}
-h2{font-size:17px;margin:0 0 8px}
-h3{font-size:14px;margin:0 0 12px}
-.topright{display:flex;align-items:center;gap:13px}
-.avatar{width:38px;height:38px;border-radius:50%;background:#e8efff;color:var(--blue);display:grid;place-items:center;font-weight:800}
-.primary{background:var(--blue);color:white;border:0;border-radius:7px;padding:10px 15px;font-size:12px;font-weight:700}
-.primary:hover{background:#2458c8}
-.secondary{background:white;color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:9px 13px;font-size:12px}
-.danger{background:#fff1f0;color:var(--red);border:1px solid #f5d6d3;border-radius:7px;padding:9px 13px;font-size:12px}
-.link{border:0;background:none;color:var(--blue);font-size:12px;padding:5px}
-.muted{color:var(--muted);font-size:12px}
-.small{font-size:11px}
-.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin:20px 0}
-.card,.panel{background:white;border:1px solid var(--line);border-radius:11px;padding:19px;box-shadow:var(--shadow)}
-.metric-label{font-size:12px;color:var(--muted)}
-.metric{font-size:27px;font-weight:800;margin:11px 0 6px;letter-spacing:-1px}
-.metric-note{font-size:11px;color:var(--green)}
-.section-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:17px;margin-bottom:18px}
-.card-title{font-size:14px;font-weight:750;margin-bottom:15px}
-.priority{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
-.priority:last-child{border:0}
-.tag{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;background:#edf3ff;color:var(--blue);font-weight:700;white-space:nowrap}
-.tag.green{background:#e8f7f0;color:#16875e}
-.tag.orange{background:#fff3e5;color:#c47b22}
-.tag.red{background:#fff0ef;color:#ce5750}
-.tag.grey{background:#f0f2f5;color:#687386}
-.page{display:none}.page.active{display:block}
-.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:16px 0}
-.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-input,select,textarea{border:1px solid #dfe5ee;border-radius:7px;padding:10px 11px;font-size:12px;background:white;color:var(--ink);width:100%;outline:none}
-input:focus,select:focus,textarea:focus{border-color:#8eacee;box-shadow:0 0 0 3px #3269df12}
-textarea{min-height:85px;resize:vertical}
-.search{max-width:280px}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
-.field{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted);margin-bottom:12px}
-.field.full{grid-column:1/-1}
-.table-wrap{overflow-x:auto}
-table{border-collapse:collapse;width:100%;font-size:12px}
-th{text-align:left;color:#8993a3;font-weight:700;font-size:10px;padding:12px 9px;border-bottom:1px solid var(--line);white-space:nowrap}
-td{padding:13px 9px;border-bottom:1px solid var(--line);vertical-align:middle}
-tbody tr:hover{background:#fafbfe}
-td strong{font-weight:650}
-.empty{padding:35px;text-align:center;color:var(--muted);font-size:12px}
-.actions{display:flex;gap:5px;align-items:center;white-space:nowrap}
-.action{border:0;background:none;color:var(--blue);font-size:11px;padding:5px}
-.page-intro{color:var(--muted);font-size:12px;margin-bottom:12px}
-.detail-layout{display:grid;grid-template-columns:1.3fr .7fr;gap:16px}
-.detail-card{background:white;border:1px solid var(--line);border-radius:10px;padding:19px;margin-bottom:14px}
-.detail-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:15px;margin-bottom:18px}
-.detail-name{font-size:20px;font-weight:800;letter-spacing:-.4px}
-.detail-line{padding:10px 0;border-bottom:1px solid var(--line);font-size:12px;display:flex;justify-content:space-between;gap:10px}
-.detail-line:last-child{border:0}
-.history-item{border-left:2px solid #dce6fb;padding:3px 0 15px 13px;margin-left:5px;font-size:12px}
-.history-item:last-child{padding-bottom:0}
-.history-date{color:var(--muted);font-size:10px;margin-bottom:5px}
-.history-type{font-weight:700;margin-bottom:4px}
-.quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:15px}
-.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
-.day{background:white;border:1px solid var(--line);border-radius:7px;min-height:75px;padding:9px;font-size:11px}
-.day.today{border:2px solid var(--blue)}
-.day small{display:block;color:var(--blue);margin-top:8px}
-.chart{display:flex;align-items:end;gap:12px;height:190px;margin-top:20px}
-.bar-wrap{flex:1;height:100%;display:flex;flex-direction:column;justify-content:end;text-align:center;gap:7px}
-.bar{background:#dce7ff;border-radius:5px 5px 0 0;min-height:3px}
-.message{background:#f0f4ff;padding:13px;border-radius:9px;font-size:12px;line-height:1.6;margin:12px 0}
-.modal-backdrop{display:none;position:fixed;inset:0;background:#10182888;z-index:20;align-items:center;justify-content:center;padding:16px}
-.modal{width:100%;max-width:590px;max-height:92vh;overflow:auto;background:white;border-radius:13px;padding:23px;box-shadow:0 20px 70px #10182830}
-.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:19px}
-.modal-title{font-size:17px;font-weight:800}
-.notice{padding:12px;border-radius:8px;background:#f2f6ff;color:#526785;font-size:11px;line-height:1.6;margin:12px 0}
-.tabs{display:flex;gap:7px;flex-wrap:wrap;margin:12px 0}
-.tab{padding:8px 11px;border:1px solid var(--line);border-radius:7px;background:white;font-size:11px;color:var(--muted)}
-.tab.active{background:var(--blue-light);border-color:#d8e4ff;color:var(--blue);font-weight:700}
-.split{display:flex;justify-content:space-between;align-items:center;gap:10px}
-hr{border:0;border-top:1px solid var(--line);margin:17px 0}
-@media(max-width:1050px){.main{padding:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:750px){.sidebar{width:190px}.main{margin-left:190px;width:calc(100% - 190px);padding:20px 15px}.section-grid,.detail-layout{grid-template-columns:1fr}}
-@media(max-width:560px){.sidebar{display:none}.main{margin:0;width:100%}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar{gap:8px}.grid{gap:8px}.metric{font-size:22px}}
-</style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2575.7">
+  <style type="text/css">
+    body {background-color: #f2f5fa}
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 24.0px '.SF NS'; color: #182031; -webkit-text-stroke: #182031}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 10.0px '.SF NS'; color: #9099ac; -webkit-text-stroke: #9099ac}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 13.0px 'Apple SD Gothic Neo'; color: #2750d7; -webkit-text-stroke: #2750d7}
+    p.p4 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; color: #2750d7; -webkit-text-stroke: #2750d7}
+    p.p5 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 13.0px Menlo; color: #525d73; -webkit-text-stroke: #525d73}
+    p.p6 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; color: #525d73; -webkit-text-stroke: #525d73}
+    p.p7 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 13.0px 'Apple SD Gothic Neo'; color: #525d73; -webkit-text-stroke: #525d73}
+    p.p8 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 13.0px '.Apple Color Emoji UI'; color: #525d73; -webkit-text-stroke: #525d73}
+    p.p9 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 13.0px 'Helvetica Neue'; color: #525d73; -webkit-text-stroke: #525d73}
+    p.p10 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 13.0px '.CJK Symbols Fallback SC'; color: #525d73; -webkit-text-stroke: #525d73}
+    p.p11 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 13.0px 'Zapf Dingbats'; color: #525d73; -webkit-text-stroke: #525d73}
+    p.p12 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.0px 'Helvetica Neue'; color: #525d73; -webkit-text-stroke: #525d73; background-color: #ffffff}
+    p.p13 {margin: 0.0px 0.0px 0.0px 0.0px; font: 11.0px 'Helvetica Neue'; color: #646f85; -webkit-text-stroke: #646f85}
+    p.p15 {margin: 0.0px 0.0px 0.0px 0.0px; text-align: center; font: 12.0px 'Helvetica Neue'; color: #ffffff; -webkit-text-stroke: #ffffff; background-color: #2750d7}
+    p.p16 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px '.SF NS'; color: #2750d7; -webkit-text-stroke: #2750d7}
+    p.p17 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px 'Helvetica Neue'; color: #646f85; -webkit-text-stroke: #646f85}
+    p.p18 {margin: 0.0px 0.0px 0.0px 0.0px; font: 27.0px '.SF NS'; color: #182031; -webkit-text-stroke: #182031}
+    p.p19 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px '.SF NS'; color: #182031; -webkit-text-stroke: #182031}
+    p.p20 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px 'Helvetica Neue'; color: #182031; -webkit-text-stroke: #182031; min-height: 17.0px}
+    span.s1 {font-kerning: none; background-color: #ffffff}
+    span.s2 {font-kerning: none; color: #2750d7; background-color: #ffffff; -webkit-text-stroke: 0px #2750d7}
+    span.s3 {font: 13.0px '.AppleKoreanFont'; font-kerning: none; background-color: #e9f0ff}
+    span.s4 {font-kerning: none; background-color: #e9f0ff}
+    span.s5 {font-kerning: none}
+    span.s6 {font: 26.0px '.Apple Color Emoji UI'; font-kerning: none}
+    span.s7 {font-kerning: none; background-color: #e3eaff}
+    span.s8 {font: 11.0px '.SF NS'; font-kerning: none; color: #2750d7; background-color: #ffffff; -webkit-text-stroke: 0px #2750d7}
+  </style>
 </head>
 <body>
-
-<aside class="sidebar">
- <div class="brand">trade<span>flow</span></div>
- <div class="nav-label">WORKSPACE</div>
- <button class="nav active" data-page="overview"><span class="ico">▦</span> Overview</button>
- <button class="nav" data-page="enquiries"><span class="ico">✉</span> Enquiries</button>
- <button class="nav" data-page="customers"><span class="ico">♙</span> Customers</button>
- <button class="nav" data-page="quotes"><span class="ico">▤</span> Quotes</button>
- <button class="nav" data-page="jobs"><span class="ico">🔧</span> Jobs</button>
- <button class="nav" data-page="calendar"><span class="ico">▦</span> Calendar</button>
- <button class="nav" data-page="followups"><span class="ico">↗</span> Follow-ups</button>
- <div class="nav-label">BUSINESS</div>
- <button class="nav" data-page="revenue"><span class="ico">£</span> Revenue</button>
- <button class="nav" data-page="website"><span class="ico">◎</span> Website Management</button>
- <button class="nav" data-page="assistant"><span class="ico">✧</span> AI Assistant</button>
- <div class="nav-label">ACCOUNT</div>
- <button class="nav" data-page="settings"><span class="ico">⚙</span> Settings</button>
-</aside>
-
-<main class="main">
-<header class="topbar">
- <div><div class="eyebrow">BUSINESS WORKSPACE / <span id="crumb">OVERVIEW</span></div><h1 id="heading">Good morning 👋</h1></div>
- <div class="topright"><button class="primary" onclick="openAdd()">+ Add new</button><div class="avatar">T</div></div>
-</header>
-
-<section class="page active" id="overview">
- <div class="muted">Here's what's happening with your business today.</div>
- <div class="grid">
-  <div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="mEnquiries">0</div><div class="metric-note">Enquiries to review</div></div>
-  <div class="card"><div class="metric-label">Active jobs</div><div class="metric" id="mJobs">0</div><div class="metric-note">Currently underway</div></div>
-  <div class="card"><div class="metric-label">Projected revenue</div><div class="metric" id="mRevenue">£0</div><div class="metric-note">From active jobs</div></div>
-  <div class="card"><div class="metric-label">Outstanding payments</div><div class="metric" id="mOutstanding">£0</div><div class="metric-note">Awaiting payment</div></div>
- </div>
- <div class="section-grid">
-  <div class="card"><div class="card-title">Today's priorities</div><div id="priorities"></div></div>
-  <div class="card"><div class="card-title">Upcoming follow-ups</div><div id="upcomingOverview"></div></div>
- </div>
- <div class="card"><div class="card-title">Recent enquiries <button class="link" onclick="showPage('enquiries')">View all →</button></div><div class="table-wrap" id="recentRows"></div></div>
-</section>
-
-<section class="page" id="enquiries">
- <div class="page-intro">Keep every opportunity organised, follow up at the right time and turn enquiries into paying work.</div>
- <div class="grid">
-  <div class="card"><div class="metric-label">Total enquiries</div><div class="metric" id="enquiryTotal">0</div></div>
-  <div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="enquiryNew">0</div></div>
-  <div class="card"><div class="metric-label">Quotes sent</div><div class="metric" id="enquiryQuoted">0</div></div>
-  <div class="card"><div class="metric-label">Potential value</div><div class="metric" id="enquiryValue">£0</div></div>
- </div>
- <div class="toolbar">
-  <div class="toolbar-left"><span class="muted">All customer leads</span></div>
-  <button class="primary" onclick="openAdd('enquiries')">+ New enquiry</button>
- </div>
- <div class="panel">
-  <div class="toolbar">
-   <div class="toolbar-left">
-    <input class="search" id="enquirySearch" placeholder="Search name, service, email..." oninput="renderEnquiries()">
-    <select id="enquiryFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All statuses</option><option>New</option><option>Contacted</option><option>Quote Sent</option><option>Won</option><option>Lost</option></select>
-    <select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>
-   </div>
-  </div>
-  <div class="table-wrap" id="enquiriesTable"></div>
- </div>
- <div id="enquiryDetail" style="display:none;margin-top:18px"></div>
-</section>
-
-<section class="page" id="customers">
- <div class="toolbar"><span class="muted">Your customer contact book and history.</span><button class="primary" onclick="openAdd('customers')">+ Add customer</button></div>
- <div class="panel"><input class="search" placeholder="Search customers..." oninput="renderTable('customers',this.value)"><div class="table-wrap" id="customersTable"></div></div>
-</section>
-<section class="page" id="quotes">
- <div class="toolbar"><span class="muted">Create and manage customer quotes.</span><button class="primary" onclick="openAdd('quotes')">+ Create quote</button></div>
- <div class="panel"><div class="table-wrap" id="quotesTable"></div></div>
-</section>
-<section class="page" id="jobs">
- <div class="toolbar"><span class="muted">Track work, completion and payments.</span><button class="primary" onclick="openAdd('jobs')">+ Add job</button></div>
- <div class="panel"><div class="table-wrap" id="jobsTable"></div></div>
-</section>
-<section class="page" id="calendar">
- <div class="toolbar"><span class="muted">Your appointments and work schedule.</span><button class="primary" onclick="openAdd('calendar')">+ Add event</button></div>
- <div class="panel"><div class="card-title" id="monthTitle"></div><div class="calendar" id="calendarGrid"></div></div>
-</section>
-<section class="page" id="followups">
- <div class="toolbar"><span class="muted">Never let an enquiry or customer go forgotten.</span><button class="primary" onclick="openAdd('followups')">+ Add follow-up</button></div>
- <div class="panel"><div class="table-wrap" id="followupsTable"></div></div>
-</section>
-<section class="page" id="revenue">
- <div class="grid">
-  <div class="card"><div class="metric-label">Completed job revenue</div><div class="metric" id="completedRevenue">£0</div></div>
-  <div class="card"><div class="metric-label">Active job value</div><div class="metric" id="activeRevenue">£0</div></div>
-  <div class="card"><div class="metric-label">Payments received</div><div class="metric" id="receivedRevenue">£0</div></div>
-  <div class="card"><div class="metric-label">Outstanding</div><div class="metric" id="outstandingRevenue">£0</div></div>
- </div>
- <div class="panel"><div class="card-title">Revenue overview</div><div class="muted">Figures are calculated from your recorded jobs. Add real jobs and payment details to populate this area.</div><div class="chart" id="bars"></div></div>
-</section>
-<section class="page" id="website">
- <div class="panel"><div class="card-title">Your business website</div><p class="muted">Manage the business details displayed on your public website.</p>
-  <div class="field">Business name<input id="siteName" value="Your Business Name"></div>
-  <div class="field">Short description<textarea id="siteDescription">Professional, reliable service for your home and business.</textarea></div>
-  <div class="field">Phone number<input id="sitePhone" placeholder="Your contact number"></div>
-  <div class="field">Email address<input id="siteEmail" placeholder="Your business email"></div>
-  <div class="field">Services<textarea id="siteServices" placeholder="List your services"></textarea></div>
-  <button class="primary" onclick="saveWebsite()">Save website details</button><div id="siteSaved" class="muted" style="margin-top:10px"></div>
- </div>
-</section>
-<section class="page" id="assistant">
- <div class="panel"><div class="card-title">✧ Your business assistant</div><p class="muted">Ask questions about managing your business. This demonstration uses preset responses and does not connect to live AI.</p>
-  <div id="chat" class="message">Hello! I'm your Tradeflow assistant demo. Ask me about follow-ups, quotes, jobs or revenue.</div>
-  <div class="toolbar"><input id="chatInput" placeholder="Ask your assistant something..." onkeydown="if(event.key==='Enter')askAI()"><button class="primary" onclick="askAI()">Send</button></div>
-  <div class="muted">Try: "Who needs following up?" · "How do I manage quotes?" · "How much is outstanding?"</div>
- </div>
-</section>
-<section class="page" id="settings">
- <div class="panel"><div class="card-title">Business settings</div>
-  <div class="field">Business name<input id="settingName" value="Your Business Name"></div>
-  <div class="field">Business type<select id="settingType"><option>Plumbing</option><option>Electrical</option><option>Building</option><option>Cleaning</option><option>Landscaping</option><option>Heating</option><option>Other service business</option></select></div>
-  <div class="field">Currency<select id="settingCurrency"><option value="GBP">GBP (£)</option><option value="EUR">EUR (€)</option><option value="USD">USD ($)</option></select></div>
-  <div class="field">VAT registered?<select id="settingVat"><option>No</option><option>Yes</option></select></div>
-  <button class="primary" onclick="saveSettings()">Save settings</button>
-  <div class="notice">This prototype stores information in this browser. It does not yet provide separate staff accounts, cloud synchronisation or secure multi-business data storage.</div>
- </div>
-</section>
-</main>
-
-<div class="modal-backdrop" id="modal">
- <div class="modal">
-  <div class="modal-head"><div class="modal-title" id="modalTitle">Add record</div><button class="secondary" onclick="closeModal()">Close</button></div>
-  <form id="recordForm"><div id="formFields" class="form-grid"></div><div class="toolbar"><span class="muted" id="formHint"></span><button class="primary" type="submit">Save record</button></div></form>
- </div>
-</div>
-
-<script>
-const $=id=>document.getElementById(id);
-const today=()=>new Date().toISOString().slice(0,10);
-const makeId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
-const initialData={
- enquiries:[
-  {id:makeId(),name:"James Wilson",service:"Bathroom renovation",date:today(),status:"New",priority:"High",value:2400,phone:"07123 456789",email:"james@example.com",source:"Website",notes:"Interested in a full bathroom renovation.",history:[],followup:""},
-  {id:makeId(),name:"Sarah Thompson",service:"Leaking tap",date:today(),status:"Contacted",priority:"Normal",value:150,phone:"07123 456780",email:"sarah@example.com",source:"Phone",notes:"Asked for a call back.",history:[],followup:""},
-  {id:makeId(),name:"David Brown",service:"Boiler installation",date:today(),status:"Quote Sent",priority:"High",value:1800,phone:"07123 456781",email:"david@example.com",source:"Referral",notes:"Quote sent, waiting for response.",history:[],followup:""},
-  {id:makeId(),name:"Emma Jones",service:"Kitchen plumbing",date:today(),status:"New",priority:"Normal",value:950,phone:"07123 456782",email:"emma@example.com",source:"Website",notes:"",history:[],followup:""}
- ],
- customers:[
-  {id:makeId(),name:"James Wilson",phone:"07123 456789",email:"james@example.com",notes:""},
-  {id:makeId(),name:"Sarah Thompson",phone:"07123 456780",email:"sarah@example.com",notes:""},
-  {id:makeId(),name:"David Brown",phone:"07123 456781",email:"david@example.com",notes:""}
- ],
- quotes:[{id:makeId(),name:"James Wilson",service:"Bathroom renovation",value:2400,status:"Draft",date:today()},{id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Sent",date:today()}],
- jobs:[{id:makeId(),name:"Sarah Thompson",service:"Tap replacement",value:150,status:"In progress",payment:"Paid",paid:150,start:today(),completion:""},{id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Upcoming",payment:"Unpaid",paid:0,start:today(),completion:""}],
- followups:[{id:makeId(),name:"James Wilson",service:"Follow up on enquiry",date:today(),status:"Pending"},{id:makeId(),name:"David Brown",service:"Check quote response",date:today(),status:"Pending"}],
- events:[]
-};
-let data;
-try{
- const saved=JSON.parse(localStorage.getItem("tradeflowData"));
- data=saved&&typeof saved==="object"?saved:initialData;
-}catch(e){data=initialData}
-["enquiries","customers","quotes","jobs","followups","events"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=initialData[k]||[]});
-data.enquiries.forEach(e=>{e.id=e.id||makeId();e.priority=e.priority||"Normal";e.history=Array.isArray(e.history)?e.history:[];e.notes=e.notes||"";e.source=e.source||"Other";e.phone=e.phone||"";e.email=e.email||"";e.followup=e.followup||"";e.value=Number(e.value)||0});
-data.customers.forEach(x=>x.id=x.id||makeId());
-data.quotes.forEach(x=>x.id=x.id||makeId());
-data.jobs.forEach(x=>{x.id=x.id||makeId();x.paid=Number(x.paid)||0});
-data.followups.forEach(x=>x.id=x.id||makeId());
-data.events.forEach(x=>x.id=x.id||makeId());
-function save(){localStorage.setItem("tradeflowData",JSON.stringify(data))}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function money(v){let symbol=({GBP:"£",EUR:"€",USD:"$"})[localStorage.getItem("tradeflowCurrency")||"GBP"];return symbol+Number(v||0).toLocaleString("en-GB",{minimumFractionDigits:0,maximumFractionDigits:2})}
-function tag(s){let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":["Urgent","Overdue","Lost","Rejected"].includes(s)?"red":["New","Pending","Unpaid","Quote Sent"].includes(s)?"orange":"";return `<span class="tag ${c}">${esc(s||"—")}</span>`}
-function showPage(id){
- document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
- $(id).classList.add("active");
- document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
- $("heading").textContent=({overview:"Good morning 👋",enquiries:"Enquiries",customers:"Customers",quotes:"Quotes",jobs:"Jobs",calendar:"Calendar",followups:"Follow-ups",revenue:"Revenue",website:"Website Management",assistant:"AI Assistant",settings:"Settings"})[id];
- $("crumb").textContent=id.toUpperCase();
- if(id==="enquiries")renderEnquiries();
- if(["customers","quotes","jobs","followups"].includes(id))renderTable(id);
- if(id==="calendar")renderCalendar();
- if(id==="revenue")renderRevenue();
-}
-document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>showPage(n.dataset.page)));
-
-function renderEnquiries(){
- const q=($("enquirySearch")?.value||"").toLowerCase();
- const st=$("enquiryFilter")?.value||"";
- const pr=$("enquiryPriorityFilter")?.value||"";
- const rows=data.enquiries.filter(e=>(!st||e.status===st)&&(!pr||e.priority===pr)&&[e.name,e.service,e.email,e.phone,e.source].join(" ").toLowerCase().includes(q));
- $("enquiryTotal").textContent=data.enquiries.length;
- $("enquiryNew").textContent=data.enquiries.filter(e=>e.status==="New").length;
- $("enquiryQuoted").textContent=data.enquiries.filter(e=>e.status==="Quote Sent").length;
- $("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(e.status)).reduce((s,e)=>s+Number(e.value||0),0));
- if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match your search. Try changing your filters or add a new enquiry.</div>';return}
- $("enquiriesTable").innerHTML=`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>EST. VALUE</th><th>STATUS</th><th>PRIORITY</th><th>FOLLOW-UP</th><th></th></tr></thead><tbody>${rows.map(e=>`<tr><td><strong>${esc(e.name)}</strong><div class="muted">${esc(e.phone||e.email||"No contact details")}</div></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td>${tag(e.priority)}</td><td>${e.followup?esc(e.followup):'<span class="muted">Not set</span>'}</td><td><button class="action" onclick="openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`;
-}
-let selectedEnquiry=null;
-function openEnquiry(id){
- selectedEnquiry=id;
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- $("enquiryDetail").style.display="block";
- $("enquiryDetail").innerHTML=`
- <div class="detail-heading"><div><div class="eyebrow">ENQUIRY RECORD</div><div class="detail-name">${esc(e.name)}</div><div class="muted">${esc(e.service)} · Added ${esc(e.date||"Date not set")}</div></div><div class="actions"><button class="secondary" onclick="editEnquiry('${e.id}')">Edit details</button><button class="secondary" onclick="closeEnquiry()">Close</button></div></div>
- <div class="detail-layout">
-  <div>
-   <div class="detail-card"><h3>Enquiry information</h3>
-    <div class="detail-line"><span class="muted">Phone</span><strong>${esc(e.phone||"Not provided")}</strong></div>
-    <div class="detail-line"><span class="muted">Email</span><strong>${esc(e.email||"Not provided")}</strong></div>
-    <div class="detail-line"><span class="muted">Lead source</span><strong>${esc(e.source||"Other")}</strong></div>
-    <div class="detail-line"><span class="muted">Estimated value</span><strong>${money(e.value)}</strong></div>
-    <div class="detail-line"><span class="muted">Priority</span>${tag(e.priority)}</div>
-    <div class="detail-line"><span class="muted">Status</span>${tag(e.status)}</div>
-    <div class="detail-line"><span class="muted">Follow-up date</span><strong>${esc(e.followup||"Not scheduled")}</strong></div>
-    <hr><div class="muted">Enquiry notes</div><p style="font-size:12px;line-height:1.6">${esc(e.notes||"No notes added yet.")}</p>
-   </div>
-   <div class="detail-card"><div class="split"><h3>Contact history</h3><button class="primary" onclick="addHistory('${e.id}')">+ Log contact</button></div>
-    ${e.history.length?e.history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Log calls, emails or messages here.</div>'}
-   </div>
-  </div>
-  <div>
-   <div class="detail-card"><h3>Update enquiry status</h3><div class="field">Status<select id="detailStatus" onchange="changeEnquiryField('${e.id}','status',this.value)">${["New","Contacted","Quote Sent","Won","Lost"].map(s=>`<option ${e.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
-    <div class="field">Priority<select id="detailPriority" onchange="changeEnquiryField('${e.id}','priority',this.value)">${["Low","Normal","High","Urgent"].map(s=>`<option ${e.priority===s?"selected":""}>${s}</option>`).join("")}</select></div>
-    <div class="field">Follow-up date<input type="date" value="${esc(e.followup)}" onchange="changeEnquiryField('${e.id}','followup',this.value)"></div>
-   </div>
-   <div class="detail-card"><h3>Convert enquiry</h3><p class="muted">Move this lead into the next stage without entering the details again.</p>
-    <button class="primary" style="width:100%;margin:5px 0" onclick="convertCustomer('${e.id}')">Convert to customer</button>
-    <button class="secondary" style="width:100%;margin:5px 0" onclick="convertJob('${e.id}')">Convert to job</button>
-    <div class="notice">Converting to a job also creates a customer record if one doesn't already exist.</div>
-   </div>
-   <button class="danger" onclick="deleteEnquiry('${e.id}')">Delete this enquiry</button>
-  </div>
- </div>`;
- $("enquiryDetail").scrollIntoView({behavior:"smooth",block:"start"});
-}
-function closeEnquiry(){$("enquiryDetail").style.display="none";selectedEnquiry=null}
-function changeEnquiryField(id,key,value){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- e[key]=value;save();renderEnquiries();openEnquiry(id);updateDashboard();
-}
-function editEnquiry(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- openForm("enquiries",e);
-}
-function addHistory(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
- const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
- const note=prompt("What happened?");if(note===null)return;
- e.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
- e.status=e.status==="New"?"Contacted":e.status;
- save();renderEnquiries();openEnquiry(id);updateDashboard();
-}
-function convertCustomer(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- let c=data.customers.find(x=>x.email&&e.email&&x.email.toLowerCase()===e.email.toLowerCase());
- if(!c)c=data.customers.find(x=>x.phone&&e.phone&&x.phone===e.phone);
- if(!c){c={id:makeId(),name:e.name,phone:e.phone,email:e.email,notes:"Created from enquiry: "+e.service};data.customers.push(c)}
- e.status="Won";e.convertedCustomerId=c.id;save();renderEnquiries();openEnquiry(id);updateDashboard();
- alert("Customer record created or matched successfully.");
-}
-function convertJob(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- let c=data.customers.find(x=>x.email&&e.email&&x.email.toLowerCase()===e.email.toLowerCase())||data.customers.find(x=>x.phone&&e.phone&&x.phone===e.phone);
- if(!c){c={id:makeId(),name:e.name,phone:e.phone,email:e.email,notes:"Created from enquiry: "+e.service};data.customers.push(c)}
- const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Upcoming",payment:"Unpaid",paid:0,start:"",completion:"",customerId:c.id,sourceEnquiryId:e.id};
- data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;save();renderEnquiries();openEnquiry(id);updateDashboard();
- alert("Job created successfully. You can find it in the Jobs section.");
-}
-function deleteEnquiry(id){
- if(!confirm("Are you sure you want to permanently delete this enquiry?"))return;
- data.enquiries=data.enquiries.filter(e=>e.id!==id);save();closeEnquiry();renderEnquiries();updateDashboard();
-}
-
-const schemas={
- enquiries:[["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["service","Service required","text"],["value","Estimated value (£)","number"],["date","Date received","date"],["source","How did they contact you?","select",["Website","Phone","Email","WhatsApp","Referral","Social media","Other"]],["status","Status","select",["New","Contacted","Quote Sent","Won","Lost"]],["priority","Priority","select",["Low","Normal","High","Urgent"]],["followup","Follow-up date","date"],["notes","Enquiry notes","textarea"]],
- customers:[["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["notes","Customer notes","textarea"]],
- quotes:[["name","Customer name","text"],["service","Description of work","text"],["value","Quote value (£)","number"],["status","Status","select",["Draft","Sent","Accepted","Rejected","Expired"]],["date","Quote date","date"]],
- jobs:[["name","Customer name","text"],["service","Job description","text"],["value","Agreed price (£)","number"],["status","Job status","select",["Upcoming","In progress","On hold","Completed"]],["payment","Payment status","select",["Unpaid","Partially paid","Paid"]],["paid","Amount paid (£)","number"],["start","Start date","date"],["completion","Expected completion date","date"]],
- followups:[["name","Customer name","text"],["service","Follow-up task","text"],["date","Due date","date"],["status","Status","select",["Pending","Completed","Overdue"]]],
- calendar:[["name","Event title","text"],["service","Details","text"],["date","Date","date"]]
-};
-let editingId=null,editingType=null;
-function openAdd(type="enquiries"){openForm(type,null)}
-function openForm(type,record){
- editingType=type;editingId=record?.id||null;
- $("modalTitle").textContent=(record?"Edit ":"Add ")+(type==="calendar"?"event":type==="enquiries"?"enquiry":type.slice(0,-1));
- $("formHint").textContent=type==="enquiries"?"You can add contact history and update this enquiry after saving.":"";
- $("formFields").innerHTML=schemas[type].map(([key,label,kind,opts])=>{
-  let val=record?.[key]??(key==="date"&&type!=="calendar"?today():key==="status"?(type==="enquiries"?"New":type==="jobs"?"Upcoming":"Pending"):key==="priority"?"Normal":"");
-  let input=kind==="textarea"?`<textarea name="${key}">${esc(val)}</textarea>`:kind==="select"?`<select name="${key}">${opts.map(o=>`<option ${val===o?"selected":""}>${o}</option>`).join("")}</select>`:`<input name="${key}" type="${kind}" value="${esc(val)}" ${key==="name"||key==="service"?"required":""} ${kind==="number"?'min="0" step="0.01"':""}>`;
-  return `<label class="field ${kind==="textarea"||key==="service"||key==="notes"?"full":""}">${label}${input}</label>`;
- }).join("");
- $("modal").style.display="flex";
-}
-function closeModal(){$("modal").style.display="none";editingId=null;editingType=null}
-$("recordForm").addEventListener("submit",ev=>{
- ev.preventDefault();const form=new FormData(ev.target);let r=Object.fromEntries(form.entries());let type=editingType;
- ["value","paid"].forEach(k=>{if(r[k]!==undefined)r[k]=Number(r[k])||0});
- if(type==="calendar"){r.id=makeId();data.events.push(r);save();closeModal();renderCalendar();return}
- if(editingId){
-  const old=data[type].find(x=>x.id===editingId);if(old)Object.assign(old,r);
- }else{r.id=makeId();if(type==="enquiries"){r.history=[];r.convertedCustomerId="";r.convertedJobId=""}data[type].unshift(r)}
- save();closeModal();
- if(type==="enquiries"){renderEnquiries();if(editingId)openEnquiry(editingId)}
- else renderTable(type);
- updateDashboard();
-});
-
-function renderTable(type,filter=""){
- const rows=data[type].filter(r=>Object.values(r).join(" ").toLowerCase().includes(filter.toLowerCase()));
- const cols={customers:["name","phone","email"],quotes:["name","service","value","status","date"],jobs:["name","service","value","status","payment"],followups:["name","service","date","status"]}[type];
- if(!rows.length){$(type+"Table").innerHTML='<div class="empty">No records yet. Add your first record above.</div>';return}
- $(type+"Table").innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")}<th>ACTIONS</th></tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${c==="value"?money(r[c]):["status","payment"].includes(c)?tag(r[c]):esc(r[c]||"—")}</td>`).join("")}<td><div class="actions"><button class="action" onclick="editRecord('${type}','${r.id}')">Edit</button><button class="action" onclick="removeRecord('${type}','${r.id}')">Delete</button></div></td></tr>`).join("")}</tbody></table>`;
-}
-function editRecord(type,id){const r=data[type].find(x=>x.id===id);if(r)openForm(type,r)}
-function removeRecord(type,id){if(!confirm("Delete this record?"))return;data[type]=data[type].filter(r=>r.id!==id);save();renderTable(type);updateDashboard()}
-
-function updateDashboard(){
- $("mEnquiries").textContent=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).length;
- $("mJobs").textContent=data.jobs.filter(j=>j.status!=="Completed").length;
- $("mRevenue").textContent=money(data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0));
- $("mOutstanding").textContent=money(data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0));
- $("priorities").innerHTML=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).slice(0,5).map(e=>`<div class="priority"><span>${esc(e.name)} · ${esc(e.service)}</span>${tag(e.priority)}</div>`).join("")||'<div class="empty">No open enquiries. Nice work!</div>';
- $("upcomingOverview").innerHTML=data.followups.filter(f=>f.status!=="Completed").slice(0,5).map(f=>`<div class="priority"><span>${esc(f.name)} · ${esc(f.service)}</span><span class="muted">${esc(f.date)}</span></div>`).join("")||'<div class="empty">No outstanding follow-ups.</div>';
- $("recentRows").innerHTML=data.enquiries.slice(0,5).length?`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead><tbody>${data.enquiries.slice(0,5).map(e=>`<tr><td><strong>${esc(e.name)}</strong></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td><button class="action" onclick="showPage('enquiries');openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries yet.</div>';
- renderEnquiries();
-}
-function renderCalendar(){
- const now=new Date(),year=now.getFullYear(),month=now.getMonth(),first=new Date(year,month,1).getDay(),days=new Date(year,month+1,0).getDate();
- $("monthTitle").textContent=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
- let html=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="muted">${x}</div>`).join("");
- for(let i=0;i<first;i++)html+="<div></div>";
- for(let i=1;i<=days;i++){let date=`${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;let ev=data.events.filter(e=>e.date===date);let jobs=data.jobs.filter(j=>j.start===date);html+=`<div class="day ${i===now.getDate()?"today":""}">${i}${ev.map(e=>`<small>${esc(e.name)}</small>`).join("")}${jobs.map(j=>`<small>Job: ${esc(j.name)}</small>`).join("")}</div>`}
- $("calendarGrid").innerHTML=html;
-}
-function renderRevenue(){
- const completed=data.jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
- const active=data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0);
- const received=data.jobs.reduce((s,j)=>s+Number(j.paid||0),0);
- const outstanding=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
- $("completedRevenue").textContent=money(completed);$("activeRevenue").textContent=money(active);$("receivedRevenue").textContent=money(received);$("outstandingRevenue").textContent=money(outstanding);
- $("bars").innerHTML=[0,0,0,0,0,0,0,0,0,0,0,0].map((v,i)=>`<div class="bar-wrap"><div class="bar" style="height:${v||3}%"></div><small class="muted">${["J","F","M","A","M","J","J","A","S","O","N","D"][i]}</small></div>`).join("");
-}
-function saveWebsite(){
- const obj={name:$("siteName").value,description:$("siteDescription").value,phone:$("sitePhone").value,email:$("siteEmail").value,services:$("siteServices").value};
- localStorage.setItem("tradeflowWebsite",JSON.stringify(obj));$("siteSaved").textContent="Website details saved in this browser.";
-}
-function saveSettings(){localStorage.setItem("tradeflowCurrency",$("settingCurrency").value);localStorage.setItem("tradeflowSettings",JSON.stringify({name:$("settingName").value,type:$("settingType").value,vat:$("settingVat").value}));updateDashboard();alert("Settings saved in this browser.");}
-function askAI(){
- const input=$("chatInput"),q=input.value.trim();if(!q)return;
- const lower=q.toLowerCase();let a="I can help you organise your business. This is currently a demonstration assistant and doesn't connect to a live AI service.";
- if(/follow|contact|chase/i.test(lower)){const open=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status));a=open.length?`You currently have ${open.length} open enquiries: ${open.map(e=>e.name+" ("+e.status+")").join(", ")}. Review these and set a follow-up date for each.`:"You have no open enquiries at the moment."}
- else if(/quote/i.test(lower)){a=`You currently have ${data.quotes.length} quote records. Make sure every quote has a clear description, amount and status. Follow up on quotes that are still awaiting a decision.`}
- else if(/job/i.test(lower)){a=`You have ${data.jobs.length} jobs recorded, including ${data.jobs.filter(j=>j.status==="Completed").length} completed jobs. Keep job dates, progress and payment records up to date.`}
- else if(/revenue|money|sales|outstanding/i.test(lower)){const due=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);a=`Based on your recorded jobs, the outstanding balance is ${money(due)}. This is calculated from job values less payments recorded.`}
- $("chat").innerHTML+=`<div style="margin-top:12px"><strong>You:</strong> ${esc(q)}</div><div class="message">${esc(a)}</div>`;input.value="";
-}
-function loadSavedDetails(){
- try{const w=JSON.parse(localStorage.getItem("tradeflowWebsite")||"null");if(w){$("siteName").value=w.name||"";$("siteDescription").value=w.description||"";$("sitePhone").value=w.phone||"";$("siteEmail").value=w.email||"";$("siteServices").value=w.services||""}}catch(e){}
- try{const s=JSON.parse(localStorage.getItem("tradeflowSettings")||"null");if(s){$("settingName").value=s.name||"";$("settingType").value=s.type||"Plumbing";$("settingVat").value=s.vat||"No"}}catch(e){}
- $("settingCurrency").value=localStorage.getItem("tradeflowCurrency")||"GBP";
-}
-function boot(){save();loadSavedDetails();updateDashboard();renderCalendar();renderRevenue()}
-boot();
-</script>
+<p class="p1"><span class="s1"><b>trade</b></span><span class="s2"><b>flow</b><b></b></span></p>
+<p class="p2"><span class="s1"><b>WORKSPACE</b><b></b></span></p>
+<p class="p3"><span class="s3"><b>▦</b><b></b></span></p>
+<p class="p4"><span class="s4"><b>Overview</b><b></b></span></p>
+<p class="p5"><span class="s1">✉</span></p>
+<p class="p6"><span class="s1">Enquiries</span></p>
+<p class="p5"><span class="s1">♙</span></p>
+<p class="p6"><span class="s1">Customers</span></p>
+<p class="p7"><span class="s1">▤</span></p>
+<p class="p6"><span class="s1">Quotes</span></p>
+<p class="p8"><span class="s1">🔧</span></p>
+<p class="p6"><span class="s1">Jobs</span></p>
+<p class="p7"><span class="s1">▦</span></p>
+<p class="p6"><span class="s1">Calendar</span></p>
+<p class="p9"><span class="s1">↗</span></p>
+<p class="p6"><span class="s1">Follow-ups</span></p>
+<p class="p2"><span class="s1"><b>BUSINESS</b><b></b></span></p>
+<p class="p9"><span class="s1">£</span></p>
+<p class="p6"><span class="s1">Revenue</span></p>
+<p class="p10"><span class="s1">◎</span></p>
+<p class="p6"><span class="s1">Website Management</span></p>
+<p class="p11"><span class="s1">✧</span></p>
+<p class="p6"><span class="s1">AI Assistant</span></p>
+<p class="p2"><span class="s1"><b>ACCOUNT</b><b></b></span></p>
+<p class="p5"><span class="s1">⚙</span></p>
+<p class="p12"><span class="s5">Settings</span></p>
+<p class="p13"><span class="s5">BUSINESS WORKSPACE / OVERVIEW</span></p>
+<h1 style="margin: 0.0px 0.0px 0.0px 0.0px; font: 26.0px 'Helvetica Neue'; color: #182031; -webkit-text-stroke: #182031"><span class="s5"><b>Good morning </b></span><span class="s6">👋</span></h1>
+<p class="p15"><span class="s5"><b>+ Add new</b></span></p>
+<p class="p16"><span class="s7"><b>T</b><b></b></span></p>
+<p class="p17"><span class="s5">Here's what's happening with your business today.</span></p>
+<p class="p17"><span class="s1">Open enquiries</span></p>
+<p class="p18"><span class="s1"><b>0</b><b></b></span></p>
+<p class="p17"><span class="s1">Active jobs</span></p>
+<p class="p18"><span class="s1"><b>0</b><b></b></span></p>
+<p class="p17"><span class="s1">Projected revenue</span></p>
+<p class="p18"><span class="s1"><b>£0</b><b></b></span></p>
+<p class="p17"><span class="s1">Outstanding payments</span></p>
+<p class="p18"><span class="s1"><b>£0</b><b></b></span></p>
+<p class="p19"><span class="s1"><b>Today's priorities</b><b></b></span></p>
+<p class="p20"><span class="s5"></span><br></p>
+<p class="p19"><span class="s1"><b>Upcoming follow-ups</b><b></b></span></p>
+<p class="p20"><span class="s5"></span><br></p>
+<p class="p19"><span class="s1"><b>Recent enquiries </b></span><span class="s8"><b>View all →</b><b></b></span></p>
+<p class="p20"><span class="s5"></span><br></p>
 </body>
 </html>
