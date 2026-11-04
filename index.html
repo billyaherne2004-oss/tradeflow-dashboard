@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,10 +94,14 @@ td strong{font-weight:650}
 .tab{padding:8px 11px;border:1px solid var(--line);border-radius:7px;background:white;font-size:11px;color:var(--muted)}
 .tab.active{background:var(--blue-light);border-color:#d8e4ff;color:var(--blue);font-weight:700}
 .split{display:flex;justify-content:space-between;align-items:center;gap:10px}
-hr{border:0;border-top:1px solid var(--line);margin:17px 0}
+.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.profile-stat{background:#f7f9fc;border:1px solid var(--line);border-radius:8px;padding:13px}
+.profile-stat strong{display:block;font-size:18px;margin-top:6px}
+.customer-name{color:var(--blue);font-weight:700;cursor:pointer;background:none;border:0;padding:0;text-align:left}
+.customer-name:hover{text-decoration:underline}
 @media(max-width:1050px){.main{padding:25px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:750px){.sidebar{width:190px}.main{margin-left:190px;width:calc(100% - 190px);padding:20px 15px}.section-grid,.detail-layout{grid-template-columns:1fr}}
-@media(max-width:560px){.sidebar{display:none}.main{margin:0;width:100%}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar{gap:8px}.grid{gap:8px}.metric{font-size:22px}}
+@media(max-width:560px){.sidebar{display:none}.main{margin:0;width:100%}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar{gap:8px}.grid{gap:8px}.metric{font-size:22px}.profile-stats{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -150,43 +153,54 @@ hr{border:0;border-top:1px solid var(--line);margin:17px 0}
   <div class="card"><div class="metric-label">Quotes sent</div><div class="metric" id="enquiryQuoted">0</div></div>
   <div class="card"><div class="metric-label">Potential value</div><div class="metric" id="enquiryValue">£0</div></div>
  </div>
- <div class="toolbar">
-  <div class="toolbar-left"><span class="muted">All customer leads</span></div>
-  <button class="primary" onclick="openAdd('enquiries')">+ New enquiry</button>
- </div>
+ <div class="toolbar"><div class="toolbar-left"><span class="muted">All customer leads</span></div><button class="primary" onclick="openAdd('enquiries')">+ New enquiry</button></div>
  <div class="panel">
-  <div class="toolbar">
-   <div class="toolbar-left">
-    <input class="search" id="enquirySearch" placeholder="Search name, service, email..." oninput="renderEnquiries()">
-    <select id="enquiryFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All statuses</option><option>New</option><option>Contacted</option><option>Quote Sent</option><option>Won</option><option>Lost</option></select>
-    <select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>
-   </div>
-  </div>
+  <div class="toolbar"><div class="toolbar-left">
+   <input class="search" id="enquirySearch" placeholder="Search name, service, email..." oninput="renderEnquiries()">
+   <select id="enquiryFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All statuses</option><option>New</option><option>Contacted</option><option>Quote Sent</option><option>Won</option><option>Lost</option></select>
+   <select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>
+  </div></div>
   <div class="table-wrap" id="enquiriesTable"></div>
  </div>
  <div id="enquiryDetail" style="display:none;margin-top:18px"></div>
 </section>
 
 <section class="page" id="customers">
- <div class="toolbar"><span class="muted">Your customer contact book and history.</span><button class="primary" onclick="openAdd('customers')">+ Add customer</button></div>
- <div class="panel"><input class="search" placeholder="Search customers..." oninput="renderTable('customers',this.value)"><div class="table-wrap" id="customersTable"></div></div>
+ <div class="page-intro">Your customer database. Keep contact details, work history, payments and conversations together.</div>
+ <div class="grid">
+  <div class="card"><div class="metric-label">Total customers</div><div class="metric" id="customerTotal">0</div></div>
+  <div class="card"><div class="metric-label">Customers with jobs</div><div class="metric" id="customerActive">0</div></div>
+  <div class="card"><div class="metric-label">Completed job value</div><div class="metric" id="customerLifetime">£0</div></div>
+  <div class="card"><div class="metric-label">Outstanding balances</div><div class="metric" id="customerOutstanding">£0</div></div>
+ </div>
+ <div class="toolbar">
+  <div class="toolbar-left"><input class="search" id="customerSearch" placeholder="Search customers..." oninput="renderCustomers()"></div>
+  <button class="primary" onclick="openAdd('customers')">+ Add customer</button>
+ </div>
+ <div class="panel"><div class="table-wrap" id="customersTable"></div></div>
+ <div id="customerDetail" style="display:none;margin-top:18px"></div>
 </section>
+
 <section class="page" id="quotes">
  <div class="toolbar"><span class="muted">Create and manage customer quotes.</span><button class="primary" onclick="openAdd('quotes')">+ Create quote</button></div>
  <div class="panel"><div class="table-wrap" id="quotesTable"></div></div>
 </section>
+
 <section class="page" id="jobs">
  <div class="toolbar"><span class="muted">Track work, completion and payments.</span><button class="primary" onclick="openAdd('jobs')">+ Add job</button></div>
  <div class="panel"><div class="table-wrap" id="jobsTable"></div></div>
 </section>
+
 <section class="page" id="calendar">
  <div class="toolbar"><span class="muted">Your appointments and work schedule.</span><button class="primary" onclick="openAdd('calendar')">+ Add event</button></div>
  <div class="panel"><div class="card-title" id="monthTitle"></div><div class="calendar" id="calendarGrid"></div></div>
 </section>
+
 <section class="page" id="followups">
  <div class="toolbar"><span class="muted">Never let an enquiry or customer go forgotten.</span><button class="primary" onclick="openAdd('followups')">+ Add follow-up</button></div>
  <div class="panel"><div class="table-wrap" id="followupsTable"></div></div>
 </section>
+
 <section class="page" id="revenue">
  <div class="grid">
   <div class="card"><div class="metric-label">Completed job revenue</div><div class="metric" id="completedRevenue">£0</div></div>
@@ -196,6 +210,7 @@ hr{border:0;border-top:1px solid var(--line);margin:17px 0}
  </div>
  <div class="panel"><div class="card-title">Revenue overview</div><div class="muted">Figures are calculated from your recorded jobs. Add real jobs and payment details to populate this area.</div><div class="chart" id="bars"></div></div>
 </section>
+
 <section class="page" id="website">
  <div class="panel"><div class="card-title">Your business website</div><p class="muted">Manage the business details displayed on your public website.</p>
   <div class="field">Business name<input id="siteName" value="Your Business Name"></div>
@@ -206,6 +221,7 @@ hr{border:0;border-top:1px solid var(--line);margin:17px 0}
   <button class="primary" onclick="saveWebsite()">Save website details</button><div id="siteSaved" class="muted" style="margin-top:10px"></div>
  </div>
 </section>
+
 <section class="page" id="assistant">
  <div class="panel"><div class="card-title">✧ Your business assistant</div><p class="muted">Ask questions about managing your business. This demonstration uses preset responses and does not connect to live AI.</p>
   <div id="chat" class="message">Hello! I'm your Tradeflow assistant demo. Ask me about follow-ups, quotes, jobs or revenue.</div>
@@ -213,6 +229,7 @@ hr{border:0;border-top:1px solid var(--line);margin:17px 0}
   <div class="muted">Try: "Who needs following up?" · "How do I manage quotes?" · "How much is outstanding?"</div>
  </div>
 </section>
+
 <section class="page" id="settings">
  <div class="panel"><div class="card-title">Business settings</div>
   <div class="field">Business name<input id="settingName" value="Your Business Name"></div>
@@ -236,6 +253,7 @@ hr{border:0;border-top:1px solid var(--line);margin:17px 0}
 const $=id=>document.getElementById(id);
 const today=()=>new Date().toISOString().slice(0,10);
 const makeId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+
 const initialData={
  enquiries:[
   {id:makeId(),name:"James Wilson",service:"Bathroom renovation",date:today(),status:"New",priority:"High",value:2400,phone:"07123 456789",email:"james@example.com",source:"Website",notes:"Interested in a full bathroom renovation.",history:[],followup:""},
@@ -248,27 +266,60 @@ const initialData={
   {id:makeId(),name:"Sarah Thompson",phone:"07123 456780",email:"sarah@example.com",notes:""},
   {id:makeId(),name:"David Brown",phone:"07123 456781",email:"david@example.com",notes:""}
  ],
- quotes:[{id:makeId(),name:"James Wilson",service:"Bathroom renovation",value:2400,status:"Draft",date:today()},{id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Sent",date:today()}],
- jobs:[{id:makeId(),name:"Sarah Thompson",service:"Tap replacement",value:150,status:"In progress",payment:"Paid",paid:150,start:today(),completion:""},{id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Upcoming",payment:"Unpaid",paid:0,start:today(),completion:""}],
- followups:[{id:makeId(),name:"James Wilson",service:"Follow up on enquiry",date:today(),status:"Pending"},{id:makeId(),name:"David Brown",service:"Check quote response",date:today(),status:"Pending"}],
+ quotes:[
+  {id:makeId(),name:"James Wilson",service:"Bathroom renovation",value:2400,status:"Draft",date:today()},
+  {id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Sent",date:today()}
+ ],
+ jobs:[
+  {id:makeId(),name:"Sarah Thompson",service:"Tap replacement",value:150,status:"In progress",payment:"Paid",paid:150,start:today(),completion:""},
+  {id:makeId(),name:"David Brown",service:"Boiler installation",value:1800,status:"Upcoming",payment:"Unpaid",paid:0,start:today(),completion:""}
+ ],
+ followups:[
+  {id:makeId(),name:"James Wilson",service:"Follow up on enquiry",date:today(),status:"Pending"},
+  {id:makeId(),name:"David Brown",service:"Check quote response",date:today(),status:"Pending"}
+ ],
  events:[]
 };
+
 let data;
 try{
  const saved=JSON.parse(localStorage.getItem("tradeflowData"));
  data=saved&&typeof saved==="object"?saved:initialData;
 }catch(e){data=initialData}
-["enquiries","customers","quotes","jobs","followups","events"].forEach(k=>{if(!Array.isArray(data[k]))data[k]=initialData[k]||[]});
-data.enquiries.forEach(e=>{e.id=e.id||makeId();e.priority=e.priority||"Normal";e.history=Array.isArray(e.history)?e.history:[];e.notes=e.notes||"";e.source=e.source||"Other";e.phone=e.phone||"";e.email=e.email||"";e.followup=e.followup||"";e.value=Number(e.value)||0});
-data.customers.forEach(x=>x.id=x.id||makeId());
+
+["enquiries","customers","quotes","jobs","followups","events"].forEach(k=>{
+ if(!Array.isArray(data[k]))data[k]=initialData[k]||[];
+});
+
+data.enquiries.forEach(e=>{
+ e.id=e.id||makeId();e.priority=e.priority||"Normal";
+ e.history=Array.isArray(e.history)?e.history:[];
+ e.notes=e.notes||"";e.source=e.source||"Other";
+ e.phone=e.phone||"";e.email=e.email||"";
+ e.followup=e.followup||"";e.value=Number(e.value)||0;
+});
+data.customers.forEach(c=>{
+ c.id=c.id||makeId();c.address=c.address||"";
+ c.postcode=c.postcode||"";c.notes=c.notes||"";
+ c.history=Array.isArray(c.history)?c.history:[];
+});
 data.quotes.forEach(x=>x.id=x.id||makeId());
 data.jobs.forEach(x=>{x.id=x.id||makeId();x.paid=Number(x.paid)||0});
 data.followups.forEach(x=>x.id=x.id||makeId());
 data.events.forEach(x=>x.id=x.id||makeId());
+
 function save(){localStorage.setItem("tradeflowData",JSON.stringify(data))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function money(v){let symbol=({GBP:"£",EUR:"€",USD:"$"})[localStorage.getItem("tradeflowCurrency")||"GBP"];return symbol+Number(v||0).toLocaleString("en-GB",{minimumFractionDigits:0,maximumFractionDigits:2})}
-function tag(s){let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":["Urgent","Overdue","Lost","Rejected"].includes(s)?"red":["New","Pending","Unpaid","Quote Sent"].includes(s)?"orange":"";return `<span class="tag ${c}">${esc(s||"—")}</span>`}
+function money(v){
+ let symbol=({GBP:"£",EUR:"€",USD:"$"})[localStorage.getItem("tradeflowCurrency")||"GBP"];
+ return symbol+Number(v||0).toLocaleString("en-GB",{minimumFractionDigits:0,maximumFractionDigits:2});
+}
+function tag(s){
+ let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":
+ ["Urgent","Overdue","Lost","Rejected"].includes(s)?"red":
+ ["New","Pending","Unpaid","Quote Sent"].includes(s)?"orange":"";
+ return `<span class="tag ${c}">${esc(s||"—")}</span>`;
+}
 function showPage(id){
  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
  $(id).classList.add("active");
@@ -276,12 +327,14 @@ function showPage(id){
  $("heading").textContent=({overview:"Good morning 👋",enquiries:"Enquiries",customers:"Customers",quotes:"Quotes",jobs:"Jobs",calendar:"Calendar",followups:"Follow-ups",revenue:"Revenue",website:"Website Management",assistant:"AI Assistant",settings:"Settings"})[id];
  $("crumb").textContent=id.toUpperCase();
  if(id==="enquiries")renderEnquiries();
- if(["customers","quotes","jobs","followups"].includes(id))renderTable(id);
+ if(id==="customers")renderCustomers();
+ if(["quotes","jobs","followups"].includes(id))renderTable(id);
  if(id==="calendar")renderCalendar();
  if(id==="revenue")renderRevenue();
 }
 document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>showPage(n.dataset.page)));
 
+/* ENQUIRIES */
 function renderEnquiries(){
  const q=($("enquirySearch")?.value||"").toLowerCase();
  const st=$("enquiryFilter")?.value||"";
@@ -301,35 +354,34 @@ function openEnquiry(id){
  $("enquiryDetail").style.display="block";
  $("enquiryDetail").innerHTML=`
  <div class="detail-heading"><div><div class="eyebrow">ENQUIRY RECORD</div><div class="detail-name">${esc(e.name)}</div><div class="muted">${esc(e.service)} · Added ${esc(e.date||"Date not set")}</div></div><div class="actions"><button class="secondary" onclick="editEnquiry('${e.id}')">Edit details</button><button class="secondary" onclick="closeEnquiry()">Close</button></div></div>
- <div class="detail-layout">
-  <div>
-   <div class="detail-card"><h3>Enquiry information</h3>
-    <div class="detail-line"><span class="muted">Phone</span><strong>${esc(e.phone||"Not provided")}</strong></div>
-    <div class="detail-line"><span class="muted">Email</span><strong>${esc(e.email||"Not provided")}</strong></div>
-    <div class="detail-line"><span class="muted">Lead source</span><strong>${esc(e.source||"Other")}</strong></div>
-    <div class="detail-line"><span class="muted">Estimated value</span><strong>${money(e.value)}</strong></div>
-    <div class="detail-line"><span class="muted">Priority</span>${tag(e.priority)}</div>
-    <div class="detail-line"><span class="muted">Status</span>${tag(e.status)}</div>
-    <div class="detail-line"><span class="muted">Follow-up date</span><strong>${esc(e.followup||"Not scheduled")}</strong></div>
-    <hr><div class="muted">Enquiry notes</div><p style="font-size:12px;line-height:1.6">${esc(e.notes||"No notes added yet.")}</p>
-   </div>
-   <div class="detail-card"><div class="split"><h3>Contact history</h3><button class="primary" onclick="addHistory('${e.id}')">+ Log contact</button></div>
-    ${e.history.length?e.history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Log calls, emails or messages here.</div>'}
-   </div>
+ <div class="detail-layout"><div>
+  <div class="detail-card"><h3>Enquiry information</h3>
+   <div class="detail-line"><span class="muted">Phone</span><strong>${esc(e.phone||"Not provided")}</strong></div>
+   <div class="detail-line"><span class="muted">Email</span><strong>${esc(e.email||"Not provided")}</strong></div>
+   <div class="detail-line"><span class="muted">Lead source</span><strong>${esc(e.source||"Other")}</strong></div>
+   <div class="detail-line"><span class="muted">Estimated value</span><strong>${money(e.value)}</strong></div>
+   <div class="detail-line"><span class="muted">Priority</span>${tag(e.priority)}</div>
+   <div class="detail-line"><span class="muted">Status</span>${tag(e.status)}</div>
+   <div class="detail-line"><span class="muted">Follow-up date</span><strong>${esc(e.followup||"Not scheduled")}</strong></div>
+   <hr><div class="muted">Enquiry notes</div><p style="font-size:12px;line-height:1.6">${esc(e.notes||"No notes added yet.")}</p>
   </div>
-  <div>
-   <div class="detail-card"><h3>Update enquiry status</h3><div class="field">Status<select id="detailStatus" onchange="changeEnquiryField('${e.id}','status',this.value)">${["New","Contacted","Quote Sent","Won","Lost"].map(s=>`<option ${e.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
-    <div class="field">Priority<select id="detailPriority" onchange="changeEnquiryField('${e.id}','priority',this.value)">${["Low","Normal","High","Urgent"].map(s=>`<option ${e.priority===s?"selected":""}>${s}</option>`).join("")}</select></div>
-    <div class="field">Follow-up date<input type="date" value="${esc(e.followup)}" onchange="changeEnquiryField('${e.id}','followup',this.value)"></div>
-   </div>
-   <div class="detail-card"><h3>Convert enquiry</h3><p class="muted">Move this lead into the next stage without entering the details again.</p>
-    <button class="primary" style="width:100%;margin:5px 0" onclick="convertCustomer('${e.id}')">Convert to customer</button>
-    <button class="secondary" style="width:100%;margin:5px 0" onclick="convertJob('${e.id}')">Convert to job</button>
-    <div class="notice">Converting to a job also creates a customer record if one doesn't already exist.</div>
-   </div>
-   <button class="danger" onclick="deleteEnquiry('${e.id}')">Delete this enquiry</button>
+  <div class="detail-card"><div class="split"><h3>Contact history</h3><button class="primary" onclick="addHistory('${e.id}')">+ Log contact</button></div>
+   ${e.history.length?e.history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Log calls, emails or messages here.</div>'}
   </div>
- </div>`;
+ </div>
+ <div>
+  <div class="detail-card"><h3>Update enquiry status</h3>
+   <div class="field">Status<select onchange="changeEnquiryField('${e.id}','status',this.value)">${["New","Contacted","Quote Sent","Won","Lost"].map(s=>`<option ${e.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
+   <div class="field">Priority<select onchange="changeEnquiryField('${e.id}','priority',this.value)">${["Low","Normal","High","Urgent"].map(s=>`<option ${e.priority===s?"selected":""}>${s}</option>`).join("")}</select></div>
+   <div class="field">Follow-up date<input type="date" value="${esc(e.followup)}" onchange="changeEnquiryField('${e.id}','followup',this.value)"></div>
+  </div>
+  <div class="detail-card"><h3>Convert enquiry</h3><p class="muted">Move this lead into the next stage without entering the details again.</p>
+   <button class="primary" style="width:100%;margin:5px 0" onclick="convertCustomer('${e.id}')">Convert to customer</button>
+   <button class="secondary" style="width:100%;margin:5px 0" onclick="convertJob('${e.id}')">Convert to job</button>
+   <div class="notice">Converting to a job also creates a customer record if one doesn't already exist.</div>
+  </div>
+  <button class="danger" onclick="deleteEnquiry('${e.id}')">Delete this enquiry</button>
+ </div></div>`;
  $("enquiryDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function closeEnquiry(){$("enquiryDetail").style.display="none";selectedEnquiry=null}
@@ -337,10 +389,7 @@ function changeEnquiryField(id,key,value){
  const e=data.enquiries.find(x=>x.id===id);if(!e)return;
  e[key]=value;save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
-function editEnquiry(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- openForm("enquiries",e);
-}
+function editEnquiry(id){const e=data.enquiries.find(x=>x.id===id);if(e)openForm("enquiries",e)}
 function addHistory(id){
  const e=data.enquiries.find(x=>x.id===id);if(!e)return;
  const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
@@ -350,71 +399,256 @@ function addHistory(id){
  e.status=e.status==="New"?"Contacted":e.status;
  save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
-function convertCustomer(id){
- const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+function findOrCreateCustomer(e){
  let c=data.customers.find(x=>x.email&&e.email&&x.email.toLowerCase()===e.email.toLowerCase());
  if(!c)c=data.customers.find(x=>x.phone&&e.phone&&x.phone===e.phone);
- if(!c){c={id:makeId(),name:e.name,phone:e.phone,email:e.email,notes:"Created from enquiry: "+e.service};data.customers.push(c)}
- e.status="Won";e.convertedCustomerId=c.id;save();renderEnquiries();openEnquiry(id);updateDashboard();
+ if(!c){
+  c={id:makeId(),name:e.name,phone:e.phone||"",email:e.email||"",address:"",postcode:"",notes:"Created from enquiry: "+e.service,history:[]};
+  data.customers.push(c);
+ }
+ return c;
+}
+function convertCustomer(id){
+ const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+ const c=findOrCreateCustomer(e);
+ e.status="Won";e.convertedCustomerId=c.id;
+ save();renderEnquiries();openEnquiry(id);updateDashboard();
  alert("Customer record created or matched successfully.");
 }
 function convertJob(id){
  const e=data.enquiries.find(x=>x.id===id);if(!e)return;
- let c=data.customers.find(x=>x.email&&e.email&&x.email.toLowerCase()===e.email.toLowerCase())||data.customers.find(x=>x.phone&&e.phone&&x.phone===e.phone);
- if(!c){c={id:makeId(),name:e.name,phone:e.phone,email:e.email,notes:"Created from enquiry: "+e.service};data.customers.push(c)}
+ const c=findOrCreateCustomer(e);
  const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Upcoming",payment:"Unpaid",paid:0,start:"",completion:"",customerId:c.id,sourceEnquiryId:e.id};
- data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;save();renderEnquiries();openEnquiry(id);updateDashboard();
+ data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;
+ save();renderEnquiries();openEnquiry(id);updateDashboard();
  alert("Job created successfully. You can find it in the Jobs section.");
 }
 function deleteEnquiry(id){
  if(!confirm("Are you sure you want to permanently delete this enquiry?"))return;
- data.enquiries=data.enquiries.filter(e=>e.id!==id);save();closeEnquiry();renderEnquiries();updateDashboard();
+ data.enquiries=data.enquiries.filter(e=>e.id!==id);
+ save();closeEnquiry();renderEnquiries();updateDashboard();
 }
 
+/* CUSTOMERS */
+let selectedCustomer=null;
+function customerRecords(customer,type){
+ return data[type].filter(r=>{
+  if(r.customerId)return r.customerId===customer.id;
+  return String(r.name||"").trim().toLowerCase()===String(customer.name||"").trim().toLowerCase();
+ });
+}
+function customerStats(c){
+ const jobs=customerRecords(c,"jobs");
+ const quotes=customerRecords(c,"quotes");
+ const enquiries=customerRecords(c,"enquiries");
+ const lifetime=jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
+ const outstanding=jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
+ return {jobs,quotes,enquiries,lifetime,outstanding};
+}
+function renderCustomers(){
+ const q=($("customerSearch")?.value||"").toLowerCase();
+ const rows=data.customers.filter(c=>[c.name,c.phone,c.email,c.address,c.postcode,c.notes].join(" ").toLowerCase().includes(q));
+ const allStats=data.customers.map(customerStats);
+ $("customerTotal").textContent=data.customers.length;
+ $("customerActive").textContent=allStats.filter(s=>s.jobs.some(j=>j.status!=="Completed")).length;
+ $("customerLifetime").textContent=money(allStats.reduce((s,x)=>s+x.lifetime,0));
+ $("customerOutstanding").textContent=money(allStats.reduce((s,x)=>s+x.outstanding,0));
+ if(!rows.length){
+  $("customersTable").innerHTML='<div class="empty">No customers found. Add your first customer to get started.</div>';
+  return;
+ }
+ $("customersTable").innerHTML=`<table><thead><tr><th>CUSTOMER</th><th>CONTACT DETAILS</th><th>JOBS</th><th>COMPLETED VALUE</th><th>OUTSTANDING</th><th>ACTIONS</th></tr></thead><tbody>
+ ${rows.map(c=>{
+  const s=customerStats(c);
+  return `<tr>
+   <td><button class="customer-name" onclick="openCustomer('${c.id}')">${esc(c.name)}</button><div class="muted">${esc(c.address||"Address not added")}</div></td>
+   <td>${esc(c.phone||"No phone")}<div class="muted">${esc(c.email||"No email")}</div></td>
+   <td>${s.jobs.length}</td><td>${money(s.lifetime)}</td><td>${money(s.outstanding)}</td>
+   <td><div class="actions"><button class="action" onclick="openCustomer('${c.id}')">Open</button><button class="action" onclick="editRecord('customers','${c.id}')">Edit</button></div></td>
+  </tr>`;
+ }).join("")}
+ </tbody></table>`;
+}
+function openCustomer(id){
+ selectedCustomer=id;
+ const c=data.customers.find(x=>x.id===id);if(!c)return;
+ const s=customerStats(c);
+ const history=Array.isArray(c.history)?c.history:[];
+ $("customerDetail").style.display="block";
+ $("customerDetail").innerHTML=`
+ <div class="detail-heading">
+  <div><div class="eyebrow">CUSTOMER PROFILE</div><div class="detail-name">${esc(c.name)}</div><div class="muted">Customer since ${esc(c.createdAt||"Date not recorded")}</div></div>
+  <div class="actions"><button class="secondary" onclick="editRecord('customers','${c.id}')">Edit customer</button><button class="secondary" onclick="closeCustomer()">Close</button></div>
+ </div>
+ <div class="profile-stats">
+  <div class="profile-stat"><span class="muted">Completed job value</span><strong>${money(s.lifetime)}</strong></div>
+  <div class="profile-stat"><span class="muted">Outstanding balance</span><strong>${money(s.outstanding)}</strong></div>
+  <div class="profile-stat"><span class="muted">Total jobs</span><strong>${s.jobs.length}</strong></div>
+ </div>
+ <div class="detail-layout">
+  <div>
+   <div class="detail-card"><h3>Contact information</h3>
+    <div class="detail-line"><span class="muted">Phone</span><strong>${esc(c.phone||"Not provided")}</strong></div>
+    <div class="detail-line"><span class="muted">Email</span><strong>${esc(c.email||"Not provided")}</strong></div>
+    <div class="detail-line"><span class="muted">Address</span><strong>${esc(c.address||"Not provided")}</strong></div>
+    <div class="detail-line"><span class="muted">Postcode</span><strong>${esc(c.postcode||"Not provided")}</strong></div>
+    <hr><div class="muted">Customer notes</div><p style="font-size:12px;line-height:1.6">${esc(c.notes||"No notes added yet.")}</p>
+   </div>
+   <div class="detail-card"><h3>Jobs and work history</h3>
+    ${s.jobs.length?`<table><thead><tr><th>JOB</th><th>STATUS</th><th>VALUE</th><th>PAID</th></tr></thead><tbody>${s.jobs.map(j=>`<tr><td>${esc(j.service||"Job")}</td><td>${tag(j.status)}</td><td>${money(j.value)}</td><td>${money(j.paid)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No jobs linked to this customer yet.</div>'}
+   </div>
+   <div class="detail-card"><h3>Quotes</h3>
+    ${s.quotes.length?`<table><thead><tr><th>DESCRIPTION</th><th>STATUS</th><th>VALUE</th><th>DATE</th></tr></thead><tbody>${s.quotes.map(q=>`<tr><td>${esc(q.service||"Quote")}</td><td>${tag(q.status)}</td><td>${money(q.value)}</td><td>${esc(q.date||"—")}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No quotes linked to this customer yet.</div>'}
+   </div>
+   <div class="detail-card"><h3>Related enquiries</h3>
+    ${s.enquiries.length?`<table><thead><tr><th>SERVICE</th><th>STATUS</th><th>VALUE</th></tr></thead><tbody>${s.enquiries.map(e=>`<tr><td>${esc(e.service)}</td><td>${tag(e.status)}</td><td>${money(e.value)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries linked to this customer.</div>'}
+   </div>
+  </div>
+  <div>
+   <div class="detail-card"><h3>Quick actions</h3>
+    <p class="muted">Create new records already linked to this customer.</p>
+    <div class="quick-actions">
+     <button class="primary" onclick="customerAction('quotes','${c.id}')">+ Create quote</button>
+     <button class="primary" onclick="customerAction('jobs','${c.id}')">+ Add job</button>
+     <button class="secondary" onclick="customerAction('followups','${c.id}')">+ Add follow-up</button>
+    </div>
+   </div>
+   <div class="detail-card"><div class="split"><h3>Communication history</h3><button class="primary" onclick="addCustomerHistory('${c.id}')">+ Log contact</button></div>
+    ${history.length?history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Record phone calls, emails and messages here.</div>'}
+   </div>
+   <div class="detail-card"><h3>Customer account</h3>
+    <div class="detail-line"><span class="muted">Completed jobs</span><strong>${s.jobs.filter(j=>j.status==="Completed").length}</strong></div>
+    <div class="detail-line"><span class="muted">Active jobs</span><strong>${s.jobs.filter(j=>j.status!=="Completed").length}</strong></div>
+    <div class="detail-line"><span class="muted">Quotes issued</span><strong>${s.quotes.length}</strong></div>
+   </div>
+   <button class="danger" onclick="deleteCustomer('${c.id}')">Delete customer</button>
+  </div>
+ </div>`;
+ $("customerDetail").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeCustomer(){$("customerDetail").style.display="none";selectedCustomer=null}
+function addCustomerHistory(id){
+ const c=data.customers.find(x=>x.id===id);if(!c)return;
+ const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
+ const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
+ const note=prompt("What happened?");if(note===null)return;
+ c.history=c.history||[];
+ c.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
+ save();openCustomer(id);
+}
+function deleteCustomer(id){
+ const c=data.customers.find(x=>x.id===id);if(!c)return;
+ if(!confirm("Delete "+c.name+" from your customer list? Linked jobs, quotes and enquiries will not be deleted."))return;
+ data.customers=data.customers.filter(x=>x.id!==id);
+ save();closeCustomer();renderCustomers();updateDashboard();
+}
+let pendingCustomerId=null;
+function customerAction(type,id){
+ pendingCustomerId=id;
+ openForm(type,null);
+}
+
+/* ADD AND EDIT FORMS */
 const schemas={
- enquiries:[["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["service","Service required","text"],["value","Estimated value (£)","number"],["date","Date received","date"],["source","How did they contact you?","select",["Website","Phone","Email","WhatsApp","Referral","Social media","Other"]],["status","Status","select",["New","Contacted","Quote Sent","Won","Lost"]],["priority","Priority","select",["Low","Normal","High","Urgent"]],["followup","Follow-up date","date"],["notes","Enquiry notes","textarea"]],
- customers:[["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["notes","Customer notes","textarea"]],
- quotes:[["name","Customer name","text"],["service","Description of work","text"],["value","Quote value (£)","number"],["status","Status","select",["Draft","Sent","Accepted","Rejected","Expired"]],["date","Quote date","date"]],
- jobs:[["name","Customer name","text"],["service","Job description","text"],["value","Agreed price (£)","number"],["status","Job status","select",["Upcoming","In progress","On hold","Completed"]],["payment","Payment status","select",["Unpaid","Partially paid","Paid"]],["paid","Amount paid (£)","number"],["start","Start date","date"],["completion","Expected completion date","date"]],
- followups:[["name","Customer name","text"],["service","Follow-up task","text"],["date","Due date","date"],["status","Status","select",["Pending","Completed","Overdue"]]],
- calendar:[["name","Event title","text"],["service","Details","text"],["date","Date","date"]]
+ enquiries:[
+  ["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["service","Service required","text"],["value","Estimated value (£)","number"],["date","Date received","date"],["source","How did they contact you?","select",["Website","Phone","Email","WhatsApp","Referral","Social media","Other"]],["status","Status","select",["New","Contacted","Quote Sent","Won","Lost"]],["priority","Priority","select",["Low","Normal","High","Urgent"]],["followup","Follow-up date","date"],["notes","Enquiry notes","textarea"]
+ ],
+ customers:[
+  ["name","Customer name","text"],["phone","Phone number","tel"],["email","Email address","email"],["address","Street address","text"],["postcode","Postcode","text"],["notes","Customer notes","textarea"]
+ ],
+ quotes:[
+  ["name","Customer name","text"],["service","Description of work","text"],["value","Quote value (£)","number"],["status","Status","select",["Draft","Sent","Accepted","Rejected","Expired"]],["date","Quote date","date"]
+ ],
+ jobs:[
+  ["name","Customer name","text"],["service","Job description","text"],["value","Agreed price (£)","number"],["status","Job status","select",["Upcoming","In progress","On hold","Completed"]],["payment","Payment status","select",["Unpaid","Partially paid","Paid"]],["paid","Amount paid (£)","number"],["start","Start date","date"],["completion","Expected completion date","date"]
+ ],
+ followups:[
+  ["name","Customer name","text"],["service","Follow-up task","text"],["date","Due date","date"],["status","Status","select",["Pending","Completed","Overdue"]]
+ ],
+ calendar:[
+  ["name","Event title","text"],["service","Details","text"],["date","Date","date"]
+ ]
 };
+
 let editingId=null,editingType=null;
 function openAdd(type="enquiries"){openForm(type,null)}
 function openForm(type,record){
  editingType=type;editingId=record?.id||null;
+ const linkedCustomer=pendingCustomerId?data.customers.find(c=>c.id===pendingCustomerId):null;
  $("modalTitle").textContent=(record?"Edit ":"Add ")+(type==="calendar"?"event":type==="enquiries"?"enquiry":type.slice(0,-1));
- $("formHint").textContent=type==="enquiries"?"You can add contact history and update this enquiry after saving.":"";
+ $("formHint").textContent=type==="enquiries"?"You can add contact history and update this enquiry after saving.":linkedCustomer?"This record will be linked to "+linkedCustomer.name+".":"";
  $("formFields").innerHTML=schemas[type].map(([key,label,kind,opts])=>{
-  let val=record?.[key]??(key==="date"&&type!=="calendar"?today():key==="status"?(type==="enquiries"?"New":type==="jobs"?"Upcoming":"Pending"):key==="priority"?"Normal":"");
-  let input=kind==="textarea"?`<textarea name="${key}">${esc(val)}</textarea>`:kind==="select"?`<select name="${key}">${opts.map(o=>`<option ${val===o?"selected":""}>${o}</option>`).join("")}</select>`:`<input name="${key}" type="${kind}" value="${esc(val)}" ${key==="name"||key==="service"?"required":""} ${kind==="number"?'min="0" step="0.01"':""}>`;
-  return `<label class="field ${kind==="textarea"||key==="service"||key==="notes"?"full":""}">${label}${input}</label>`;
+  let val=record?.[key]??(linkedCustomer&&key==="name"?linkedCustomer.name:key==="date"&&type!=="calendar"?today():key==="status"?(type==="enquiries"?"New":type==="jobs"?"Upcoming":"Pending"):key==="priority"?"Normal":"");
+  let input=kind==="textarea"?`<textarea name="${key}">${esc(val)}</textarea>`:
+   kind==="select"?`<select name="${key}">${opts.map(o=>`<option ${val===o?"selected":""}>${o}</option>`).join("")}</select>`:
+   `<input name="${key}" type="${kind}" value="${esc(val)}" ${key==="name"||key==="service"?"required":""} ${kind==="number"?'min="0" step="0.01"':""}>`;
+  return `<label class="field ${kind==="textarea"||key==="service"||key==="notes"||key==="address"?"full":""}">${label}${input}</label>`;
  }).join("");
  $("modal").style.display="flex";
 }
-function closeModal(){$("modal").style.display="none";editingId=null;editingType=null}
+function closeModal(){
+ $("modal").style.display="none";editingId=null;editingType=null;pendingCustomerId=null;
+}
 $("recordForm").addEventListener("submit",ev=>{
- ev.preventDefault();const form=new FormData(ev.target);let r=Object.fromEntries(form.entries());let type=editingType;
+ ev.preventDefault();
+ const form=new FormData(ev.target);
+ let r=Object.fromEntries(form.entries());
+ let type=editingType;
  ["value","paid"].forEach(k=>{if(r[k]!==undefined)r[k]=Number(r[k])||0});
- if(type==="calendar"){r.id=makeId();data.events.push(r);save();closeModal();renderCalendar();return}
+ if(type==="calendar"){
+  r.id=makeId();data.events.push(r);save();closeModal();renderCalendar();return;
+ }
+ if(type==="customers"){
+  const duplicate=data.customers.find(c=>c.id!==editingId&&((r.email&&c.email&&c.email.toLowerCase()===r.email.toLowerCase())||(r.phone&&c.phone&&c.phone===r.phone)));
+  if(duplicate){
+   alert("A customer with this email address or phone number already exists. Open the existing customer record instead.");
+   return;
+  }
+ }
  if(editingId){
-  const old=data[type].find(x=>x.id===editingId);if(old)Object.assign(old,r);
- }else{r.id=makeId();if(type==="enquiries"){r.history=[];r.convertedCustomerId="";r.convertedJobId=""}data[type].unshift(r)}
+  const old=data[type].find(x=>x.id===editingId);
+  if(old)Object.assign(old,r);
+ }else{
+  r.id=makeId();
+  if(type==="enquiries"){r.history=[];r.convertedCustomerId="";r.convertedJobId=""}
+  if(type==="customers"){r.history=[];r.createdAt=today()}
+  if(pendingCustomerId&&type!=="customers")r.customerId=pendingCustomerId;
+  data[type].unshift(r);
+ }
+ const savedId=editingId;
+ const customerId=type==="customers"?(savedId||r.id):pendingCustomerId;
  save();closeModal();
- if(type==="enquiries"){renderEnquiries();if(editingId)openEnquiry(editingId)}
- else renderTable(type);
+ if(type==="enquiries"){renderEnquiries();if(savedId)openEnquiry(savedId)}
+ else if(type==="customers"){
+  renderCustomers();
+  if(customerId)openCustomer(customerId);
+ }else{
+  renderTable(type);
+  if(type==="quotes"||type==="jobs"||type==="followups"){
+   if(customerId&&$("customerDetail").style.display!=="none")openCustomer(customerId);
+  }
+ }
  updateDashboard();
 });
 
+/* TABLES */
 function renderTable(type,filter=""){
  const rows=data[type].filter(r=>Object.values(r).join(" ").toLowerCase().includes(filter.toLowerCase()));
- const cols={customers:["name","phone","email"],quotes:["name","service","value","status","date"],jobs:["name","service","value","status","payment"],followups:["name","service","date","status"]}[type];
+ const cols={quotes:["name","service","value","status","date"],jobs:["name","service","value","status","payment"],followups:["name","service","date","status"]}[type];
  if(!rows.length){$(type+"Table").innerHTML='<div class="empty">No records yet. Add your first record above.</div>';return}
  $(type+"Table").innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")}<th>ACTIONS</th></tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${c==="value"?money(r[c]):["status","payment"].includes(c)?tag(r[c]):esc(r[c]||"—")}</td>`).join("")}<td><div class="actions"><button class="action" onclick="editRecord('${type}','${r.id}')">Edit</button><button class="action" onclick="removeRecord('${type}','${r.id}')">Delete</button></div></td></tr>`).join("")}</tbody></table>`;
 }
-function editRecord(type,id){const r=data[type].find(x=>x.id===id);if(r)openForm(type,r)}
-function removeRecord(type,id){if(!confirm("Delete this record?"))return;data[type]=data[type].filter(r=>r.id!==id);save();renderTable(type);updateDashboard()}
+function editRecord(type,id){
+ const r=data[type].find(x=>x.id===id);
+ if(r)openForm(type,r);
+}
+function removeRecord(type,id){
+ if(!confirm("Delete this record?"))return;
+ data[type]=data[type].filter(r=>r.id!==id);
+ save();renderTable(type);updateDashboard();
+}
 
+/* DASHBOARD */
 function updateDashboard(){
  $("mEnquiries").textContent=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).length;
  $("mJobs").textContent=data.jobs.filter(j=>j.status!=="Completed").length;
@@ -425,42 +659,92 @@ function updateDashboard(){
  $("recentRows").innerHTML=data.enquiries.slice(0,5).length?`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead><tbody>${data.enquiries.slice(0,5).map(e=>`<tr><td><strong>${esc(e.name)}</strong></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td><button class="action" onclick="showPage('enquiries');openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries yet.</div>';
  renderEnquiries();
 }
+
+/* CALENDAR */
 function renderCalendar(){
  const now=new Date(),year=now.getFullYear(),month=now.getMonth(),first=new Date(year,month,1).getDay(),days=new Date(year,month+1,0).getDate();
  $("monthTitle").textContent=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
  let html=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="muted">${x}</div>`).join("");
  for(let i=0;i<first;i++)html+="<div></div>";
- for(let i=1;i<=days;i++){let date=`${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;let ev=data.events.filter(e=>e.date===date);let jobs=data.jobs.filter(j=>j.start===date);html+=`<div class="day ${i===now.getDate()?"today":""}">${i}${ev.map(e=>`<small>${esc(e.name)}</small>`).join("")}${jobs.map(j=>`<small>Job: ${esc(j.name)}</small>`).join("")}</div>`}
+ for(let i=1;i<=days;i++){
+  let date=`${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
+  let ev=data.events.filter(e=>e.date===date);
+  let jobs=data.jobs.filter(j=>j.start===date);
+  html+=`<div class="day ${i===now.getDate()?"today":""}">${i}${ev.map(e=>`<small>${esc(e.name)}</small>`).join("")}${jobs.map(j=>`<small>Job: ${esc(j.name)}</small>`).join("")}</div>`;
+ }
  $("calendarGrid").innerHTML=html;
 }
+
+/* REVENUE */
 function renderRevenue(){
  const completed=data.jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
  const active=data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0);
  const received=data.jobs.reduce((s,j)=>s+Number(j.paid||0),0);
  const outstanding=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
- $("completedRevenue").textContent=money(completed);$("activeRevenue").textContent=money(active);$("receivedRevenue").textContent=money(received);$("outstandingRevenue").textContent=money(outstanding);
+ $("completedRevenue").textContent=money(completed);
+ $("activeRevenue").textContent=money(active);
+ $("receivedRevenue").textContent=money(received);
+ $("outstandingRevenue").textContent=money(outstanding);
  $("bars").innerHTML=[0,0,0,0,0,0,0,0,0,0,0,0].map((v,i)=>`<div class="bar-wrap"><div class="bar" style="height:${v||3}%"></div><small class="muted">${["J","F","M","A","M","J","J","A","S","O","N","D"][i]}</small></div>`).join("");
 }
+
+/* WEBSITE AND SETTINGS */
 function saveWebsite(){
  const obj={name:$("siteName").value,description:$("siteDescription").value,phone:$("sitePhone").value,email:$("siteEmail").value,services:$("siteServices").value};
- localStorage.setItem("tradeflowWebsite",JSON.stringify(obj));$("siteSaved").textContent="Website details saved in this browser.";
+ localStorage.setItem("tradeflowWebsite",JSON.stringify(obj));
+ $("siteSaved").textContent="Website details saved in this browser.";
 }
-function saveSettings(){localStorage.setItem("tradeflowCurrency",$("settingCurrency").value);localStorage.setItem("tradeflowSettings",JSON.stringify({name:$("settingName").value,type:$("settingType").value,vat:$("settingVat").value}));updateDashboard();alert("Settings saved in this browser.");}
+function saveSettings(){
+ localStorage.setItem("tradeflowCurrency",$("settingCurrency").value);
+ localStorage.setItem("tradeflowSettings",JSON.stringify({name:$("settingName").value,type:$("settingType").value,vat:$("settingVat").value}));
+ updateDashboard();renderCustomers();alert("Settings saved in this browser.");
+}
+
+/* DEMONSTRATION ASSISTANT */
 function askAI(){
  const input=$("chatInput"),q=input.value.trim();if(!q)return;
- const lower=q.toLowerCase();let a="I can help you organise your business. This is currently a demonstration assistant and doesn't connect to a live AI service.";
- if(/follow|contact|chase/i.test(lower)){const open=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status));a=open.length?`You currently have ${open.length} open enquiries: ${open.map(e=>e.name+" ("+e.status+")").join(", ")}. Review these and set a follow-up date for each.`:"You have no open enquiries at the moment."}
- else if(/quote/i.test(lower)){a=`You currently have ${data.quotes.length} quote records. Make sure every quote has a clear description, amount and status. Follow up on quotes that are still awaiting a decision.`}
- else if(/job/i.test(lower)){a=`You have ${data.jobs.length} jobs recorded, including ${data.jobs.filter(j=>j.status==="Completed").length} completed jobs. Keep job dates, progress and payment records up to date.`}
- else if(/revenue|money|sales|outstanding/i.test(lower)){const due=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);a=`Based on your recorded jobs, the outstanding balance is ${money(due)}. This is calculated from job values less payments recorded.`}
- $("chat").innerHTML+=`<div style="margin-top:12px"><strong>You:</strong> ${esc(q)}</div><div class="message">${esc(a)}</div>`;input.value="";
+ const lower=q.toLowerCase();
+ let a="I can help you organise your business. This is currently a demonstration assistant and doesn't connect to a live AI service.";
+ if(/follow|contact|chase/i.test(lower)){
+  const open=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status));
+  a=open.length?`You currently have ${open.length} open enquiries: ${open.map(e=>e.name+" ("+e.status+")").join(", ")}. Review these and set a follow-up date for each.`:"You have no open enquiries at the moment.";
+ }else if(/quote/i.test(lower)){
+  a=`You currently have ${data.quotes.length} quote records. Make sure every quote has a clear description, amount and status. Follow up on quotes that are still awaiting a decision.`;
+ }else if(/job/i.test(lower)){
+  a=`You have ${data.jobs.length} jobs recorded, including ${data.jobs.filter(j=>j.status==="Completed").length} completed jobs. Keep job dates, progress and payment records up to date.`;
+ }else if(/revenue|money|sales|outstanding/i.test(lower)){
+  const due=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
+  a=`Based on your recorded jobs, the outstanding balance is ${money(due)}. This is calculated from job values less payments recorded.`;
+ }
+ $("chat").innerHTML+=`<div style="margin-top:12px"><strong>You:</strong> ${esc(q)}</div><div class="message">${esc(a)}</div>`;
+ input.value="";
 }
+
+/* LOAD SAVED SETTINGS */
 function loadSavedDetails(){
- try{const w=JSON.parse(localStorage.getItem("tradeflowWebsite")||"null");if(w){$("siteName").value=w.name||"";$("siteDescription").value=w.description||"";$("sitePhone").value=w.phone||"";$("siteEmail").value=w.email||"";$("siteServices").value=w.services||""}}catch(e){}
- try{const s=JSON.parse(localStorage.getItem("tradeflowSettings")||"null");if(s){$("settingName").value=s.name||"";$("settingType").value=s.type||"Plumbing";$("settingVat").value=s.vat||"No"}}catch(e){}
+ try{
+  const w=JSON.parse(localStorage.getItem("tradeflowWebsite")||"null");
+  if(w){
+   $("siteName").value=w.name||"";
+   $("siteDescription").value=w.description||"";
+   $("sitePhone").value=w.phone||"";
+   $("siteEmail").value=w.email||"";
+   $("siteServices").value=w.services||"";
+  }
+ }catch(e){}
+ try{
+  const s=JSON.parse(localStorage.getItem("tradeflowSettings")||"null");
+  if(s){
+   $("settingName").value=s.name||"";
+   $("settingType").value=s.type||"Plumbing";
+   $("settingVat").value=s.vat||"No";
+  }
+ }catch(e){}
  $("settingCurrency").value=localStorage.getItem("tradeflowCurrency")||"GBP";
 }
-function boot(){save();loadSavedDetails();updateDashboard();renderCalendar();renderRevenue()}
+function boot(){
+ save();loadSavedDetails();updateDashboard();renderCustomers();renderCalendar();renderRevenue();
+}
 boot();
 </script>
 </body>
