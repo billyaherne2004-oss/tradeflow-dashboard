@@ -1294,7 +1294,7 @@ function changeCalendarMonth(step){calendarMonthOffset+=step;renderCalendar()}
 function goCalendarToday(){calendarMonthOffset=0;renderCalendar()}
 function addCalendarEvent(date=""){openForm("calendar",date?{date}:null)}
 function openCalendarEvent(id){const e=data.events.find(x=>x.id===id);if(e)openForm("calendar",e)}
-function openCalendarJob(id){const j=data.jobs.find(x=>x.id===id);if(j)openJobEditor(j)}
+function openCalendarJob(id){const j=data.jobs.find(x=>x.id===id);if(!j)return;showPage("jobs");openJobDetail(id);setTimeout(()=>$("jobDetail").scrollIntoView({behavior:"smooth",block:"start"}),50)}
 function renderCalendar(){
 const today=new Date();today.setHours(0,0,0,0);
 const shown=new Date(today.getFullYear(),today.getMonth()+calendarMonthOffset,1);
