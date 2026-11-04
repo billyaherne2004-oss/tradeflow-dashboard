@@ -782,7 +782,55 @@ $("jobsTable").innerHTML=`<table><thead><tr><th>CUSTOMER / JOB</th><th>SCHEDULE<
 <tr><td><strong>${esc(j.name||"Customer")}</strong><div class="muted">${esc(j.service||"Job")}</div></td>
 <td>${esc(j.start?fmtDate(j.start):"Not set")}<div class="muted">${j.end||j.completion?"to "+esc(fmtDate(j.end||j.completion)):"End date not set"}</div></td>
 <td>${esc(jobDuration(j))}</td><td>${tag(j.status)}</td><td><strong>${money(j.value)}</strong></td><td>${money(jobProfit(j))}</td><td>${tag(j.payment||"Unpaid")}</td>
-<td><div class="actions"><button class="action" onclick="openJobDetail('${j.id}')">Open</button><button class="action" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit</button></div></td></tr>`).join("")}</tbody></table>`;
+<td><div class="actions"><button class="action" onclick="openJobDetail('${j.id}')">Open</button><button class="action" onclick="quickJobStatus('${j.id}','Completed')">Complete</button><button class="action" onclick="quickJobPayment('${j.id}','full')">Paid in full</button><button class="action" onclick="quickJobPayment('${j.id}','partial')">Part payment</button><button class="action" onclick="quickJobSchedule('${j.id}')">Date</button><button class="action" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit</button></div><div style="margin-top:6px"><select aria-label="Change job status" style="font-size:10px;padding:5px;width:145px" onchange="quickJobStatus('${j.id}',this.value)"><option value="">Change status…</option>${jobStatuses.map(s=>`<option value="${s}" ${j.status===s?"selected":""}>${s}</option>`).join("")} </select></div></td></tr>`).join("")}</tbody></table>`;
+}
+function quickJobStatus(id,status){
+const j=data.jobs.find(x=>x.id===id);if(!j||!jobStatuses.includes(status))return;
+j.status=status;
+if(status==="Completed"&&!j.completedDate)j.completedDate=today();
+save();renderJobs();updateDashboard();renderRevenue();renderCalendar();
+if(selectedJobId===id)openJobDetail(id);
+}
+function quickJobSchedule(id){
+const j=data.jobs.find(x=>x.id===id);if(!j)return;
+const start=prompt("Enter the new job start date (YYYY-MM-DD):",j.start||today());
+if(start===null)return;
+if(start&&!/^\\d{4}-\\d{2}-\\d{2}$/.test(start)){alert("Please use YYYY-MM-DD format.");return}
+const end=prompt("Enter the job end date (YYYY-MM-DD), or leave blank:",j.end||j.completion||"");
+if(end===null)return;
+if(end&&!/^\\d{4}-\\d{2}-\\d{2}$/.test(end)){alert("Please use YYYY-MM-DD format.");return}
+if(start&&end&&end<start){alert("The end date cannot be before the start date.");return}
+j.start=start;j.end=end;j.completion=end;
+save();renderJobs();renderCalendar();if(selectedJobId===id)openJobDetail(id);
+}
+function quickJobPayment(id,mode){
+const j=data.jobs.find(x=>x.id===id);if(!j)return;
+const total=Math.max(0,Number(j.value)||0),paid=Math.max(0,Number(j.paid)||0),remaining=Math.max(0,total-paid);
+if(remaining<=0){alert("This job is already paid in full.");return}
+let amount=remaining;
+if(mode==="partial"){
+const entered=prompt("Outstanding balance: "+money(remaining)+"\\nEnter the NEW payment received today:",String(remaining/2));
+if(entered===null)return;
+amount=Number(entered);
+if(!Number.isFinite(amount)||amount<=0){alert("Enter a payment amount greater than zero.");return}
+if(amount>remaining){alert("The payment cannot be greater than the outstanding balance of "+money(remaining)+".");return}
+}
+j.paid=paid+amount;
+j.payment=j.paid>=total?"Paid":"Partially paid";
+if(!Array.isArray(j.payments))j.payments=[];
+j.payments.push({id:makeId(),amount,date:today(),recordedAt:new Date().toISOString(),type:mode==="full"?"Paid in full":"Partial payment"});
+save();renderJobs();updateDashboard();renderRevenue();
+const balance=Math.max(0,total-j.paid);
+if(mode==="partial")alert("Payment recorded: "+money(amount)+"\\nTotal paid so far: "+money(j.paid)+"\\nRemaining balance: "+money(balance));
+else alert("Job marked as paid in full. "+money(amount)+" recorded.");
+if(selectedJobId===id)openJobDetail(id);
+}
+function quickJobNote(id){
+const j=data.jobs.find(x=>x.id===id);if(!j)return;
+const note=prompt("Add an internal job note:");
+if(note===null||!note.trim())return;
+j.notes=(j.notes?j.notes+"\\n":"")+today()+": "+note.trim();
+save();if(selectedJobId===id)openJobDetail(id);alert("Note added.");
 }
 function openJobEditor(job=null){
 editingJobId=job?.id||null;
@@ -866,7 +914,7 @@ $("jobDetail").innerHTML=`
 <div class="detail-line"><span class="muted">End date</span><strong>${esc(fmtDate(j.end||j.completion)||"Not set")}</strong></div>
 <div class="detail-line"><span class="muted">Duration</span><strong>${esc(jobDuration(j))}</strong></div>
 <div class="detail-line"><span class="muted">Agreed price</span><strong>${money(j.value)}</strong></div>
-<div class="detail-line"><span class="muted">Payment received</span><strong>${money(j.paid)}</strong></div>
+<div class="detail-line"><span class="muted">Payment received</span><strong>${money(j.paid)}</strong></div><div class="detail-card"><h3>Payment history</h3>${Array.isArray(j.payments)&&j.payments.length?j.payments.slice().reverse().map(p=>`<div class="detail-line"><span>${esc(p.type||"Payment")} · ${esc(fmtDate(p.date)||p.date||"")}</span><strong>${money(p.amount)}</strong></div>`).join(""):'<div class="muted">No individual payment records yet. Payments recorded from now on will appear here.</div>'}</div>
 <div class="detail-line"><span class="muted">Payment status</span>${tag(j.payment||"Unpaid")}</div>
 ${j.description?`<hr><div class="muted">Description</div><p style="font-size:12px;line-height:1.6">${esc(j.description)}</p>`:""}
 ${j.notes?`<hr><div class="muted">Internal notes</div><p style="font-size:12px;line-height:1.6">${esc(j.notes)}</p>`:""}
@@ -885,7 +933,7 @@ ${photos.map(([key,label])=>`<div class="section-label">${label}</div><div id="j
 <div class="job-cost-line"><span>Profit margin</span><strong>${Number.isFinite(margin)?margin.toFixed(1):"0.0"}%</strong></div>
 <div class="notice">This is a job-level estimate based only on costs entered here.</div>
 </div>
-<div class="detail-card"><h3>Quick actions</h3><button class="secondary" style="width:100%;margin:4px 0" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit job details</button><button class="danger" style="width:100%;margin:4px 0" onclick="deleteJob('${j.id}')">Delete job</button></div>
+<div class="detail-card"><h3>Quick actions</h3><button class="secondary" style="width:100%;margin:4px 0" onclick="quickJobPayment('${j.id}','full')">Mark paid in full</button><button class="secondary" style="width:100%;margin:4px 0" onclick="quickJobPayment('${j.id}','partial')">Record partial payment</button><button class="secondary" style="width:100%;margin:4px 0" onclick="quickJobStatus('${j.id}','Completed')">Mark completed</button><button class="secondary" style="width:100%;margin:4px 0" onclick="quickJobStatus('${j.id}','Scheduled')">Move to scheduled</button><button class="secondary" style="width:100%;margin:4px 0" onclick="quickJobStatus('${j.id}','In Progress')">Move to in progress</button><button class="secondary" style="width:100%;margin:4px 0" onclick="quickJobStatus('${j.id}','On Hold')">Put on hold</button><button class="secondary" style="width:100%;margin:4px 0" onclick="quickJobSchedule('${j.id}')">Change schedule</button><button class="secondary" style="width:100%;margin:4px 0" onclick="quickJobNote('${j.id}')">Add note</button><button class="secondary" style="width:100%;margin:4px 0" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit job details</button><button class="danger" style="width:100%;margin:4px 0" onclick="deleteJob('${j.id}')">Delete job</button></div>
 </div></div>`;
 photos.forEach(([key])=>loadJobPhotos(j.id,key));
 $("jobDetail").scrollIntoView({behavior:"smooth",block:"start"});
