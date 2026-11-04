@@ -116,6 +116,21 @@ td strong{font-weight:650}
 @media(max-width:750px){.sidebar{width:190px}.main{margin-left:190px;width:calc(100% - 190px);padding:20px 15px}.section-grid,.detail-layout{grid-template-columns:1fr}}
 @media(max-width:560px){.sidebar{display:none}.main{margin:0;width:100%}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.topbar{gap:8px}.grid{gap:8px}.metric{font-size:22px}.profile-stats{grid-template-columns:1fr}}
 @media(max-width:560px){.qrow{grid-template-columns:1fr 1fr}.qrow.head{display:none}.qtotals{width:100%}}
+
+/* JOB MANAGEMENT */
+.job-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin:18px 0}
+.job-detail-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}
+.job-photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(115px,1fr));gap:9px;margin-top:10px}
+.job-photo{position:relative;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:#f7f9fc}
+.job-photo img{width:100%;height:105px;object-fit:cover;display:block}
+.job-photo small{display:block;padding:6px;font-size:10px;color:var(--muted)}
+.job-cost-line{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);font-size:12px}
+.job-profit{font-size:22px;font-weight:800;margin:8px 0}
+.job-editor{max-width:850px}
+.job-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.job-status{min-width:135px}
+@media(max-width:750px){.job-detail-grid{grid-template-columns:1fr}.job-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 </style>
 </head>
 <body>
@@ -207,8 +222,16 @@ td strong{font-weight:650}
 </div>
 </section>
 <section class="page" id="jobs">
-<div class="toolbar"><span class="muted">Track work, completion and payments.</span><button class="primary" onclick="openAdd('jobs')">+ Add job</button></div>
+<div class="page-intro">Manage each job from booking through completion. Track dates, costs, profit, payments and job photos.</div>
+<div class="job-summary">
+<div class="card"><div class="metric-label">Active jobs</div><div class="metric" id="jobActiveCount">0</div><div class="metric-note">Work not yet completed</div></div>
+<div class="card"><div class="metric-label">Upcoming jobs</div><div class="metric" id="jobUpcomingCount">0</div><div class="metric-note">Scheduled to start</div></div>
+<div class="card"><div class="metric-label">Completed jobs</div><div class="metric" id="jobCompletedCount">0</div><div class="metric-note">Finished work</div></div>
+<div class="card"><div class="metric-label">Active job value</div><div class="metric" id="jobActiveValue">£0</div><div class="metric-note">Value of active work</div></div>
+</div>
+<div class="toolbar"><div class="toolbar-left"><input class="search" id="jobSearch" placeholder="Search customer, job or address..." oninput="renderJobs()"><select id="jobFilter" class="job-status" onchange="renderJobs()"><option value="">All statuses</option><option>Scheduled</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select></div><button class="primary" onclick="openJobEditor()">+ Add job</button></div>
 <div class="panel"><div class="table-wrap" id="jobsTable"></div></div>
+<div id="jobDetail" style="display:none;margin-top:18px"></div>
 </section>
 <section class="page" id="calendar">
 <div class="toolbar"><span class="muted">Your appointments and work schedule.</span><button class="primary" onclick="openAdd('calendar')">+ Add event</button></div>
@@ -289,6 +312,35 @@ td strong{font-weight:650}
 <div class="toolbar"><span class="muted">You can print, email or convert this quote to a job after saving.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeQuote()">Cancel</button><button class="primary" type="button" onclick="saveQuote()">Save quote</button></div></div>
 </div>
 </div>
+<div class="modal-backdrop" id="jobModal">
+<div class="modal wide job-editor">
+<div class="modal-head"><div class="modal-title" id="jobModalTitle">Add job</div><button class="secondary" type="button" onclick="closeJobEditor()">Close</button></div>
+<form id="jobForm">
+<div class="section-label">Job details</div>
+<div class="form-grid">
+<label class="field">Customer<select id="jCustomer" required></select></label>
+<label class="field">Job title<input id="jTitle" required placeholder="e.g. Bathroom installation"></label>
+<label class="field full">Description<textarea id="jDescription" placeholder="Scope of work and important details"></textarea></label>
+<label class="field">Job status<select id="jStatus"><option>Scheduled</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select></label>
+<label class="field">Agreed job price (£)<input id="jValue" type="number" min="0" step="0.01"></label>
+<label class="field">Start date<input id="jStart" type="date"></label>
+<label class="field">End date<input id="jEnd" type="date"></label>
+<label class="field">Completion date<input id="jCompletedDate" type="date"></label>
+<label class="field">Amount paid (£)<input id="jPaid" type="number" min="0" step="0.01"></label>
+<label class="field">Payment status<select id="jPayment"><option>Unpaid</option><option>Partially paid</option><option>Paid</option></select></label>
+</div>
+<div class="section-label">Job costs</div>
+<div class="form-grid">
+<label class="field">Materials cost (£)<input id="jMaterials" type="number" min="0" step="0.01"></label>
+<label class="field">Labour cost (£)<input id="jLabour" type="number" min="0" step="0.01"></label>
+<label class="field">Other expenses (£)<input id="jOther" type="number" min="0" step="0.01"></label>
+<div class="field"><span>Estimated job profit</span><div class="job-profit" id="jProfitPreview">£0</div><span class="muted">Job price minus the costs entered above.</span></div>
+<label class="field full">Internal notes<textarea id="jNotes" placeholder="Private notes for your own records"></textarea></label>
+<label class="field full">Completion notes<textarea id="jCompletionNotes" placeholder="Work completed, issues, handover details..."></textarea></label>
+</div>
+<div class="notice">Profit shown here is the job price minus the materials, labour and other costs you enter. It is a job-level estimate, not your overall business net profit. Photos are stored in this browser on this device.</div>
+<div class="toolbar"><span class="muted">Changes are saved in your browser.</span><div class="toolbar-right"><button type="button" class="secondary" onclick="closeJobEditor()">Cancel</button><button type="submit" class="primary">Save job</button></div></div>
+</form></div></div>
 <script>
 const $=id=>document.getElementById(id);
 const today=()=>new Date().toISOString().slice(0,10);
@@ -340,7 +392,13 @@ c.postcode=c.postcode||"";c.notes=c.notes||"";
 c.history=Array.isArray(c.history)?c.history:[];
 });
 data.quotes.forEach(x=>x.id=x.id||makeId());
-data.jobs.forEach(x=>{x.id=x.id||makeId();x.paid=Number(x.paid)||0});
+data.jobs.forEach(x=>{
+x.id=x.id||makeId();x.paid=Number(x.paid)||0;
+x.status=({"Upcoming":"Scheduled","In progress":"In Progress","in progress":"In Progress"}[x.status]||x.status||"Scheduled");
+x.materialsCost=Number(x.materialsCost)||0;x.labourCost=Number(x.labourCost)||0;x.otherCost=Number(x.otherCost)||0;
+x.description=x.description||"";x.end=x.end||x.completion||"";x.completedDate=x.completedDate||"";
+x.notes=x.notes||"";x.completionNotes=x.completionNotes||"";
+});
 data.followups.forEach(x=>x.id=x.id||makeId());
 data.events.forEach(x=>x.id=x.id||makeId());
 function save(){localStorage.setItem("tradeflowData",JSON.stringify(data))}
@@ -453,7 +511,7 @@ alert("Customer record created or matched successfully.");
 function convertJob(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
 const c=findOrCreateCustomer(e);
-const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Upcoming",payment:"Unpaid",paid:0,start:"",completion:"",customerId:c.id,sourceEnquiryId:e.id};
+const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceEnquiryId:e.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
 data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;
 save();renderEnquiries();openEnquiry(id);updateDashboard();
 alert("Job created successfully. You can find it in the Jobs section.");
@@ -605,6 +663,7 @@ calendar:[
 let editingId=null,editingType=null;
 function openAdd(type="enquiries"){openForm(type,null)}
 function openForm(type,record){
+if(type==="jobs"){openJobEditor(record||null);return}
 if(type==="quotes"){openQuote(record?record.id:null);return}
 editingType=type;editingId=record?.id||null;
 const linkedCustomer=pendingCustomerId?data.customers.find(c=>c.id===pendingCustomerId):null;
@@ -665,6 +724,7 @@ updateDashboard();
 });
 /* TABLES */
 function renderTable(type,filter=""){
+if(type==="jobs"){renderJobs();return}
 if(type==="quotes"){renderQuotes();return}
 const rows=data[type].filter(r=>Object.values(r).join(" ").toLowerCase().includes(filter.toLowerCase()));
 const cols={quotes:["name","service","value","status","date"],jobs:["name","service","value","status","payment"],followups:["name","service","date","status"]}[type];
@@ -672,6 +732,7 @@ if(!rows.length){$(type+"Table").innerHTML='<div class="empty">No records yet. A
 $(type+"Table").innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")}<th>ACTIONS</th></tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${c==="value"?money(r[c]):["status","payment"].includes(c)?tag(r[c]):esc(r[c]||"—")}</td>`).join("")}<td><div class="actions"><button class="action" onclick="editRecord('${type}','${r.id}')">Edit</button><button class="action" onclick="removeRecord('${type}','${r.id}')">Delete</button></div></td></tr>`).join("")}</tbody></table>`;
 }
 function editRecord(type,id){
+if(type==="jobs"){const j=data.jobs.find(x=>x.id===id);if(j)openJobEditor(j);return}
 const r=data[type].find(x=>x.id===id);
 if(r)openForm(type,r);
 }
@@ -680,6 +741,226 @@ if(!confirm("Delete this record?"))return;
 data[type]=data[type].filter(r=>r.id!==id);
 save();renderTable(type);updateDashboard();
 }
+
+/* JOB MANAGEMENT */
+let editingJobId=null, selectedJobId=null;
+const jobStatuses=["Scheduled","In Progress","On Hold","Completed","Cancelled"];
+function jobCustomer(j){
+return data.customers.find(c=>c.id===j.customerId)||data.customers.find(c=>String(c.name||"").trim().toLowerCase()===String(j.name||"").trim().toLowerCase())||null;
+}
+function jobCosts(j){
+return Number(j.materialsCost||0)+Number(j.labourCost||0)+Number(j.otherCost||0);
+}
+function jobProfit(j){return Number(j.value||0)-jobCosts(j)}
+function jobDuration(j){
+if(!j.start)return "Not scheduled";
+const end=j.end||j.completion||j.start;
+const a=new Date(j.start+"T00:00:00"),b=new Date(end+"T00:00:00");
+if(isNaN(a)||isNaN(b)||b<a)return "Dates to check";
+const days=Math.round((b-a)/86400000)+1;
+return days+" day"+(days===1?"":"s");
+}
+function renderJobs(){
+const search=($("jobSearch")?.value||"").toLowerCase();
+const status=$("jobFilter")?.value||"";
+const active=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status));
+const upcoming=data.jobs.filter(j=>j.status==="Scheduled");
+const completed=data.jobs.filter(j=>j.status==="Completed");
+$("jobActiveCount").textContent=active.length;
+$("jobUpcomingCount").textContent=upcoming.length;
+$("jobCompletedCount").textContent=completed.length;
+$("jobActiveValue").textContent=money(active.reduce((sum,j)=>sum+Number(j.value||0),0));
+const rows=data.jobs.filter(j=>{
+const c=jobCustomer(j);
+return (!status||j.status===status)&&[j.name,j.service,j.description,j.address,c?.address,c?.postcode].join(" ").toLowerCase().includes(search);
+}).slice().sort((a,b)=>(a.start||"9999").localeCompare(b.start||"9999"));
+if(!rows.length){
+$("jobsTable").innerHTML='<div class="empty">No jobs match your search. Add a job or change the filters.</div>';
+return;
+}
+$("jobsTable").innerHTML=`<table><thead><tr><th>CUSTOMER / JOB</th><th>SCHEDULE</th><th>DURATION</th><th>STATUS</th><th>JOB VALUE</th><th>PROFIT</th><th>PAYMENT</th><th></th></tr></thead><tbody>${rows.map(j=>`
+<tr><td><strong>${esc(j.name||"Customer")}</strong><div class="muted">${esc(j.service||"Job")}</div></td>
+<td>${esc(j.start?fmtDate(j.start):"Not set")}<div class="muted">${j.end||j.completion?"to "+esc(fmtDate(j.end||j.completion)):"End date not set"}</div></td>
+<td>${esc(jobDuration(j))}</td><td>${tag(j.status)}</td><td><strong>${money(j.value)}</strong></td><td>${money(jobProfit(j))}</td><td>${tag(j.payment||"Unpaid")}</td>
+<td><div class="actions"><button class="action" onclick="openJobDetail('${j.id}')">Open</button><button class="action" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit</button></div></td></tr>`).join("")}</tbody></table>`;
+}
+function openJobEditor(job=null){
+editingJobId=job?.id||null;
+const linked=pendingCustomerId?data.customers.find(c=>c.id===pendingCustomerId):null;
+$("jobModalTitle").textContent=job?"Edit job":"Add job";
+$("jCustomer").innerHTML='<option value="">— Select a customer —</option>'+data.customers.map(c=>`<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("");
+const cust=job?jobCustomer(job):linked;
+$("jCustomer").value=cust?.id||"";
+$("jTitle").value=job?.service||"";
+$("jDescription").value=job?.description||"";
+$("jStatus").value=job?.status||"Scheduled";
+$("jValue").value=job?.value??"";
+$("jStart").value=job?.start||"";
+$("jEnd").value=job?.end||job?.completion||"";
+$("jCompletedDate").value=job?.completedDate||"";
+$("jPaid").value=job?.paid??0;
+$("jPayment").value=job?.payment||"Unpaid";
+$("jMaterials").value=job?.materialsCost??0;
+$("jLabour").value=job?.labourCost??0;
+$("jOther").value=job?.otherCost??0;
+$("jNotes").value=job?.notes||"";
+$("jCompletionNotes").value=job?.completionNotes||"";
+["jValue","jMaterials","jLabour","jOther"].forEach(id=>$(id).oninput=updateJobProfitPreview);
+updateJobProfitPreview();
+$("jobModal").style.display="flex";
+}
+function updateJobProfitPreview(){
+const price=Number($("jValue").value)||0;
+const costs=["jMaterials","jLabour","jOther"].reduce((sum,id)=>sum+(Number($(id).value)||0),0);
+$("jProfitPreview").textContent=money(price-costs);
+}
+function closeJobEditor(){
+$("jobModal").style.display="none";editingJobId=null;pendingCustomerId=null;
+}
+$("jobForm").addEventListener("submit",ev=>{
+ev.preventDefault();
+const customer=data.customers.find(c=>c.id===$("jCustomer").value);
+if(!customer){alert("Please choose a customer first. You can add customers in the Customers section.");return}
+const status=$("jStatus").value;
+const fields={
+name:customer.name,customerId:customer.id,service:$("jTitle").value.trim(),
+description:$("jDescription").value.trim(),status,value:Number($("jValue").value)||0,
+start:$("jStart").value,end:$("jEnd").value,completion:$("jEnd").value,
+completedDate:$("jCompletedDate").value||(status==="Completed"?today():""),
+paid:Number($("jPaid").value)||0,payment:$("jPayment").value,
+materialsCost:Number($("jMaterials").value)||0,labourCost:Number($("jLabour").value)||0,
+otherCost:Number($("jOther").value)||0,notes:$("jNotes").value.trim(),
+completionNotes:$("jCompletionNotes").value.trim()
+};
+if(!fields.service){alert("Please enter a job title.");return}
+if(fields.start&&fields.end&&fields.end<fields.start){alert("The end date cannot be before the start date.");return}
+if(fields.paid>=fields.value&&fields.value>0)fields.payment="Paid";
+else if(fields.paid>0)fields.payment="Partially paid";
+else fields.payment="Unpaid";
+let savedId=editingJobId;
+if(savedId){
+const old=data.jobs.find(j=>j.id===savedId);if(old)Object.assign(old,fields);
+}else{
+savedId=makeId();data.jobs.unshift({...fields,id:savedId,sourceQuoteId:"",sourceEnquiryId:""});
+}
+save();closeJobEditor();renderJobs();updateDashboard();renderRevenue();renderCalendar();
+if(selectedCustomer&&$("customers").classList.contains("active"))openCustomer(selectedCustomer);
+if(selectedJobId===savedId)openJobDetail(savedId);
+});
+function openJobDetail(id){
+const j=data.jobs.find(x=>x.id===id);if(!j)return;
+selectedJobId=id;
+const c=jobCustomer(j);
+const costs=jobCosts(j),profit=jobProfit(j),margin=Number(j.value)>0?(profit/Number(j.value))*100:0;
+const photos=[["before","Before work"],["during","During work"],["after","After work"]];
+$("jobDetail").style.display="block";
+$("jobDetail").innerHTML=`
+<div class="detail-heading"><div><div class="eyebrow">JOB RECORD</div><div class="detail-name">${esc(j.service||"Job")}</div><div class="muted">${esc(j.name)} · ${tag(j.status)}</div></div><div class="actions"><button class="primary" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit job</button><button class="secondary" onclick="closeJobDetail()">Close</button></div></div>
+<div class="job-detail-grid"><div>
+<div class="detail-card"><h3>Job information</h3>
+<div class="detail-line"><span class="muted">Customer</span><strong>${esc(c?.name||j.name)}</strong></div>
+<div class="detail-line"><span class="muted">Phone</span><strong>${esc(c?.phone||"Not provided")}</strong></div>
+<div class="detail-line"><span class="muted">Email</span><strong>${esc(c?.email||"Not provided")}</strong></div>
+<div class="detail-line"><span class="muted">Address</span><strong>${esc([c?.address,c?.postcode].filter(Boolean).join(", ")||"Not provided")}</strong></div>
+<div class="detail-line"><span class="muted">Start date</span><strong>${esc(fmtDate(j.start)||"Not set")}</strong></div>
+<div class="detail-line"><span class="muted">End date</span><strong>${esc(fmtDate(j.end||j.completion)||"Not set")}</strong></div>
+<div class="detail-line"><span class="muted">Duration</span><strong>${esc(jobDuration(j))}</strong></div>
+<div class="detail-line"><span class="muted">Agreed price</span><strong>${money(j.value)}</strong></div>
+<div class="detail-line"><span class="muted">Payment received</span><strong>${money(j.paid)}</strong></div>
+<div class="detail-line"><span class="muted">Payment status</span>${tag(j.payment||"Unpaid")}</div>
+${j.description?`<hr><div class="muted">Description</div><p style="font-size:12px;line-height:1.6">${esc(j.description)}</p>`:""}
+${j.notes?`<hr><div class="muted">Internal notes</div><p style="font-size:12px;line-height:1.6">${esc(j.notes)}</p>`:""}
+${j.completionNotes?`<hr><div class="muted">Completion notes</div><p style="font-size:12px;line-height:1.6">${esc(j.completionNotes)}</p>`:""}
+</div>
+<div class="detail-card"><div class="split"><h3>Job photos</h3><span class="muted small">Before · During · After</span></div>
+${photos.map(([key,label])=>`<div class="section-label">${label}</div><div id="jobPhotos-${key}" class="job-photo-grid"><div class="muted small">Loading photos…</div></div><label class="secondary" style="display:inline-block;margin-top:7px;cursor:pointer">+ Add ${label.toLowerCase()} photos<input type="file" accept="image/*" multiple style="display:none" onchange="addJobPhotos('${j.id}','${key}',this.files)"></label>`).join("")}
+</div></div>
+<div>
+<div class="detail-card"><h3>Job profitability</h3><div class="muted">Agreed job price</div><div class="job-profit">${money(j.value)}</div>
+<div class="job-cost-line"><span>Materials</span><strong>${money(j.materialsCost)}</strong></div>
+<div class="job-cost-line"><span>Labour</span><strong>${money(j.labourCost)}</strong></div>
+<div class="job-cost-line"><span>Other expenses</span><strong>${money(j.otherCost)}</strong></div>
+<div class="job-cost-line"><span>Total recorded costs</span><strong>${money(costs)}</strong></div>
+<div class="job-cost-line"><span>Estimated profit</span><strong>${money(profit)}</strong></div>
+<div class="job-cost-line"><span>Profit margin</span><strong>${Number.isFinite(margin)?margin.toFixed(1):"0.0"}%</strong></div>
+<div class="notice">This is a job-level estimate based only on costs entered here.</div>
+</div>
+<div class="detail-card"><h3>Quick actions</h3><button class="secondary" style="width:100%;margin:4px 0" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit job details</button><button class="danger" style="width:100%;margin:4px 0" onclick="deleteJob('${j.id}')">Delete job</button></div>
+</div></div>`;
+photos.forEach(([key])=>loadJobPhotos(j.id,key));
+$("jobDetail").scrollIntoView({behavior:"smooth",block:"start"});
+}
+function closeJobDetail(){$("jobDetail").style.display="none";selectedJobId=null}
+function deleteJob(id){
+if(!confirm("Delete this job record? This cannot be undone."))return;
+data.jobs=data.jobs.filter(j=>j.id!==id);
+data.quotes.forEach(q=>{if(q.convertedJobId===id)q.convertedJobId=""});
+save();closeJobDetail();renderJobs();updateDashboard();renderRevenue();renderCalendar();
+}
+let jobPhotoDBPromise=null;
+function jobPhotoDB(){
+if(jobPhotoDBPromise)return jobPhotoDBPromise;
+jobPhotoDBPromise=new Promise((resolve,reject)=>{
+if(!("indexedDB" in window)){reject(new Error("Photo storage is not supported in this browser."));return}
+const req=indexedDB.open("TradeflowJobPhotos",1);
+req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains("photos"))db.createObjectStore("photos",{keyPath:"id"})};
+req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);
+});
+return jobPhotoDBPromise;
+}
+async function compressJobImage(file){
+return new Promise((resolve,reject)=>{
+const reader=new FileReader();
+reader.onerror=()=>reject(reader.error);
+reader.onload=()=>{
+const img=new Image();img.onerror=()=>reject(new Error("Could not read image"));
+img.onload=()=>{
+const max=1400,scale=Math.min(1,max/Math.max(img.width,img.height));
+const canvas=document.createElement("canvas");canvas.width=Math.round(img.width*scale);canvas.height=Math.round(img.height*scale);
+const ctx=canvas.getContext("2d");ctx.drawImage(img,0,0,canvas.width,canvas.height);
+resolve(canvas.toDataURL("image/jpeg",0.76));
+};img.src=reader.result;
+};reader.readAsDataURL(file);
+});
+}
+async function addJobPhotos(jobId,stage,files){
+if(!files||!files.length)return;
+try{
+const db=await jobPhotoDB();
+for(const file of Array.from(files)){
+if(!file.type.startsWith("image/"))continue;
+const dataUrl=await compressJobImage(file);
+await new Promise((resolve,reject)=>{
+const tx=db.transaction("photos","readwrite");
+tx.objectStore("photos").add({id:makeId(),jobId,stage,name:file.name||"Job photo",dataUrl,createdAt:new Date().toISOString()});
+tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+});
+}
+loadJobPhotos(jobId,stage);
+}catch(err){alert("The photos could not be saved in this browser. Please try smaller images or another browser.");}
+}
+async function loadJobPhotos(jobId,stage){
+const target=$("jobPhotos-"+stage);if(!target)return;
+try{
+const db=await jobPhotoDB();
+const records=await new Promise((resolve,reject)=>{
+const tx=db.transaction("photos","readonly"),req=tx.objectStore("photos").getAll();
+req.onsuccess=()=>resolve(req.result.filter(p=>p.jobId===jobId&&p.stage===stage));
+req.onerror=()=>reject(req.error);
+});
+const current=$("jobPhotos-"+stage);if(!current)return;
+current.innerHTML=records.length?records.map(p=>`<div class="job-photo"><img src="${p.dataUrl}" alt="${esc(p.name)}"><small>${esc(p.name)} <button class="action" onclick="deleteJobPhoto('${p.id}','${jobId}','${stage}')">Remove</button></small></div>`).join(""):'<div class="muted small">No photos added yet.</div>';
+}catch(e){target.innerHTML='<div class="muted small">Photo storage unavailable in this browser.</div>'}
+}
+async function deleteJobPhoto(photoId,jobId,stage){
+if(!confirm("Remove this photo from the job?"))return;
+try{
+const db=await jobPhotoDB();
+await new Promise((resolve,reject)=>{const tx=db.transaction("photos","readwrite");tx.objectStore("photos").delete(photoId);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});
+loadJobPhotos(jobId,stage);
+}catch(e){alert("Could not remove this photo.")}
+}
+
 /* QUOTES */
 const QUOTE_TERMS="Payment is due within 14 days of completion unless agreed otherwise. This quote is valid until the date shown. Any extra work will be agreed with you before it is carried out.";
 let qItems=[],qEditingId=null;
@@ -920,7 +1201,7 @@ if(q.status!=="Accepted"){alert("Only accepted quotes can be converted into jobs
 if(q.convertedJobId&&data.jobs.some(j=>j.id===q.convertedJobId)){alert("This quote has already been converted into a job.");return}
 let c=quoteCustomer(q);
 if(!c)c=findOrCreateCustomer({name:q.name,phone:"",email:"",service:q.service});
-const job={id:makeId(),name:c.name,service:q.service,value:Number(q.value)||0,status:"Upcoming",payment:"Unpaid",paid:0,start:"",completion:"",customerId:c.id,sourceQuoteId:q.id};
+const job={id:makeId(),name:c.name,service:q.service,value:Number(q.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceQuoteId:q.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
 data.jobs.push(job);
 q.convertedJobId=job.id;q.customerId=c.id;
 save();renderQuotes();updateDashboard();
@@ -929,14 +1210,15 @@ alert("Job created. You can find it in the Jobs section.");
 /* DASHBOARD */
 function updateDashboard(){
 $("mEnquiries").textContent=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).length;
-$("mJobs").textContent=data.jobs.filter(j=>j.status!=="Completed").length;
-$("mRevenue").textContent=money(data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0));
+$("mJobs").textContent=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status)).length;
+$("mRevenue").textContent=money(data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status)).reduce((s,j)=>s+Number(j.value||0),0));
 $("mOutstanding").textContent=money(data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0));
 $("priorities").innerHTML=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).slice(0,5).map(e=>`<div class="priority"><span>${esc(e.name)} · ${esc(e.service)}</span>${tag(e.priority)}</div>`).join("")||'<div class="empty">No open enquiries. Nice work!</div>';
 $("upcomingOverview").innerHTML=data.followups.filter(f=>f.status!=="Completed").slice(0,5).map(f=>`<div class="priority"><span>${esc(f.name)} · ${esc(f.service)}</span><span class="muted">${esc(f.date)}</span></div>`).join("")||'<div class="empty">No outstanding follow-ups.</div>';
 $("recentRows").innerHTML=data.enquiries.slice(0,5).length?`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead><tbody>${data.enquiries.slice(0,5).map(e=>`<tr><td><strong>${esc(e.name)}</strong></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td><button class="action" onclick="showPage('enquiries');openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries yet.</div>';
 renderEnquiries();
 renderQuotes();
+renderJobs();
 }
 /* CALENDAR */
 function renderCalendar(){
@@ -947,7 +1229,10 @@ for(let i=0;i<first;i++)html+="<div></div>";
 for(let i=1;i<=days;i++){
 let date=`${year}-${String(month+1).padStart(2,"0")}-${String(i).padStart(2,"0")}`;
 let ev=data.events.filter(e=>e.date===date);
-let jobs=data.jobs.filter(j=>j.start===date);
+let jobs=data.jobs.filter(j=>{
+const firstDay=j.start||"";const lastDay=j.end||j.completion||firstDay;
+return firstDay&&date>=firstDay&&date<=lastDay&&j.status!=="Cancelled";
+});
 html+=`<div class="day ${i===now.getDate()?"today":""}">${i}${ev.map(e=>`<small>${esc(e.name)}</small>`).join("")}${jobs.map(j=>`<small>Job: ${esc(j.name)}</small>`).join("")}</div>`;
 }
 $("calendarGrid").innerHTML=html;
@@ -955,7 +1240,7 @@ $("calendarGrid").innerHTML=html;
 /* REVENUE */
 function renderRevenue(){
 const completed=data.jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
-const active=data.jobs.filter(j=>j.status!=="Completed").reduce((s,j)=>s+Number(j.value||0),0);
+const active=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status)).reduce((s,j)=>s+Number(j.value||0),0);
 const received=data.jobs.reduce((s,j)=>s+Number(j.paid||0),0);
 const outstanding=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
 $("completedRevenue").textContent=money(completed);
@@ -1017,7 +1302,7 @@ $("settingVat").value=s.vat||"No";
 $("settingCurrency").value=localStorage.getItem("tradeflowCurrency")||"GBP";
 }
 function boot(){
-prepareQuotes();save();loadSavedDetails();updateDashboard();renderCustomers();renderCalendar();renderRevenue();
+prepareQuotes();save();loadSavedDetails();updateDashboard();renderCustomers();renderJobs();renderCalendar();renderRevenue();
 }
 boot();
 </script>
