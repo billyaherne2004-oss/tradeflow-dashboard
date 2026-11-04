@@ -687,6 +687,7 @@ $("formHint").textContent=type==="enquiries"?"You can add contact history and up
 $("formFields").innerHTML=schemas[type].map(([key,label,kind,opts])=>{
 let val=record?.[key]??(linkedCustomer&&key==="name"?linkedCustomer.name:key==="date"&&type!=="calendar"?today():key==="status"?(type==="enquiries"?"New":type==="jobs"?"Upcoming":"Pending"):key==="priority"?"Normal":"");
 let input=kind==="textarea"?`<textarea name="${key}">${esc(val)}</textarea>`:
+kind==="time"?`<select name="${key}"><option value="">No specific time</option>${Array.from({length:65},(_,i)=>{const mins=360+i*15,h=Math.floor(mins/60),m=mins%60,value=String(h).padStart(2,"0")+":"+String(m).padStart(2,"0"),label=(h%12||12)+":"+String(m).padStart(2,"0")+" "+(h<12?"AM":"PM");return `<option value="${value}" ${val===value?"selected":""}>${label}</option>`}).join("")}</select>`:
 kind==="select"?`<select name="${key}">${opts.map(o=>`<option ${val===o?"selected":""}>${o}</option>`).join("")}</select>`:
 `<input name="${key}" type="${kind}" value="${esc(val)}" ${key==="name"||key==="service"?"required":""} ${kind==="number"?'min="0" step="0.01"':""}>`;
 return `<label class="field ${kind==="textarea"||key==="service"||key==="notes"||key==="address"?"full":""}">${label}${input}</label>`;
