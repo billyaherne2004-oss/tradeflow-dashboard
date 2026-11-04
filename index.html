@@ -703,7 +703,9 @@ let r=Object.fromEntries(form.entries());
 let type=editingType;
 ["value","paid"].forEach(k=>{if(r[k]!==undefined)r[k]=Number(r[k])||0});
 if(type==="calendar"){
-r.id=makeId();data.events.push(r);save();closeModal();renderCalendar();return;
+if(editingId){const existing=data.events.find(x=>x.id===editingId);if(existing)Object.assign(existing,r)}
+else{r.id=makeId();data.events.push(r)}
+save();closeModal();renderCalendar();return;
 }
 if(type==="customers"){
 const duplicate=data.customers.find(c=>c.id!==editingId&&((r.email&&c.email&&c.email.toLowerCase()===r.email.toLowerCase())||(r.phone&&c.phone&&c.phone===r.phone)));
