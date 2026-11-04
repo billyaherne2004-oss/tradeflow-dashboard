@@ -778,10 +778,10 @@ if(!rows.length){
 $("jobsTable").innerHTML='<div class="empty">No jobs match your search. Add a job or change the filters.</div>';
 return;
 }
-$("jobsTable").innerHTML=`<table><thead><tr><th>CUSTOMER / JOB</th><th>SCHEDULE</th><th>DURATION</th><th>STATUS</th><th>JOB VALUE</th><th>PROFIT</th><th>PAYMENT</th><th></th></tr></thead><tbody>${rows.map(j=>`
+$("jobsTable").innerHTML=`<table><thead><tr><th>CUSTOMER / JOB</th><th>SCHEDULE</th><th>DURATION</th><th>STATUS</th><th>JOB VALUE</th><th>AMOUNT PAID</th><th>REMAINING</th><th>PROFIT</th><th>PAYMENT</th><th></th></tr></thead><tbody>${rows.map(j=>`
 <tr><td><strong>${esc(j.name||"Customer")}</strong><div class="muted">${esc(j.service||"Job")}</div></td>
 <td>${esc(j.start?fmtDate(j.start):"Not set")}<div class="muted">${j.end||j.completion?"to "+esc(fmtDate(j.end||j.completion)):"End date not set"}</div></td>
-<td>${esc(jobDuration(j))}</td><td>${tag(j.status)}</td><td><strong>${money(j.value)}</strong></td><td>${money(jobProfit(j))}</td><td>${tag(j.payment||"Unpaid")}</td>
+<td>${esc(jobDuration(j))}</td><td>${tag(j.status)}</td><td><strong>${money(j.value)}</strong></td><td><strong>${money(j.paid||0)}</strong></td><td><strong>${money(Math.max(0,Number(j.value||0)-Number(j.paid||0)))}</strong></td><td>${money(jobProfit(j))}</td><td>${tag(j.payment||"Unpaid")}</td>
 <td><div class="actions"><button class="action" onclick="openJobDetail('${j.id}')">Open</button><button class="action" onclick="quickJobStatus('${j.id}','Completed')">Complete</button><button class="action" onclick="quickJobPayment('${j.id}','full')">Paid in full</button><button class="action" onclick="quickJobPayment('${j.id}','partial')">Part payment</button><button class="action" onclick="quickJobSchedule('${j.id}')">Date</button><button class="action" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit</button></div><div style="margin-top:6px"><select aria-label="Change job status" style="font-size:10px;padding:5px;width:145px" onchange="quickJobStatus('${j.id}',this.value)"><option value="">Change status…</option>${jobStatuses.map(s=>`<option value="${s}" ${j.status===s?"selected":""}>${s}</option>`).join("")} </select></div></td></tr>`).join("")}</tbody></table>`;
 }
 function quickJobStatus(id,status){
