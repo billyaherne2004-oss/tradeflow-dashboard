@@ -1,0 +1,273 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tradeflow | Business Dashboard</title>
+<style>
+:root{--blue:#3269df;--dark:#182338;--muted:#718096;--bg:#f5f7fb;--line:#e9edf3;--white:#fff;--green:#15976a}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Arial,sans-serif;background:var(--bg);color:var(--dark)}
+.layout{display:flex;min-height:100vh}
+.sidebar{width:245px;background:#fff;border-right:1px solid var(--line);padding:25px 16px;position:fixed;inset:0 auto 0 0;overflow-y:auto;z-index:5}
+.brand{font-size:23px;font-weight:800;letter-spacing:-1px;padding:5px 12px 30px}
+.brand span{color:var(--blue)}
+.nav-label{font-size:10px;color:#a0aabb;font-weight:700;letter-spacing:1.3px;padding:15px 12px 8px}
+.nav{display:flex;align-items:center;gap:12px;padding:11px 12px;margin:3px 0;border-radius:8px;color:#657186;font-size:13px;cursor:pointer;border:0;background:none;width:100%;text-align:left}
+.nav:hover,.nav.active{background:#edf3ff;color:var(--blue);font-weight:700}
+.nav .ico{width:19px;text-align:center;font-size:16px}
+.main{margin-left:245px;width:calc(100% - 245px);padding:30px 38px 60px}
+.topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px}
+.eyebrow{font-size:12px;color:var(--muted);margin-bottom:5px}
+h1{font-size:25px;margin:0;letter-spacing:-.7px}
+.topright{display:flex;align-items:center;gap:14px}
+.avatar{width:38px;height:38px;border-radius:50%;background:#e8efff;color:var(--blue);display:grid;place-items:center;font-weight:800}
+button{cursor:pointer;font:inherit}
+.primary{background:var(--blue);color:white;border:0;border-radius:7px;padding:10px 15px;font-size:12px;font-weight:700}
+.primary:hover{background:#2458c8}
+.secondary{background:white;color:var(--dark);border:1px solid var(--line);border-radius:7px;padding:9px 13px;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin:22px 0}
+.card{background:white;border:1px solid var(--line);border-radius:11px;padding:19px}
+.metric-label{font-size:12px;color:var(--muted)}
+.metric{font-size:27px;font-weight:800;margin:12px 0 7px;letter-spacing:-1px}
+.metric-note{font-size:11px;color:var(--green)}
+.section-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:17px;margin-bottom:18px}
+.card-title{font-size:14px;font-weight:750;margin-bottom:17px}
+.muted{color:var(--muted);font-size:12px}
+.priority{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid var(--line);font-size:12px}
+.priority:last-child{border:0}
+.tag{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;background:#edf3ff;color:var(--blue);font-weight:700}
+.tag.green{background:#e8f7f0;color:#16875e}
+.tag.orange{background:#fff3e5;color:#c47b22}
+.tag.red{background:#fff0ef;color:#ce5750}
+.table-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th{text-align:left;color:#8792a3;font-weight:600;font-size:10px;padding:11px 9px;border-bottom:1px solid var(--line)}
+td{padding:13px 9px;border-bottom:1px solid var(--line)}
+td strong{font-weight:650}
+.page{display:none}
+.page.active{display:block}
+.toolbar{display:flex;justify-content:space-between;gap:10px;align-items:center;margin:20px 0}
+input,select,textarea{font:inherit;border:1px solid #dfe5ee;border-radius:7px;padding:10px;font-size:12px;background:#fff;color:var(--dark);width:100%}
+.search{max-width:260px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--muted);margin-bottom:12px}
+.field.full{grid-column:1/-1}
+.panel{background:#fff;border:1px solid var(--line);border-radius:11px;padding:22px;margin-bottom:16px}
+.empty{padding:30px;text-align:center;color:var(--muted);font-size:12px}
+.actions{display:flex;gap:8px}
+.action{border:0;background:none;color:var(--blue);font-size:11px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.day{background:#fff;border:1px solid var(--line);border-radius:7px;min-height:76px;padding:9px;font-size:11px}
+.day.today{border:2px solid var(--blue)}
+.day small{display:block;color:var(--blue);margin-top:9px}
+.message{background:#f0f4ff;padding:13px;border-radius:9px;font-size:12px;line-height:1.6;margin:12px 0}
+.mobile-menu{display:none}
+@media(max-width:900px){.sidebar{width:205px}.main{margin-left:205px;width:calc(100% - 205px);padding:22px}.grid{grid-template-columns:repeat(2,1fr)}.section-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.sidebar{display:none}.main{margin:0;width:100%;padding:20px 14px}.grid{gap:9px}.card{padding:14px}.metric{font-size:22px}.mobile-menu{display:inline-block}.topbar{gap:10px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}}
+</style>
+</head>
+<body>
+<div class="layout">
+<aside class="sidebar">
+<div class="brand">trade<span>flow</span></div>
+<div class="nav-label">WORKSPACE</div>
+<button class="nav active" data-page="overview"> <span class="ico">▦</span> Overview</button>
+<button class="nav" data-page="enquiries"><span class="ico">✉</span> Enquiries</button>
+<button class="nav" data-page="customers"><span class="ico">♙</span> Customers</button>
+<button class="nav" data-page="quotes"><span class="ico">▤</span> Quotes</button>
+<button class="nav" data-page="jobs"><span class="ico">🔧</span> Jobs</button>
+<button class="nav" data-page="calendar"><span class="ico">▦</span> Calendar</button>
+<button class="nav" data-page="followups"><span class="ico">↗</span> Follow-ups</button>
+<div class="nav-label">BUSINESS</div>
+<button class="nav" data-page="revenue"><span class="ico">£</span> Revenue</button>
+<button class="nav" data-page="website"><span class="ico">◎</span> Website Management</button>
+<button class="nav" data-page="assistant"><span class="ico">✧</span> AI Assistant</button>
+<div class="nav-label">ACCOUNT</div>
+<button class="nav" data-page="settings"><span class="ico">⚙</span> Settings</button>
+</aside>
+<main class="main">
+<header class="topbar">
+<div><div class="eyebrow">BUSINESS WORKSPACE / <span id="crumb">OVERVIEW</span></div><h1 id="heading">Good morning 👋</h1></div>
+<div class="topright"><button class="primary" onclick="openAdd()">+ Add new</button><div class="avatar">T</div></div>
+</header>
+
+<section class="page active" id="overview">
+<div class="muted">Here's what's happening with your business today.</div>
+<div class="grid">
+<div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="mEnquiries">8</div><div class="metric-note">Enquiries to review</div></div>
+<div class="card"><div class="metric-label">Active jobs</div><div class="metric" id="mJobs">12</div><div class="metric-note">Currently underway</div></div>
+<div class="card"><div class="metric-label">Projected revenue</div><div class="metric" id="mRevenue">£8,450</div><div class="metric-note">From active jobs</div></div>
+<div class="card"><div class="metric-label">Outstanding payments</div><div class="metric" id="mOutstanding">£1,250</div><div class="metric-note">Awaiting payment</div></div>
+</div>
+<div class="section-grid">
+<div class="card"><div class="card-title">Today's priorities</div>
+<div class="priority"><span>Follow up with new plumbing enquiry</span><span class="tag red">Urgent</span></div>
+<div class="priority"><span>Send quote to James Wilson</span><span class="tag orange">Pending</span></div>
+<div class="priority"><span>Confirm tomorrow's installation</span><span class="tag">Upcoming</span></div>
+<div class="priority"><span>Check outstanding invoice</span><span class="tag orange">Payment</span></div>
+</div>
+<div class="card"><div class="card-title">Upcoming appointments</div>
+<div class="priority"><span><strong>09:00</strong> · Bathroom installation</span><span class="tag green">Job</span></div>
+<div class="priority"><span><strong>11:30</strong> · Site inspection</span><span class="tag">Visit</span></div>
+<div class="priority"><span><strong>14:00</strong> · Customer meeting</span><span class="tag">Meeting</span></div>
+</div>
+</div>
+<div class="card"><div class="card-title">Recent enquiries <button class="action" onclick="showPage('enquiries')">View all →</button></div><div class="table-wrap"><table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>DATE</th><th>STATUS</th></tr></thead><tbody id="recentRows"></tbody></table></div></div>
+</section>
+
+<section class="page" id="enquiries">
+<div class="toolbar"><div class="muted">Manage new leads and customer requests.</div><button class="primary" onclick="openAdd('enquiries')">+ New enquiry</button></div>
+<div class="panel"><input class="search" placeholder="Search enquiries..." oninput="renderTable('enquiries',this.value)"><div class="table-wrap" id="enquiriesTable"></div></div>
+</section>
+<section class="page" id="customers">
+<div class="toolbar"><div class="muted">Your customer contact book and history.</div><button class="primary" onclick="openAdd('customers')">+ Add customer</button></div>
+<div class="panel"><input class="search" placeholder="Search customers..." oninput="renderTable('customers',this.value)"><div class="table-wrap" id="customersTable"></div></div>
+</section>
+<section class="page" id="quotes">
+<div class="toolbar"><div class="muted">Create and manage customer quotes.</div><button class="primary" onclick="openAdd('quotes')">+ Create quote</button></div>
+<div class="panel"><div class="table-wrap" id="quotesTable"></div></div>
+</section>
+<section class="page" id="jobs">
+<div class="toolbar"><div class="muted">Track jobs, completion and payment status.</div><button class="primary" onclick="openAdd('jobs')">+ Add job</button></div>
+<div class="panel"><div class="table-wrap" id="jobsTable"></div></div>
+</section>
+<section class="page" id="calendar">
+<div class="toolbar"><div class="muted">Your appointments and work schedule.</div><button class="primary" onclick="openAdd('calendar')">+ Add event</button></div>
+<div class="panel"><div class="card-title" id="monthTitle"></div><div class="calendar" id="calendarGrid"></div></div>
+</section>
+<section class="page" id="followups">
+<div class="toolbar"><div class="muted">Keep track of customers who need a response.</div><button class="primary" onclick="openAdd('followups')">+ Add follow-up</button></div>
+<div class="panel"><div class="table-wrap" id="followupsTable"></div></div>
+</section>
+<section class="page" id="revenue">
+<div class="grid">
+<div class="card"><div class="metric-label">Completed job revenue</div><div class="metric">£6,200</div></div>
+<div class="card"><div class="metric-label">Active job value</div><div class="metric">£8,450</div></div>
+<div class="card"><div class="metric-label">Payments received</div><div class="metric">£5,700</div></div>
+<div class="card"><div class="metric-label">Outstanding</div><div class="metric">£1,250</div></div>
+</div>
+<div class="panel"><div class="card-title">Revenue overview</div><div class="muted">Illustrative monthly figures — replace with your real job and payment records.</div><div style="display:flex;align-items:end;gap:12px;height:190px;margin-top:25px" id="bars"></div></div>
+</section>
+<section class="page" id="website">
+<div class="panel"><div class="card-title">Your business website</div><p class="muted">Manage the details customers see on your public business website.</p>
+<div class="field">Business name<input id="siteName" value="Your Business Name"></div>
+<div class="field">Short description<textarea id="siteDescription">Professional, reliable service for your home and business.</textarea></div>
+<div class="field">Phone number<input placeholder="Your contact number"></div>
+<div class="field">Services<textarea placeholder="List your services"></textarea></div>
+<button class="primary" onclick="saveWebsite()">Save website details</button><div id="siteSaved" class="muted"></div>
+</div>
+</section>
+<section class="page" id="assistant">
+<div class="panel"><div class="card-title">✧ Your business assistant</div><p class="muted">Ask questions about managing your business. This demo uses preset responses, not live AI or connected business data.</p>
+<div id="chat" class="message">Hello! I'm your Tradeflow assistant demo. Try asking me about follow-ups, quotes or jobs.</div>
+<div class="toolbar"><input id="chatInput" placeholder="Ask your assistant something..." onkeydown="if(event.key==='Enter')askAI()"><button class="primary" onclick="askAI()">Send</button></div>
+<div class="muted">Suggestions: "Who needs following up?" · "How do I manage quotes?" · "Show me my jobs."</div>
+</div>
+</section>
+<section class="page" id="settings">
+<div class="panel"><div class="card-title">Business settings</div><div class="field">Business name<input value="Your Business Name"></div><div class="field">Business type<select><option>Plumbing</option><option>Electrical</option><option>Building</option><option>Cleaning</option><option>Landscaping</option><option>Other service business</option></select></div><div class="field">Currency<select><option>GBP (£)</option><option>EUR (€)</option><option>USD ($)</option></select></div><div class="field">VAT registered?<select><option>No</option><option>Yes</option></select></div><button class="primary" onclick="alert('Demo settings saved in this screen only.')">Save settings</button></div>
+</section>
+
+<div id="modal" style="display:none;position:fixed;inset:0;background:#10182877;z-index:10;align-items:center;justify-content:center;padding:15px">
+<div class="panel" style="width:100%;max-width:480px;max-height:90vh;overflow:auto">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px"><div class="card-title" id="modalTitle">Add record</div><button class="secondary" onclick="closeModal()">Close</button></div>
+<form id="recordForm"><div id="formFields" class="form-grid"></div><div style="display:flex;justify-content:end;margin-top:10px"><button class="primary" type="submit">Save record</button></div></form>
+</div></div>
+</main></div>
+<script>
+const titles={overview:"Good morning 👋",enquiries:"Enquiries",customers:"Customers",quotes:"Quotes",jobs:"Jobs",calendar:"Calendar",followups:"Follow-ups",revenue:"Revenue",website:"Website Management",assistant:"AI Assistant",settings:"Settings"};
+let current="overview";
+const initial={
+enquiries:[
+{name:"James Wilson",service:"Bathroom renovation",date:"Today",status:"New",value:2400},
+{name:"Sarah Thompson",service:"Leaking tap",date:"Yesterday",status:"Contacted",value:150},
+{name:"David Brown",service:"Boiler installation",date:"Yesterday",status:"Quoted",value:1800},
+{name:"Emma Jones",service:"Kitchen plumbing",date:"Monday",status:"New",value:950}
+],
+customers:[
+{name:"James Wilson",phone:"07123 456789",email:"james@example.com"},
+{name:"Sarah Thompson",phone:"07123 456780",email:"sarah@example.com"},
+{name:"David Brown",phone:"07123 456781",email:"david@example.com"}
+],
+quotes:[{name:"James Wilson",service:"Bathroom renovation",value:2400,status:"Draft"},{name:"David Brown",service:"Boiler installation",value:1800,status:"Sent"}],
+jobs:[{name:"Sarah Thompson",service:"Tap replacement",value:150,status:"In progress",payment:"Paid"},{name:"David Brown",service:"Boiler installation",value:1800,status:"Upcoming",payment:"Unpaid"}],
+followups:[{name:"James Wilson",service:"Follow up on enquiry",date:"Tomorrow",status:"Pending"},{name:"David Brown",service:"Check quote response",date:"Friday",status:"Pending"}]
+};
+let data={};
+try{data=JSON.parse(localStorage.getItem("tradeflowData"))||initial}catch(e){data=initial}
+function save(){localStorage.setItem("tradeflowData",JSON.stringify(data))}
+function showPage(id){
+current=id;
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
+document.getElementById("heading").textContent=titles[id];
+document.getElementById("crumb").textContent=id.toUpperCase();
+if(["enquiries","customers","quotes","jobs","followups"].includes(id))renderTable(id);
+if(id==="calendar")renderCalendar();
+}
+document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>showPage(n.dataset.page)));
+function money(v){return "£"+Number(v||0).toLocaleString("en-GB")}
+function statusTag(s){let c=["Paid","Completed","Accepted"].includes(s)?"green":["Urgent","Overdue","Rejected"].includes(s)?"red":["Pending","Unpaid","New"].includes(s)?"orange":"";return `<span class="tag ${c}">${s||"New"}</span>`}
+function tableFor(type,rows){
+if(!rows.length)return '<div class="empty">No records yet. Add your first record above.</div>';
+let cols={enquiries:["name","service","date","status","value"],customers:["name","phone","email"],quotes:["name","service","value","status"],jobs:["name","service","value","status","payment"],followups:["name","service","date","status"]}[type];
+return `<table><thead><tr>${cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")}<th>ACTION</th></tr></thead><tbody>${rows.map((r,i)=>`<tr>${cols.map(c=>`<td>${c==="status"||c==="payment"?statusTag(r[c]):c==="value"?money(r[c]):(r[c]||"—")}</td>`).join("")}<td><button class="action" onclick="removeRecord('${type}',${i})">Delete</button></td></tr>`).join("")}</tbody></table>`;
+}
+function renderTable(type,filter=""){
+let rows=data[type].filter(r=>Object.values(r).join(" ").toLowerCase().includes(filter.toLowerCase()));
+document.getElementById(type+"Table").innerHTML=tableFor(type,rows);
+}
+function renderRecent(){
+document.getElementById("recentRows").innerHTML=data.enquiries.slice(0,4).map(r=>`<tr><td><strong>${r.name}</strong></td><td>${r.service}</td><td>${r.date}</td><td>${statusTag(r.status)}</td></tr>`).join("");
+}
+function removeRecord(type,i){if(confirm("Delete this record?")){data[type].splice(i,1);save();renderTable(type);renderRecent()}}
+function openAdd(type=current){
+let fields={enquiries:[["name","Customer name"],["service","Service required"],["value","Estimated value (£)"],["date","Date"],["status","Status"]],customers:[["name","Customer name"],["phone","Phone"],["email","Email"]],quotes:[["name","Customer name"],["service","Description"],["value","Quote value (£)"],["status","Status"]],jobs:[["name","Customer name"],["service","Job description"],["value","Agreed price (£)"],["status","Job status"],["payment","Payment status"]],followups:[["name","Customer name"],["service","Follow-up task"],["date","Due date"],["status","Status"]],calendar:[["name","Event title"],["service","Details"],["date","Date"]]};
+let list=fields[type]||fields.enquiries;
+document.getElementById("modalTitle").textContent="Add "+(type==="calendar"?"event":type.slice(0,-1));
+document.getElementById("formFields").innerHTML=list.map(([key,label])=>`<label class="field ${key==="service"?"full":""}">${label}<input name="${key}" ${key==="value"?'type="number" min="0"':''} required></label>`).join("");
+document.getElementById("recordForm").dataset.type=type;
+document.getElementById("modal").style.display="flex";
+}
+function closeModal(){document.getElementById("modal").style.display="none"}
+document.getElementById("recordForm").addEventListener("submit",e=>{
+e.preventDefault();let f=new FormData(e.target),r=Object.fromEntries(f.entries()),type=e.target.dataset.type;
+if(r.value)r.value=Number(r.value);
+if(type==="calendar"){data.followups.push({name:r.name,service:r.service,date:r.date,status:"Event"});save();closeModal();renderCalendar();return}
+data[type].unshift(r);save();closeModal();renderTable(type);renderRecent();updateMetrics();
+});
+function updateMetrics(){
+document.getElementById("mEnquiries").textContent=data.enquiries.filter(x=>x.status==="New").length;
+document.getElementById("mJobs").textContent=data.jobs.filter(x=>x.status!=="Completed").length;
+let total=data.jobs.filter(x=>x.status!=="Completed").reduce((s,x)=>s+Number(x.value||0),0);
+document.getElementById("mRevenue").textContent=money(total);
+document.getElementById("mOutstanding").textContent=money(data.jobs.filter(x=>x.payment!=="Paid").reduce((s,x)=>s+Number(x.value||0),0));
+}
+function renderCalendar(){
+let now=new Date(),year=now.getFullYear(),month=now.getMonth(),first=new Date(year,month,1).getDay(),days=new Date(year,month+1,0).getDate();
+document.getElementById("monthTitle").textContent=now.toLocaleString("en-GB",{month:"long",year:"numeric"});
+let html=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="muted">${x}</div>`).join("");
+for(let i=0;i<first;i++)html+='<div></div>';
+for(let i=1;i<=days;i++)html+=`<div class="day ${i===now.getDate()?"today":""}">${i}</div>`;
+document.getElementById("calendarGrid").innerHTML=html;
+}
+function saveWebsite(){localStorage.setItem("tradeflowSiteName",document.getElementById("siteName").value);document.getElementById("siteSaved").textContent="Website details saved in this browser demo."}
+function askAI(){
+let input=document.getElementById("chatInput"),q=input.value.trim();if(!q)return;
+let a="I can help you organise your business. This is a demo assistant, so it doesn't yet read your live business records.";
+if(/follow|contact|chase/i.test(q))a="Start with new enquiries and outstanding quotes. Contact customers promptly, record each conversation, and set a follow-up date so no opportunity gets missed.";
+else if(/quote|price/i.test(q))a="Create a quote with a clear job description, labour, materials and total price. Send it to the customer, then follow up if you haven't heard back.";
+else if(/job|work/i.test(q))a="Keep each job linked to a customer and quote. Record the agreed price, scheduled dates, progress, completion and payment status.";
+else if(/revenue|money|sales/i.test(q))a="Track completed job revenue separately from projected revenue and payments received. That way you can see what you've earned and what is still outstanding.";
+document.getElementById("chat").innerHTML+=`<div style="margin-top:12px"><strong>You:</strong> ${escapeHtml(q)}</div><div class="message">${a}</div>`;
+input.value="";
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+document.getElementById("bars").innerHTML=[45,65,52,80,62,95,72,88,60,100,78,90].map((v,i)=>`<div style="flex:1;text-align:center;height:100%"><div style="height:${v}%;background:#dce7ff;border-radius:5px 5px 0 0;margin-top:auto"></div><small class="muted">${["J","F","M","A","M","J","J","A","S","O","N","D"][i]}</small></div>`).join("");
+renderRecent();updateMetrics();
+</script>
+</body>
+</html>
