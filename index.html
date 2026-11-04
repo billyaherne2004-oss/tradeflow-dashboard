@@ -795,10 +795,10 @@ function quickJobSchedule(id){
 const j=data.jobs.find(x=>x.id===id);if(!j)return;
 const start=prompt("Enter the new job start date (YYYY-MM-DD):",j.start||today());
 if(start===null)return;
-if(start&&!/^\\d{4}-\\d{2}-\\d{2}$/.test(start)){alert("Please use YYYY-MM-DD format.");return}
+if(start&&!/^\d{4}-\d{2}-\d{2}$/.test(start)){alert("Please use YYYY-MM-DD format.");return}
 const end=prompt("Enter the job end date (YYYY-MM-DD), or leave blank:",j.end||j.completion||"");
 if(end===null)return;
-if(end&&!/^\\d{4}-\\d{2}-\\d{2}$/.test(end)){alert("Please use YYYY-MM-DD format.");return}
+if(end&&!/^\d{4}-\d{2}-\d{2}$/.test(end)){alert("Please use YYYY-MM-DD format.");return}
 if(start&&end&&end<start){alert("The end date cannot be before the start date.");return}
 j.start=start;j.end=end;j.completion=end;
 save();renderJobs();renderCalendar();if(selectedJobId===id)openJobDetail(id);
