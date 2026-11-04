@@ -248,7 +248,7 @@ td strong{font-weight:650}
 </section>
 <section class="page" id="calendar">
 <div class="page-intro">Plan appointments, see booked jobs and keep your work schedule organised.</div>
-<div class="toolbar"><div class="toolbar-left"><button class="secondary" onclick="changeCalendarMonth(-1)">← Previous</button><button class="secondary" onclick="goCalendarToday()">Today</button><button class="secondary" onclick="changeCalendarMonth(1)">Next →</button><strong id="monthTitle"></strong></div><button class="primary" onclick="addCalendarEvent()">+ Add event</button></div>
+<div class="toolbar"><div class="toolbar-left"><button class="secondary" onclick="changeCalendarMonth(-1)">← Previous</button><button class="secondary" onclick="goCalendarToday()">Today</button><button class="secondary" onclick="changeCalendarMonth(1)">Next →</button><strong id="monthTitle"></strong></div><div class="toolbar-left"><button class="secondary" onclick="addCalendarJob()">+ Schedule job</button><button class="primary" onclick="addCalendarEvent()">+ Add event</button></div></div>
 <div class="panel"><div class="calendar" id="calendarGrid"></div></div>
 <div class="panel" style="margin-top:16px"><div class="split"><div class="card-title" style="margin:0">Upcoming schedule</div><span class="muted">Next 10 events and jobs</span></div><div id="calendarAgenda" style="margin-top:12px"></div></div>
 </section>
@@ -1293,6 +1293,7 @@ function calendarDateKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).pa
 function changeCalendarMonth(step){calendarMonthOffset+=step;renderCalendar()}
 function goCalendarToday(){calendarMonthOffset=0;renderCalendar()}
 function addCalendarEvent(date=""){openForm("calendar",date?{date}:null)}
+function addCalendarJob(date=""){pendingCustomerId=null;openJobEditor(null);if(date)$("jStart").value=date;}
 function openCalendarEvent(id){const e=data.events.find(x=>x.id===id);if(e)openForm("calendar",e)}
 function openCalendarJob(id){const j=data.jobs.find(x=>x.id===id);if(!j)return;showPage("jobs");openJobDetail(id);setTimeout(()=>$("jobDetail").scrollIntoView({behavior:"smooth",block:"start"}),50)}
 function renderCalendar(){
