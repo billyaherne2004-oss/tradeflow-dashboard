@@ -361,7 +361,7 @@ td strong{font-weight:650}
 </form></div></div>
 <script>
 const $=id=>document.getElementById(id);
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const makeId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const initialData={
 enquiries:[
@@ -532,7 +532,7 @@ $("enquiryDetail").scrollIntoView({behavior:"smooth",block:"start"});
 function closeEnquiry(){$("enquiryDetail").style.display="none";selectedEnquiry=null}
 function changeEnquiryField(id,key,value){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
-e[key]=value;save();renderEnquiries();openEnquiry(id);updateDashboard();
+e[key]=value;if(key==="status")syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
 function editEnquiry(id){const e=data.enquiries.find(x=>x.id===id);if(e)openForm("enquiries",e)}
 function addHistory(id){
@@ -542,7 +542,7 @@ const title=prompt("Short title for this contact","Customer contacted");if(!titl
 const note=prompt("What happened?");if(note===null)return;
 e.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
 e.status=e.status==="New"?"Contacted":e.status;
-save();renderEnquiries();openEnquiry(id);updateDashboard();
+syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
 function findOrCreateCustomer(e){
 let c=data.customers.find(x=>x.email&&e.email&&x.email.toLowerCase()===e.email.toLowerCase());
@@ -556,7 +556,7 @@ return c;
 function convertCustomer(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
 const c=findOrCreateCustomer(e);
-e.status="Won";e.convertedCustomerId=c.id;
+e.status="Won";e.convertedCustomerId=c.id;syncEnquiryFollowups(e);
 save();renderEnquiries();openEnquiry(id);updateDashboard();
 alert("Customer record created or matched successfully.");
 }
@@ -564,7 +564,7 @@ function convertJob(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
 const c=findOrCreateCustomer(e);
 const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceEnquiryId:e.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
-data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;
+data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;syncEnquiryFollowups(e);syncJobFollowups(job);
 save();renderEnquiries();openEnquiry(id);updateDashboard();
 alert("Job created successfully. You can find it in the Jobs section.");
 }
@@ -865,6 +865,7 @@ function quickJobStatus(id,status){
 const j=data.jobs.find(x=>x.id===id);if(!j||!jobStatuses.includes(status))return;
 j.status=status;
 if(status==="Completed"&&!j.completedDate)j.completedDate=today();
+if(status!=="Completed")j.completedDate="";syncJobFollowups(j);
 save();renderJobs();updateDashboard();renderRevenue();renderCalendar();
 if(selectedJobId===id)openJobDetail(id);
 }
@@ -877,7 +878,7 @@ const end=prompt("Enter the job end date (YYYY-MM-DD), or leave blank:",j.end||j
 if(end===null)return;
 if(end&&!/^\d{4}-\d{2}-\d{2}$/.test(end)){alert("Please use YYYY-MM-DD format.");return}
 if(start&&end&&end<start){alert("The end date cannot be before the start date.");return}
-j.start=start;j.end=end;j.completion=end;
+j.start=start;j.end=end;j.completion=end;syncJobFollowups(j);
 save();renderJobs();renderCalendar();if(selectedJobId===id)openJobDetail(id);
 }
 function quickJobPayment(id,mode){
