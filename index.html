@@ -598,8 +598,10 @@ e.status=enquiryStageName(e.status)==="New"?"Contacted":enquiryStageName(e.statu
 syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
 function findOrCreateCustomer(e){
-let c=data.customers.find(x=>x.email&&e.email&&x.email.toLowerCase()===e.email.toLowerCase());
-if(!c)c=data.customers.find(x=>x.phone&&e.phone&&x.phone===e.phone);
+let c=e.convertedCustomerId?data.customers.find(x=>x.id===e.convertedCustomerId):null;
+const email=String(e.email||"").trim().toLowerCase(),phone=String(e.phone||"").replace(/\D/g,"");
+if(!c&&email)c=data.customers.find(x=>String(x.email||"").trim().toLowerCase()===email);
+if(!c&&phone)c=data.customers.find(x=>String(x.phone||"").replace(/\D/g,"")===phone);
 if(!c){
 c={id:makeId(),name:e.name,phone:e.phone||"",email:e.email||"",address:"",postcode:"",notes:"Created from enquiry: "+e.service,history:[]};
 data.customers.push(c);
@@ -616,7 +618,8 @@ alert("Customer record created or matched successfully.");
 }
 function convertJob(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
-if(e.convertedJobId&&data.jobs.some(j=>j.id===e.convertedJobId)){alert("This enquiry has already been converted into a job.");return;}
+const existingJob=data.jobs.find(j=>j.id===e.convertedJobId||j.sourceEnquiryId===e.id);
+if(existingJob){e.convertedJobId=existingJob.id;save();openEnquiry(id);alert("This enquiry has already been converted into a job.");return;}
 const c=findOrCreateCustomer(e);
 const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceEnquiryId:e.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
 data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;syncEnquiryFollowups(e);syncJobFollowups(job);
@@ -837,6 +840,7 @@ renderTable(type);
 if(type==="quotes"||type==="jobs"||type==="followups"){
 if(customerId&&$("customerDetail").style.display!=="none")openCustomer(customerId);
 }
+if(type==="followups"&&r.linkType==="Enquiry"&&r.linkId&&selectedEnquiry===r.linkId)openEnquiry(r.linkId);
 }
 updateDashboard();
 });
@@ -1316,8 +1320,10 @@ if(old)Object.assign(old,fields);
 data.quotes.unshift(Object.assign({id:makeId(),number:nextQuoteNumber(),convertedJobId:""},fields));
 }
 const savedQuote=data.quotes.find(x=>x.id===(qEditingId||data.quotes[0]?.id));if(savedQuote)syncQuoteFollowup(savedQuote);
+const sourceEnquiryId=pendingEnquiryId;
 save();closeQuote();renderQuotes();updateDashboard();
-if(selectedCustomer&&$("customers").classList.contains("active"))openCustomer(selectedCustomer);
+if(sourceEnquiryId)openEnquiry(sourceEnquiryId);
+else if(selectedCustomer&&$("customers").classList.contains("active"))openCustomer(selectedCustomer);
 }
 function bizInfo(){
 let s={},w={};
