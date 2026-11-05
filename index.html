@@ -161,7 +161,7 @@ body.enquiry-focus #enquiryWorkspace{display:block;min-height:80vh}
 body.enquiry-focus #enquiryDetail{display:block!important}
 body.enquiry-focus .enquiry-back-button{position:sticky;top:10px;z-index:3;background:#fff;box-shadow:0 2px 8px #18233812}
 .enquiry-stage-actions select{cursor:pointer}
-</style>
+.followup-state{display:inline-block;margin-left:5px;font-size:10px;font-weight:700;color:var(--muted)}.followup-state.overdue,.enquiry-card-followup.overdue{color:var(--red)}.followup-state.due,.enquiry-card-followup.due{color:var(--orange)}.enquiry-card-followup{font-size:11px;font-weight:650;color:var(--muted);margin-top:7px}</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -210,14 +210,14 @@ body.enquiry-focus .enquiry-back-button{position:sticky;top:10px;z-index:3;backg
 <div class="card"><div class="metric-label">Total enquiries</div><div class="metric" id="enquiryTotal">0</div></div>
 <div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="enquiryNew">0</div></div>
 <div class="card"><div class="metric-label">Quotes sent</div><div class="metric" id="enquiryQuoted">0</div></div>
-<div class="card"><div class="metric-label">Potential value</div><div class="metric" id="enquiryValue">£0</div></div>
+<div class="card"><div class="metric-label">Potential value</div><div class="metric" id="enquiryValue">£0</div></div><div class="card"><div class="metric-label">Follow-ups due / overdue</div><div class="metric" id="enquiryDueCount">0</div></div>
 </div>
 <div class="toolbar"><div class="toolbar-left"><span class="muted">All customer leads</span></div><button class="primary" onclick="openAdd('enquiries')">+ New enquiry</button></div>
 <div class="panel">
 <div class="toolbar"><div class="toolbar-left">
 <input class="search" id="enquirySearch" placeholder="Search name, service, email..." oninput="renderEnquiries()">
 <select id="enquiryFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All statuses</option><option>New</option><option>Contacted</option><option>Quote Sent</option><option>Won</option><option>Lost</option></select>
-<select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>\n<select id="enquirySourceFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All sources</option><option>Website</option><option>Phone</option><option>Email</option><option>WhatsApp</option><option>Referral</option><option>Social media</option><option>Other</option></select>
+<select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>\n<select id="enquirySourceFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All sources</option><option>Website</option><option>Phone</option><option>Email</option><option>WhatsApp</option><option>Referral</option><option>Social media</option><option>Other</option></select><select id="enquiryFollowupFilter" onchange="renderEnquiries()" style="width:155px"><option value="">All follow-ups</option><option>Overdue</option><option>Due today</option><option>Scheduled</option><option>Not set</option></select><button class="action" type="button" onclick="clearEnquiryFilters()">Clear filters</button>
 </div></div>
 <div class="table-wrap" id="enquiriesTable"></div>
 </div>
@@ -502,32 +502,26 @@ if(id==="revenue")renderRevenue();
 }
 document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>showPage(n.dataset.page)));
 /* ENQUIRIES */
+function enquiryFollowupState(e){const due=String(e.followup||"");if(!due)return "Not set";if(due<today())return "Overdue";if(due===today())return "Due today";return "Scheduled"}
 function renderEnquiries(){
-const q=($("enquirySearch")?.value||"").toLowerCase().trim(),st=$("enquiryFilter")?.value||"",pr=$("enquiryPriorityFilter")?.value||"",src=$("enquirySourceFilter")?.value||"";
-const rows=data.enquiries.filter(e=>(!st||enquiryStageName(e.status)===st)&&(!pr||e.priority===pr)&&(!src||e.source===src)&&[e.name,e.service,e.email,e.phone,e.source,e.notes].join(" ").toLowerCase().includes(q)).sort((a,b)=>{const order={Urgent:0,High:1,Normal:2,Low:3};return (order[a.priority]??2)-(order[b.priority]??2)||String(b.date||"").localeCompare(String(a.date||""))});
-$("enquiryTotal").textContent=data.enquiries.length;
-$("enquiryNew").textContent=data.enquiries.filter(e=>enquiryStageName(e.status)==="New").length;
-$("enquiryQuoted").textContent=data.enquiries.filter(e=>enquiryStageName(e.status)==="Quote Sent").length;
-$("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(e.status)).reduce((sum,e)=>sum+Number(e.value||0),0));
-renderEnquiryPipeline();
-if(!$("enquiriesTable"))return;
-if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match these filters. Try clearing a filter or add a new enquiry.</div>';return}
-$("enquiriesTable").innerHTML='<table><thead><tr><th>ENQUIRY</th><th>SOURCE</th><th>VALUE</th><th>STATUS</th><th>PRIORITY</th><th>FOLLOW-UP</th><th>QUICK ACTION</th><th></th></tr></thead><tbody>'+rows.map(e=>{
-const stage=enquiryStageName(e.status);const quick=stage==="New"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Contacted\')">Mark contacted</button>':stage==="Contacted"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Quote Sent\')">Mark quote sent</button>':stage==="Quote Sent"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Won\')">Mark won</button>':'<span class="muted">—</span>';
-return '<tr><td><strong>'+esc(e.name)+'</strong><div class="muted">'+esc(e.service||"Service not specified")+' · '+esc(e.date||"Date not set")+'</div><div class="muted">'+esc(e.phone||e.email||"No contact details")+'</div></td><td>'+esc(e.source||"Other")+'</td><td>'+money(e.value)+'</td><td>'+tag(e.status)+'</td><td>'+tag(e.priority||"Normal")+'</td><td>'+(e.followup?esc(e.followup):'<span class="muted">Not set</span>')+'</td><td>'+quick+'</td><td><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></td></tr>';
-}).join("")+'</tbody></table>';
+const q=($("enquirySearch")?.value||"").toLowerCase().trim(),st=$("enquiryFilter")?.value||"",pr=$("enquiryPriorityFilter")?.value||"",src=$("enquirySourceFilter")?.value||"",fu=$("enquiryFollowupFilter")?.value||"";
+const priorityOrder={Urgent:0,High:1,Normal:2,Low:3};
+const rows=data.enquiries.filter(e=>{const state=enquiryFollowupState(e),historyText=(Array.isArray(e.history)?e.history.map(h=>[h.method,h.title,h.note].join(" ")).join(" "):"");return (!st||enquiryStageName(e.status)===st)&&(!pr||e.priority===pr)&&(!src||e.source===src)&&(!fu||state===fu)&&[e.name,e.service,e.email,e.phone,e.source,e.notes,historyText].join(" ").toLowerCase().includes(q)}).sort((a,b)=>{const followOrder={"Overdue":0,"Due today":1,"Scheduled":2,"Not set":3};return (followOrder[enquiryFollowupState(a)]??4)-(followOrder[enquiryFollowupState(b)]??4)||(priorityOrder[a.priority]??2)-(priorityOrder[b.priority]??2)||String(b.date||"").localeCompare(String(a.date||""))});
+$("enquiryTotal").textContent=data.enquiries.length;$("enquiryNew").textContent=data.enquiries.filter(e=>enquiryStageName(e.status)==="New").length;$("enquiryQuoted").textContent=data.enquiries.filter(e=>enquiryStageName(e.status)==="Quote Sent").length;$("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(enquiryStageName(e.status))).reduce((sum,e)=>sum+Number(e.value||0),0));
+if($("enquiryDueCount"))$("enquiryDueCount").textContent=data.enquiries.filter(e=>["Overdue","Due today"].includes(enquiryFollowupState(e))).length;
+renderEnquiryPipeline(rows);if(!$("enquiriesTable"))return;if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match these filters. Try clearing a filter or add a new enquiry.</div>';return}
+$("enquiriesTable").innerHTML='<table><thead><tr><th>ENQUIRY</th><th>SOURCE</th><th>VALUE</th><th>STATUS</th><th>PRIORITY</th><th>NEXT FOLLOW-UP</th><th>QUICK ACTION</th><th></th></tr></thead><tbody>'+rows.map(e=>{const stage=enquiryStageName(e.status),state=enquiryFollowupState(e);const quick=stage==="New"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Contacted\')">Mark contacted</button>':stage==="Contacted"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Quote Sent\')">Mark quote sent</button>':stage==="Quote Sent"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Won\')">Mark won</button>':'<span class="muted">—</span>';const followLabel=e.followup?esc(e.followup)+' <span class="followup-state '+(state==="Overdue"?"overdue":state==="Due today"?"due":"")+'">'+state+'</span>':'<span class="muted">Not set</span>';return '<tr><td><strong>'+esc(e.name)+'</strong><div class="muted">'+esc(e.service||"Service not specified")+' · '+esc(e.date||"Date not set")+'</div><div class="muted">'+esc(e.phone||e.email||"No contact details")+'</div></td><td>'+esc(e.source||"Other")+'</td><td>'+money(e.value)+'</td><td>'+tag(stage)+'</td><td>'+tag(e.priority||"Normal")+'</td><td>'+followLabel+'</td><td>'+quick+'</td><td><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></td></tr>'}).join("")+'</tbody></table>';
 }
+function clearEnquiryFilters(){["enquirySearch","enquiryFilter","enquiryPriorityFilter","enquirySourceFilter","enquiryFollowupFilter"].forEach(id=>{const el=$(id);if(el)el.value=""});renderEnquiries()}
 function enquiryStageName(value){
 const raw=String(value??"").trim().toLowerCase();
 return ({"new":"New","contacted":"Contacted","quote sent":"Quote Sent","won":"Won","lost":"Lost"})[raw]||"New";
 }
-function renderEnquiryPipeline(){
-const stages=["New","Contacted","Quote Sent","Won","Lost"];
-const root=$("enquiryPipeline");if(!root)return;
-root.innerHTML=stages.map(stage=>{
-const items=data.enquiries.filter(e=>enquiryStageName(e.status)===stage).sort((a,b)=>({Urgent:0,High:1,Normal:2,Low:3}[a.priority]??2)-({Urgent:0,High:1,Normal:2,Low:3}[b.priority]??2));
-return '<section class="enquiry-stage"><div class="enquiry-stage-head"><strong>'+stage+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>'<article class="enquiry-lead" onclick="openEnquiry(\''+e.id+'\')"><div class="split"><strong>'+esc(e.name)+'</strong>'+tag(e.priority||"Normal")+'</div><div class="muted small">'+esc(e.service||"Service not specified")+'</div><div class="enquiry-lead-value">'+money(e.value)+'</div><div class="muted small">'+esc(e.source||"Other")+' · '+(e.followup?'Follow-up '+esc(e.followup):'No follow-up set')+'</div><div class="enquiry-stage-actions" onclick="event.stopPropagation()"><select aria-label="Move '+esc(e.name)+' to stage" onclick="event.stopPropagation()" onchange="event.stopPropagation();quickEnquiryStatus(\''+e.id+'\',this.options[this.selectedIndex].value)">'+stages.map(v=>'<option '+(v===stage?'selected':'')+'>'+v+'</option>').join('')+'</select><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></div></article>').join(""):'<div class="enquiry-stage-empty">No leads in this stage</div>')+'</section>';
-}).join("");
+function renderEnquiryPipeline(filteredRows){
+const stages=["New","Contacted","Quote Sent","Won","Lost"],root=$("enquiryPipeline");if(!root)return;
+const records=Array.isArray(filteredRows)?filteredRows:data.enquiries;
+root.innerHTML=stages.map(stage=>{const items=records.filter(e=>enquiryStageName(e.status)===stage).sort((a,b)=>({Urgent:0,High:1,Normal:2,Low:3}[a.priority]??2)-({Urgent:0,High:1,Normal:2,Low:3}[b.priority]??2));
+return '<section class="enquiry-stage"><div class="enquiry-stage-head"><strong>'+stage+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>{const state=enquiryFollowupState(e),stateClass=state==="Overdue"?"overdue":state==="Due today"?"due":"";return '<article class="enquiry-lead" onclick="openEnquiry(\''+e.id+'\')"><div class="split"><strong>'+esc(e.name)+'</strong>'+tag(e.priority||"Normal")+'</div><div class="muted small">'+esc(e.service||"Service not specified")+'</div><div class="enquiry-lead-value">'+money(e.value)+'</div><div class="muted small">'+esc(e.source||"Other")+'</div><div class="enquiry-card-followup '+stateClass+'">'+(e.followup?state+" · "+esc(e.followup):"No follow-up scheduled")+'</div><div class="enquiry-stage-actions" onclick="event.stopPropagation()"><select aria-label="Move '+esc(e.name)+' to stage" onclick="event.stopPropagation()" onchange="event.stopPropagation();quickEnquiryStatus(\''+e.id+'\',this.options[this.selectedIndex].value)">'+stages.map(v=>'<option '+(v===stage?'selected':'')+'>'+v+'</option>').join('')+'</select><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></div></article>'}).join(""):'<div class="enquiry-stage-empty">No leads in this stage</div>')+'</section>'}).join("");
 }
 function quickEnquiryStatus(id,status){
 const allowed=["New","Contacted","Quote Sent","Won","Lost"];
