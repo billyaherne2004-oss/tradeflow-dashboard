@@ -292,6 +292,7 @@ td strong{font-weight:650}
 <div class="field">Currency<select id="settingCurrency"><option value="GBP">GBP (£)</option><option value="EUR">EUR (€)</option><option value="USD">USD ($)</option></select></div>
 <div class="field">VAT registered?<select id="settingVat"><option>No</option><option>Yes</option></select></div>
 <button class="primary" onclick="saveSettings()">Save settings</button>
+<div class="section-label">Your business data</div><p class="muted">Download a copy of your records or restore them from a previous Tradeflow backup.</p><div class="toolbar"><button class="secondary" onclick="exportBackup()">Download backup</button><label class="secondary" style="display:inline-flex;align-items:center;gap:8px">Restore backup <input id="restoreBackupFile" type="file" accept=".json,application/json" style="width:190px;padding:4px" onchange="restoreBackup(event)"></label></div><div id="backupStatus" class="muted" style="margin:8px 0"></div>
 <div class="notice">This prototype stores information in this browser. It does not yet provide separate staff accounts, cloud synchronisation or secure multi-business data storage.</div>
 </div>
 </section>
@@ -1399,6 +1400,25 @@ function saveWebsite(){
 const obj={name:$("siteName").value,description:$("siteDescription").value,phone:$("sitePhone").value,email:$("siteEmail").value,services:$("siteServices").value};
 localStorage.setItem("tradeflowWebsite",JSON.stringify(obj));
 $("siteSaved").textContent="Website details saved in this browser.";
+}
+function exportBackup(){
+const payload={product:"Tradeflow",formatVersion:1,exportedAt:new Date().toISOString(),data:data};
+const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+const url=URL.createObjectURL(blob);const a=document.createElement("a");
+a.href=url;a.download="tradeflow-backup-"+today()+".json";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+$("backupStatus").textContent="Backup downloaded. Keep this file somewhere safe.";
+}
+function restoreBackup(event){
+const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();
+reader.onload=function(){try{
+const parsed=JSON.parse(String(reader.result||""));const incoming=parsed&&parsed.data?parsed.data:parsed;
+const required=["enquiries","customers","quotes","jobs","events","followups"];
+if(!incoming||!required.every(function(k){return Array.isArray(incoming[k]);}))throw new Error("This file does not look like a valid Tradeflow backup.");
+if(!confirm("Restore this backup? It will replace the records currently saved in this browser. Download a backup of your current records first if you may need them."))return;
+data=Object.assign({},data,incoming);save();updateDashboard();renderCustomers();renderJobs();renderCalendar();renderFollowups();renderRevenue();
+$("backupStatus").textContent="Backup restored successfully.";
+}catch(err){alert(err.message||"Could not restore this backup.");}finally{event.target.value="";}};
+reader.onerror=function(){alert("Could not read that backup file.");event.target.value="";};reader.readAsText(file);
 }
 function saveSettings(){
 localStorage.setItem("tradeflowCurrency",$("settingCurrency").value);
