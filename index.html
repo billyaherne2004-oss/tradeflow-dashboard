@@ -145,6 +145,8 @@ td strong{font-weight:650}
 .followup-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:16px 0}.followup-summary .metric{font-size:25px}.followup-overdue{color:var(--red)!important}.followup-due{color:#b7791f!important}.followup-filters{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.followup-filters .search{min-width:190px}.followup-actions{display:flex;gap:6px;flex-wrap:wrap}.followup-related{font-size:11px;color:var(--muted);margin-top:3px}
 @media(max-width:750px){.job-detail-grid{grid-template-columns:1fr}.job-summary,.followup-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
+
+.dashboard-kpi{cursor:pointer;transition:transform .15s,border-color .15s}.dashboard-kpi:hover{transform:translateY(-2px);border-color:#b9caf0}.dashboard-kpi:focus-visible{outline:3px solid #3269df55;outline-offset:2px}.dashboard-actions{margin:14px 0 8px}.dashboard-priority{width:100%;text-align:left;background:white;border:0;border-bottom:1px solid var(--line);cursor:pointer}.dashboard-priority:hover{background:#f8faff}
 </style>
 </head>
 <body>
@@ -171,18 +173,22 @@ td strong{font-weight:650}
 <div class="topright"><button class="primary" onclick="openAdd()">+ Add new</button><div class="avatar">T</div></div>
 </header>
 <section class="page active" id="overview">
-<div class="muted">Here's what's happening with your business today.</div>
+<div class="muted">Your daily business command centre. See what needs attention and jump straight into the work.</div>
+<div class="toolbar dashboard-actions"><div class="toolbar-left"><button class="primary" onclick="openAdd('enquiries')">+ New enquiry</button><button class="secondary" onclick="openJobEditor()">+ Add job</button><button class="secondary" onclick="openAdd('quotes')">+ Create quote</button><button class="secondary" onclick="openAdd('followups')">+ Add follow-up</button></div></div>
 <div class="grid">
-<div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="mEnquiries">0</div><div class="metric-note">Enquiries to review</div></div>
-<div class="card"><div class="metric-label">Active jobs</div><div class="metric" id="mJobs">0</div><div class="metric-note">Currently underway</div></div>
-<div class="card"><div class="metric-label">Projected revenue</div><div class="metric" id="mRevenue">£0</div><div class="metric-note">From active jobs</div></div>
-<div class="card"><div class="metric-label">Outstanding payments</div><div class="metric" id="mOutstanding">£0</div><div class="metric-note">Awaiting payment</div></div>
+<div class="card dashboard-kpi" role="button" tabindex="0" onclick="openDashboardKpi('enquiries')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDashboardKpi('enquiries')}"><div class="metric-label">Open enquiries</div><div class="metric" id="mEnquiries">0</div><div class="metric-note">New leads to respond to · View enquiries →</div></div>
+<div class="card dashboard-kpi" role="button" tabindex="0" onclick="openDashboardKpi('jobs')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDashboardKpi('jobs')}"><div class="metric-label">Active jobs</div><div class="metric" id="mJobs">0</div><div class="metric-note">Work in progress · View jobs →</div></div>
+<div class="card dashboard-kpi" role="button" tabindex="0" onclick="openDashboardKpi('revenue')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDashboardKpi('revenue')}"><div class="metric-label">Active job value</div><div class="metric" id="mRevenue">£0</div><div class="metric-note">Value of active work · View revenue →</div></div>
+<div class="card dashboard-kpi" role="button" tabindex="0" onclick="openDashboardKpi('outstanding')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openDashboardKpi('outstanding')}"><div class="metric-label">Outstanding payments</div><div class="metric" id="mOutstanding">£0</div><div class="metric-note">Still to collect · View revenue →</div></div>
 </div>
 <div class="section-grid">
-<div class="card"><div class="card-title">Today's priorities</div><div id="priorities"></div></div>
-<div class="card"><div class="card-title">Upcoming follow-ups</div><div id="upcomingOverview"></div></div>
+<div class="card"><div class="card-title">Today's priorities <span class="muted">· overdue and due today</span></div><div id="priorities"></div></div>
+<div class="card"><div class="card-title">Upcoming schedule <button class="link" onclick="showPage('calendar')">Open calendar →</button></div><div id="overviewSchedule"></div></div>
 </div>
+<div class="section-grid">
+<div class="card"><div class="card-title">Upcoming follow-ups <button class="link" onclick="showPage('followups')">View all →</button></div><div id="upcomingOverview"></div></div>
 <div class="card"><div class="card-title">Recent enquiries <button class="link" onclick="showPage('enquiries')">View all →</button></div><div class="table-wrap" id="recentRows"></div></div>
+</div>
 </section>
 <section class="page" id="enquiries">
 <div class="page-intro">Keep every opportunity organised, follow up at the right time and turn enquiries into paying work.</div>
@@ -1339,17 +1345,47 @@ save();renderQuotes();updateDashboard();
 alert("Job created. You can find it in the Jobs section.");
 }
 /* DASHBOARD */
+function openDashboardLink(type,id){
+if(!id)return;
+if(type==="Enquiry"){showPage("enquiries");openEnquiry(id);return;}
+if(type==="Customer"){showPage("customers");openCustomer(id);return;}
+if(type==="Quote"){showPage("quotes");openQuote(id);return;}
+if(type==="Job"){showPage("jobs");openJobDetail(id);return;}
+showPage("followups");
+}
+function openDashboardFollowup(id){
+const f=data.followups.find(x=>x.id===id);if(!f)return;
+if(f.linkId&&f.linkType&&f.linkType!=="General"){openDashboardLink(f.linkType,f.linkId);return;}
+showPage("followups");$("followupSearch").value=f.name||f.service||"";renderFollowups();
+}
+function openDashboardKpi(which){
+if(which==="enquiries"){showPage("enquiries");$("enquiryFilter").value="New";renderEnquiries();return;}
+if(which==="jobs"){showPage("jobs");$("jobFilter").value="";renderJobs();return;}
+showPage("revenue");
+}
 function updateDashboard(){
-$("mEnquiries").textContent=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).length;
-$("mJobs").textContent=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status)).length;
-$("mRevenue").textContent=money(data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status)).reduce((s,j)=>s+Number(j.value||0),0));
-$("mOutstanding").textContent=money(data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0));
-$("priorities").innerHTML=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).slice(0,5).map(e=>`<div class="priority"><span>${esc(e.name)} · ${esc(e.service)}</span>${tag(e.priority)}</div>`).join("")||'<div class="empty">No open enquiries. Nice work!</div>';
-$("upcomingOverview").innerHTML=data.followups.filter(f=>f.status!=="Completed").slice().sort((a,b)=>(a.date||"9999").localeCompare(b.date||"9999")).slice(0,5).map(f=>`<div class="priority"><span>${esc(f.name)} · ${esc(f.service)}</span><span class="muted">${esc(f.date?fmtDate(f.date):"No date")}</span></div>`).join("")||'<div class="empty">No outstanding follow-ups.</div>';
-$("recentRows").innerHTML=data.enquiries.slice(0,5).length?`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead><tbody>${data.enquiries.slice(0,5).map(e=>`<tr><td><strong>${esc(e.name)}</strong></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td><button class="action" onclick="showPage('enquiries');openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries yet.</div>';
-renderEnquiries();
-renderQuotes();
-renderJobs();
+const openEnquiries=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status));
+const activeJobs=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status));
+$("mEnquiries").textContent=openEnquiries.length;
+$("mJobs").textContent=activeJobs.length;
+$("mRevenue").textContent=money(activeJobs.reduce((sum,j)=>sum+(Number(j.value)||0),0));
+$("mOutstanding").textContent=money(data.jobs.reduce((sum,j)=>sum+Math.max(0,(Number(j.value)||0)-(Number(j.paid)||0)),0));
+const rank={Urgent:0,High:1,Normal:2,Low:3};
+const due=data.followups.filter(f=>f.status!=="Completed"&&["Overdue","Today"].includes(followupDueState(f))).sort((a,b)=>(rank[a.priority||"Normal"]??2)-(rank[b.priority||"Normal"]??2)||(a.date||"").localeCompare(b.date||""));
+const todayJobs=data.jobs.filter(j=>j.start===today()&&!["Completed","Cancelled"].includes(j.status));
+const priorityHtml=due.slice(0,5).map(f=>'<button class="priority dashboard-priority" onclick="openDashboardFollowup(\''+f.id+'\')"><span><strong>'+esc(f.name||"Follow-up")+'</strong><span class="muted"> · '+esc(f.service||"Task")+'</span><div class="muted">'+(followupDueState(f)==="Overdue"?"Overdue":"Due today")+' · '+esc(f.date?fmtDate(f.date):"No date")+'</div></span>'+tag(f.priority||"Normal")+'</button>').join("");
+const jobHtml=todayJobs.slice(0,3).map(j=>'<button class="priority dashboard-priority" onclick="openDashboardLink(\'Job\',\''+j.id+'\')"><span><strong>'+esc(j.name)+'</strong><span class="muted"> · '+esc(j.service||"Job")+'</span><div class="muted">Scheduled to start today</div></span>'+tag("Job")+'</button>').join("");
+$("priorities").innerHTML=priorityHtml+jobHtml||'<div class="empty">Nothing urgent today. You are all caught up.</div>';
+const upcoming=data.followups.filter(f=>f.status!=="Completed"&&followupDueState(f)==="Upcoming").slice().sort((a,b)=>(a.date||"9999").localeCompare(b.date||"9999")).slice(0,5);
+$("upcomingOverview").innerHTML=upcoming.length?upcoming.map(f=>'<button class="priority dashboard-priority" onclick="openDashboardFollowup(\''+f.id+'\')"><span><strong>'+esc(f.name||"Follow-up")+'</strong><span class="muted"> · '+esc(f.service||"Task")+'</span></span><span class="muted">'+esc(f.date?fmtDate(f.date):"No date")+'</span></button>').join(""):'<div class="empty">No upcoming follow-ups. Add one whenever you need a reminder.</div>';
+const key=today(),schedule=[];
+data.events.filter(e=>e.date>=key).forEach(e=>schedule.push({date:e.date,time:e.time||"",name:e.name,detail:e.service||e.location||"Calendar event",kind:"Event",id:e.id}));
+data.jobs.filter(j=>j.start>=key&&!["Completed","Cancelled"].includes(j.status)).forEach(j=>schedule.push({date:j.start,time:"",name:j.name,detail:j.service||"Scheduled job",kind:"Job",id:j.id}));
+schedule.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+$("overviewSchedule").innerHTML=schedule.length?schedule.slice(0,5).map(x=>'<button class="priority dashboard-priority" onclick="openDashboardLink(\''+x.kind+'\',\''+x.id+'\')"><span><strong>'+esc(x.name||x.kind)+'</strong><span class="muted"> · '+esc(x.detail)+'</span></span><span class="muted">'+esc(fmtDate(x.date))+(x.time?" · "+esc(x.time):"")+'</span></button>').join(""):'<div class="empty">Nothing scheduled yet. Add a job or calendar event.</div>';
+const recent=data.enquiries.slice().sort((a,b)=>(b.date||"").localeCompare(a.date||"")).slice(0,5);
+$("recentRows").innerHTML=recent.length?'<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead><tbody>'+recent.map(e=>'<tr><td><strong>'+esc(e.name)+'</strong></td><td>'+esc(e.service)+'</td><td>'+money(e.value)+'</td><td>'+tag(e.status)+'</td><td><button class="action" onclick="showPage(\'enquiries\');openEnquiry(\''+e.id+'\')">Open →</button></td></tr>').join("")+'</tbody></table>':'<div class="empty">No enquiries yet. Add your first enquiry to get started.</div>';
+renderEnquiries();renderQuotes();renderJobs();
 }
 /* CALENDAR */
 let calendarMonthOffset=0;
