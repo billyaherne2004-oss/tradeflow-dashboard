@@ -897,6 +897,7 @@ j.paid=paid+amount;
 j.payment=j.paid>=total?"Paid":"Partially paid";
 if(!Array.isArray(j.payments))j.payments=[];
 j.payments.push({id:makeId(),amount,date:today(),recordedAt:new Date().toISOString(),type:mode==="full"?"Paid in full":"Partial payment"});
+syncJobFollowups(j);
 save();renderJobs();updateDashboard();renderRevenue();
 const balance=Math.max(0,total-j.paid);
 if(mode==="partial")alert("Payment recorded: "+money(amount)+"\\nTotal paid so far: "+money(j.paid)+"\\nRemaining balance: "+money(balance));
@@ -1332,6 +1333,7 @@ if(!c)c=findOrCreateCustomer({name:q.name,phone:"",email:"",service:q.service});
 const job={id:makeId(),name:c.name,service:q.service,value:Number(q.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceQuoteId:q.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
 data.jobs.push(job);
 q.convertedJobId=job.id;q.customerId=c.id;
+syncJobFollowups(job);
 save();renderQuotes();updateDashboard();
 alert("Job created. You can find it in the Jobs section.");
 }
