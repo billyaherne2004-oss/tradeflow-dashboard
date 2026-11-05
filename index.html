@@ -266,7 +266,7 @@ td strong{font-weight:650}
 <div class="card"><div class="metric-label">Payments received</div><div class="metric" id="receivedRevenue">£0</div></div>
 <div class="card"><div class="metric-label">Outstanding</div><div class="metric" id="outstandingRevenue">£0</div></div>
 </div>
-<div class="panel"><div class="card-title">Revenue overview</div><div class="muted">Figures are calculated from your recorded jobs. Add real jobs and payment details to populate this area.</div><div class="chart" id="bars"></div></div>
+<div class="panel"><div class="card-title">Payments received by month</div><div class="muted" id="revenueChartNote">Monthly totals from recorded payment history.</div><div class="chart" id="bars"></div></div>
 </section>
 <section class="page" id="website">
 <div class="panel"><div class="card-title">Your business website</div><p class="muted">Manage the business details displayed on your public website.</p>
@@ -1393,7 +1393,13 @@ $("completedRevenue").textContent=money(completed);
 $("activeRevenue").textContent=money(active);
 $("receivedRevenue").textContent=money(received);
 $("outstandingRevenue").textContent=money(outstanding);
-$("bars").innerHTML=[0,0,0,0,0,0,0,0,0,0,0,0].map((v,i)=>`<div class="bar-wrap"><div class="bar" style="height:${v||3}%"></div><small class="muted">${["J","F","M","A","M","J","J","A","S","O","N","D"][i]}</small></div>`).join("");
+const now=new Date();const months=[];
+for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString("en-GB",{month:"short"})});}
+const monthly=months.map(function(m){return data.jobs.reduce(function(sum,j){return sum+(Array.isArray(j.payments)?j.payments.reduce(function(p,x){const d=new Date(String(x.date||"")+"T00:00:00");return p+(Number.isFinite(d.getTime())&&d.getFullYear()===m.year&&d.getMonth()===m.month?(Number(x.amount)||0):0);},0):0);},0);});
+const max=Math.max(1,...monthly);
+$("bars").innerHTML=months.map(function(m,i){return '<div class="bar-wrap"><div class="bar" title="'+money(monthly[i])+'" style="height:'+Math.max(3,monthly[i]/max*100)+'%"></div><small class="muted">'+m.label+'</small></div>';}).join("");
+const undated=data.jobs.reduce(function(sum,j){return sum+(!Array.isArray(j.payments)||!j.payments.length?(Number(j.paid)||0):0);},0);
+$("revenueChartNote").textContent=undated>0?"Monthly bars show dated payment records only. "+money(undated)+" in older payment totals has no recorded date, so it is included in total payments received but not assigned to a month.":"Monthly bars show payments recorded with dates over the last 12 months."
 }
 /* WEBSITE AND SETTINGS */
 function saveWebsite(){
