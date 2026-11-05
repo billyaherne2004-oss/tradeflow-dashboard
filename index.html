@@ -154,6 +154,13 @@ td strong{font-weight:650}
 
 .enquiry-back-button{display:inline-flex;align-items:center;gap:8px;margin:0 0 18px;padding:10px 14px;font-weight:600}.enquiry-back-button span{font-size:18px;line-height:1}
 #enquiryDetail{margin-top:0!important;min-height:60vh}
+
+body.enquiry-focus .sidebar,body.enquiry-focus .topbar{display:none!important}
+body.enquiry-focus .main{margin:0;width:100%;max-width:1100px;padding:32px 28px 70px}
+body.enquiry-focus #enquiryWorkspace{display:block;min-height:80vh}
+body.enquiry-focus #enquiryDetail{display:block!important}
+body.enquiry-focus .enquiry-back-button{position:sticky;top:10px;z-index:3;background:#fff;box-shadow:0 2px 8px #18233812}
+.enquiry-stage-actions select{cursor:pointer}
 </style>
 </head>
 <body>
@@ -214,8 +221,8 @@ td strong{font-weight:650}
 </div></div>
 <div class="table-wrap" id="enquiriesTable"></div>
 </div>
-<div id="enquiryDetail" style="display:none;margin-top:18px"></div>
 </section>
+<section class="page" id="enquiryWorkspace"><div id="enquiryDetail" style="display:none;margin-top:18px"></div></section>
 <section class="page" id="customers">
 <div class="page-intro">Your customer database. Keep contact details, work history, payments and conversations together.</div>
 <div class="grid">
@@ -480,6 +487,7 @@ let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":
 return `<span class="tag ${c}">${esc(s||"—")}</span>`;
 }
 function showPage(id){
+document.body.classList.remove("enquiry-focus");
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 $(id).classList.add("active");
 document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
@@ -517,7 +525,12 @@ const items=data.enquiries.filter(e=>(e.status||"New")===stage).sort((a,b)=>({Ur
 return '<section class="enquiry-stage"><div class="enquiry-stage-head"><strong>'+stage+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>'<article class="enquiry-lead" onclick="openEnquiry(\''+e.id+'\')"><div class="split"><strong>'+esc(e.name)+'</strong>'+tag(e.priority||"Normal")+'</div><div class="muted small">'+esc(e.service||"Service not specified")+'</div><div class="enquiry-lead-value">'+money(e.value)+'</div><div class="muted small">'+esc(e.source||"Other")+' · '+(e.followup?'Follow-up '+esc(e.followup):'No follow-up set')+'</div><div class="enquiry-stage-actions" onclick="event.stopPropagation()"><select aria-label="Move '+esc(e.name)+' to stage" onchange="quickEnquiryStatus(\''+e.id+'\',this.value)">'+stages.map(v=>'<option '+(v===stage?'selected':'')+'>'+v+'</option>').join('')+'</select><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></div></article>').join(""):'<div class="enquiry-stage-empty">No leads in this stage</div>')+'</section>';
 }).join("");
 }
-function quickEnquiryStatus(id,status){const e=data.enquiries.find(x=>x.id===id);if(!e)return;e.status=status;syncEnquiryFollowups(e);save();renderEnquiries();updateDashboard();if(selectedEnquiry===id)openEnquiry(id);renderEnquiryPipeline()}
+function quickEnquiryStatus(id,status){
+const allowed=["New","Contacted","Quote Sent","Won","Lost"];
+const e=data.enquiries.find(x=>x.id===id);if(!e||!allowed.includes(status))return;
+e.status=status;syncEnquiryFollowups(e);save();renderEnquiries();updateDashboard();
+if(selectedEnquiry===id)openEnquiry(id);
+}
 let selectedEnquiry=null;
 function enquiryRelated(e){
 const customer=e.convertedCustomerId?data.customers.find(c=>c.id===e.convertedCustomerId):null;
@@ -531,7 +544,11 @@ if(name)name.value=e.name||"";if(service)service.value="Follow up: "+(e.service|
 if(type){type.value="Enquiry";type.dispatchEvent(new Event("change",{bubbles:true}));}if(link)link.value=e.id;
 }
 function openEnquiry(id){
-selectedEnquiry=id;const section=$("enquiries");section.querySelectorAll(":scope > *").forEach(el=>{if(el.id!=="enquiryDetail")el.style.display="none";});const e=data.enquiries.find(x=>x.id===id);if(!e)return;if(!Array.isArray(e.history))e.history=[];
+const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+selectedEnquiry=id;if(!Array.isArray(e.history))e.history=[];
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+$("enquiryWorkspace").classList.add("active");document.body.classList.add("enquiry-focus");
+$("enquiryWorkspace").appendChild($("enquiryDetail"));
 const related=enquiryRelated(e),phone=String(e.phone||"").replace(/[^+\d]/g,""),actions=[];
 if(phone){actions.push('<a class="primary" href="tel:'+esc(phone)+'">Call customer</a>');actions.push('<a class="secondary" href="https://wa.me/'+phone.replace(/^\+/,"")+'" target="_blank" rel="noopener">WhatsApp</a>');}
 if(e.email)actions.push('<a class="secondary" href="mailto:'+esc(e.email)+'">Email customer</a>');
@@ -548,7 +565,11 @@ $("enquiryDetail").innerHTML='<button class="secondary enquiry-back-button" oncl
 '<div class="detail-card"><h3>Next steps</h3><button class="primary" style="width:100%;margin:5px 0" onclick="createQuoteFromEnquiry(\''+e.id+'\')">+ Create quote from enquiry</button>'+(related.customer?'<div class="notice">This enquiry is already linked to a customer.</div>':'<button class="secondary" style="width:100%;margin:5px 0" onclick="convertCustomer(\''+e.id+'\')">Create / match customer</button>')+(related.jobs.length?'<div class="notice">A job is already linked to this enquiry.</div>':'<button class="secondary" style="width:100%;margin:5px 0" onclick="convertJob(\''+e.id+'\')">Convert directly to job</button>')+'</div><button class="danger" onclick="deleteEnquiry(\''+e.id+'\')">Delete this enquiry</button></div></div>';
 $("enquiryDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
-function closeEnquiry(){$("enquiryDetail").style.display="none";$("enquiries").querySelectorAll(":scope > *").forEach(el=>{if(el.id!=="enquiryDetail")el.style.display="";});selectedEnquiry=null;$("enquiries").scrollIntoView({behavior:"smooth",block:"start"});}
+function closeEnquiry(){
+$("enquiryDetail").style.display="none";$("enquiries").appendChild($("enquiryDetail"));
+selectedEnquiry=null;document.body.classList.remove("enquiry-focus");showPage("enquiries");
+$("enquiries").scrollIntoView({behavior:"smooth",block:"start"});
+}
 function changeEnquiryField(id,key,value){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
 e[key]=value;if(key==="status")syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
