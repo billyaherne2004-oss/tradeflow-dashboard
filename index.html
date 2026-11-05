@@ -149,6 +149,8 @@ td strong{font-weight:650}
 .dashboard-kpi{cursor:pointer;transition:transform .15s,border-color .15s}.dashboard-kpi:hover{transform:translateY(-2px);border-color:#b9caf0}.dashboard-kpi:focus-visible{outline:3px solid #3269df55;outline-offset:2px}.dashboard-actions{margin:14px 0 8px}.dashboard-priority{width:100%;text-align:left;background:white;border:0;border-bottom:1px solid var(--line);cursor:pointer}.dashboard-priority:hover{background:#f8faff}
 \n#enquiriesTable .action{white-space:nowrap}#enquiryDetail .detail-card{margin-bottom:14px}#enquiryDetail a.secondary{display:inline-flex;align-items:center;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid var(--line);color:var(--text);font-size:12px}\n
 .enquiry-pipeline-wrap{margin:18px 0 22px}.enquiry-pipeline{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px}.enquiry-stage{background:var(--panel,#f6f8fc);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:160px}.enquiry-stage-head{display:flex;justify-content:space-between;align-items:center;padding:4px 2px 10px}.enquiry-stage-head span{background:#e8edf6;border-radius:20px;padding:2px 8px;font-size:11px}.enquiry-lead{background:white;border:1px solid var(--line);border-radius:9px;padding:11px;margin-bottom:9px;cursor:pointer;box-shadow:0 1px 2px #15233a08}.enquiry-lead:hover{border-color:#9eb5e6;box-shadow:0 3px 10px #15233a10}.enquiry-lead-value{font-weight:700;margin:9px 0 4px}.enquiry-stage-actions{display:flex;gap:6px;margin-top:9px}.enquiry-stage-actions select{min-width:0;flex:1;font-size:11px;padding:6px}.enquiry-stage-empty{color:var(--muted);font-size:12px;padding:14px 4px}@media(max-width:900px){.enquiry-pipeline{grid-template-columns:repeat(5,minmax(220px,1fr))}}
+
+.enquiry-workspace-actions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.enquiry-workspace-actions a{display:inline-flex;align-items:center;text-decoration:none;padding:9px 12px;border-radius:8px;font-size:12px;font-weight:600}.enquiry-workspace-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}.enquiry-workspace-stats .profile-stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:13px}.enquiry-detail-layout{grid-template-columns:minmax(0,1.4fr) minmax(280px,1fr)}.enquiry-notes{font-size:13px;line-height:1.65;white-space:pre-wrap}.linked-record{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.linked-record:last-child{border-bottom:0}@media(max-width:760px){.enquiry-workspace-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.enquiry-detail-layout{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -514,40 +516,33 @@ return '<section class="enquiry-stage"><div class="enquiry-stage-head"><strong>'
 }
 function quickEnquiryStatus(id,status){const e=data.enquiries.find(x=>x.id===id);if(!e)return;e.status=status;syncEnquiryFollowups(e);save();renderEnquiries();updateDashboard();if(selectedEnquiry===id)openEnquiry(id);renderEnquiryPipeline()}
 let selectedEnquiry=null;
+function enquiryRelated(e){
+const customer=e.convertedCustomerId?data.customers.find(c=>c.id===e.convertedCustomerId):null;
+return {customer,quotes:data.quotes.filter(q=>q.sourceEnquiryId===e.id||(customer&&q.customerId===customer.id)),jobs:data.jobs.filter(j=>j.sourceEnquiryId===e.id||(customer&&j.customerId===customer.id)),reminders:data.followups.filter(f=>f.linkType==="Enquiry"&&f.linkId===e.id)};
+}
+function createQuoteFromEnquiry(id){const e=data.enquiries.find(x=>x.id===id);if(!e)return;const c=findOrCreateCustomer(e);pendingCustomerId=c.id;openQuote();$("qService").value=e.service||"";$("qNotes").value="Created from enquiry: "+(e.service||"")+(e.notes?"\n\nOriginal enquiry notes: "+e.notes:"");}
+function addEnquiryFollowup(id){
+const e=data.enquiries.find(x=>x.id===id);if(!e)return;openAdd("followups");
+const fields=$("formFields"),name=fields.querySelector('[name="name"]'),service=fields.querySelector('[name="service"]'),type=fields.querySelector('[name="linkType"]'),link=fields.querySelector('[name="linkId"]');
+if(name)name.value=e.name||"";if(service)service.value="Follow up: "+(e.service||"enquiry");
+if(type){type.value="Enquiry";type.dispatchEvent(new Event("change",{bubbles:true}));}if(link)link.value=e.id;
+}
 function openEnquiry(id){
-selectedEnquiry=id;
-const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+selectedEnquiry=id;const e=data.enquiries.find(x=>x.id===id);if(!e)return;if(!Array.isArray(e.history))e.history=[];
+const related=enquiryRelated(e),phone=String(e.phone||"").replace(/[^+\d]/g,""),actions=[];
+if(phone){actions.push('<a class="primary" href="tel:'+esc(phone)+'">Call customer</a>');actions.push('<a class="secondary" href="https://wa.me/'+phone.replace(/^\+/,"")+'" target="_blank" rel="noopener">WhatsApp</a>');}
+if(e.email)actions.push('<a class="secondary" href="mailto:'+esc(e.email)+'">Email customer</a>');
+const stages=["New","Contacted","Quote Sent","Won","Lost"],history=e.history.slice().reverse();
 $("enquiryDetail").style.display="block";
-$("enquiryDetail").innerHTML=`
-<div class="detail-heading"><div><div class="eyebrow">ENQUIRY RECORD</div><div class="detail-name">${esc(e.name)}</div><div class="muted">${esc(e.service)} · Added ${esc(e.date||"Date not set")}</div></div><div class="actions"><button class="secondary" onclick="editEnquiry('${e.id}')">Edit details</button><button class="secondary" onclick="closeEnquiry()">Close</button></div></div>
-<div class="detail-layout"><div>
-<div class="detail-card"><h3>Enquiry information</h3>
-<div class="detail-line"><span class="muted">Phone</span><strong>${esc(e.phone||"Not provided")}</strong></div>
-<div class="detail-line"><span class="muted">Email</span><strong>${esc(e.email||"Not provided")}</strong></div>
-<div class="detail-line"><span class="muted">Lead source</span><strong>${esc(e.source||"Other")}</strong></div>
-<div class="detail-line"><span class="muted">Estimated value</span><strong>${money(e.value)}</strong></div>
-<div class="detail-line"><span class="muted">Priority</span>${tag(e.priority)}</div>
-<div class="detail-line"><span class="muted">Status</span>${tag(e.status)}</div>
-<div class="detail-line"><span class="muted">Follow-up date</span><strong>${esc(e.followup||"Not scheduled")}</strong></div>
-<hr><div class="muted">Enquiry notes</div><p style="font-size:12px;line-height:1.6">${esc(e.notes||"No notes added yet.")}</p>
-</div>
-<div class="detail-card"><div class="split"><h3>Contact history</h3><button class="primary" onclick="addHistory('${e.id}')">+ Log contact</button></div>
-${e.history.length?e.history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Log calls, emails or messages here.</div>'}
-</div>
-</div>
-<div>
-<div class="detail-card"><h3>Update enquiry status</h3>
-<div class="field">Status<select onchange="changeEnquiryField('${e.id}','status',this.value)">${["New","Contacted","Quote Sent","Won","Lost"].map(s=>`<option ${e.status===s?"selected":""}>${s}</option>`).join("")}</select></div>
-<div class="field">Priority<select onchange="changeEnquiryField('${e.id}','priority',this.value)">${["Low","Normal","High","Urgent"].map(s=>`<option ${e.priority===s?"selected":""}>${s}</option>`).join("")}</select></div>
-<div class="field">Follow-up date<input type="date" value="${esc(e.followup)}" onchange="changeEnquiryField('${e.id}','followup',this.value)"></div>
-</div>
-<div class="detail-card"><h3>Convert enquiry</h3><p class="muted">Move this lead into the next stage without entering the details again.</p>
-<button class="primary" style="width:100%;margin:5px 0" onclick="convertCustomer('${e.id}')">Convert to customer</button>
-<button class="secondary" style="width:100%;margin:5px 0" onclick="convertJob('${e.id}')">Convert to job</button>
-<div class="notice">Converting to a job also creates a customer record if one doesn't already exist.</div>
-</div>
-<button class="danger" onclick="deleteEnquiry('${e.id}')">Delete this enquiry</button>
-</div></div>`;
+$("enquiryDetail").innerHTML='<div class="detail-heading"><div><div class="eyebrow">ENQUIRY WORKSPACE</div><div class="detail-name">'+esc(e.name)+'</div><div class="muted">'+esc(e.service||"Service not specified")+' · Received '+esc(e.date||"Date not recorded")+'</div></div><div class="actions"><button class="secondary" onclick="editEnquiry(\''+e.id+'\')">Edit details</button><button class="secondary" onclick="closeEnquiry()">Close</button></div></div>'+
+'<div class="enquiry-workspace-actions">'+actions.join("")+'<button class="secondary" onclick="addHistory(\''+e.id+'\')">+ Log contact</button><button class="secondary" onclick="addEnquiryFollowup(\''+e.id+'\')">+ Add follow-up</button></div>'+
+'<div class="enquiry-workspace-stats"><div class="profile-stat"><span class="muted">Estimated value</span><strong>'+money(e.value)+'</strong></div><div class="profile-stat"><span class="muted">Current stage</span><strong>'+esc(e.status||"New")+'</strong></div><div class="profile-stat"><span class="muted">Priority</span><strong>'+esc(e.priority||"Normal")+'</strong></div><div class="profile-stat"><span class="muted">Follow-up</span><strong>'+esc(e.followup||"Not scheduled")+'</strong></div></div>'+
+'<div class="detail-layout enquiry-detail-layout"><div><div class="detail-card"><div class="split"><h3>Enquiry details</h3><button class="action" onclick="editEnquiry(\''+e.id+'\')">Edit</button></div><div class="detail-line"><span class="muted">Phone</span><strong>'+esc(e.phone||"Not provided")+'</strong></div><div class="detail-line"><span class="muted">Email</span><strong>'+esc(e.email||"Not provided")+'</strong></div><div class="detail-line"><span class="muted">Lead source</span><strong>'+esc(e.source||"Other")+'</strong></div><div class="detail-line"><span class="muted">Received</span><strong>'+esc(e.date||"Date not recorded")+'</strong></div><hr><div class="muted">What the customer needs</div><p class="enquiry-notes">'+esc(e.notes||"No enquiry description has been added yet.")+'</p></div>'+
+'<div class="detail-card"><div class="split"><h3>Contact timeline</h3><button class="primary" onclick="addHistory(\''+e.id+'\')">+ Log contact</button></div>'+(history.length?history.map(h=>'<div class="history-item"><div class="history-date">'+esc(h.date||"Date not recorded")+' · '+esc(h.method||"Contact")+'</div><div class="history-type">'+esc(h.title||"Contact logged")+'</div><div>'+esc(h.note||"")+'</div></div>').join(""):'<div class="empty">Nothing logged yet. Record calls, emails and messages here so you always know what has happened.</div>')+'</div>'+
+'<div class="detail-card"><h3>Related follow-ups</h3>'+(related.reminders.length?related.reminders.map(f=>'<div class="detail-line"><span>'+esc(f.service||"Follow-up")+' · '+esc(f.date||"No due date")+'</span>'+tag(f.status||"Pending")+'</div>').join(""):'<div class="muted">No follow-ups linked to this enquiry yet.</div>')+'<button class="secondary" style="margin-top:10px" onclick="addEnquiryFollowup(\''+e.id+'\')">+ Create linked follow-up</button></div></div>'+
+'<div><div class="detail-card"><h3>Manage lead</h3><div class="field">Pipeline stage<select onchange="changeEnquiryField(\''+e.id+'\',\'status\',this.value)">'+stages.map(v=>'<option '+((e.status||"New")===v?"selected":"")+'>'+v+'</option>').join("")+'</select></div><div class="field">Priority<select onchange="changeEnquiryField(\''+e.id+'\',\'priority\',this.value)">'+["Low","Normal","High","Urgent"].map(v=>'<option '+((e.priority||"Normal")===v?"selected":"")+'>'+v+'</option>').join("")+'</select></div><div class="field">Next follow-up date<input type="date" value="'+esc(e.followup||"")+'" onchange="changeEnquiryField(\''+e.id+'\',\'followup\',this.value)"></div></div>'+
+'<div class="detail-card"><div class="split"><h3>Linked records</h3><span class="muted small">'+(related.quotes.length+related.jobs.length+(related.customer?1:0))+' linked</span></div>'+(related.customer?'<div class="linked-record"><div><strong>Customer</strong><div class="muted small">'+esc(related.customer.name)+'</div></div><button class="action" onclick="showPage(\'customers\');openCustomer(\''+related.customer.id+'\')">Open →</button></div>':'<div class="muted small">No customer record linked yet.</div>')+related.quotes.map(q=>'<div class="linked-record"><div><strong>Quote '+esc(q.number||"")+'</strong><div class="muted small">'+esc(q.service||"Quote")+' · '+money(q.value)+' · '+esc(q.status)+'</div></div><button class="action" onclick="showPage(\'quotes\');openQuote(\''+q.id+'\')">Open →</button></div>').join("")+related.jobs.map(j=>'<div class="linked-record"><div><strong>Job</strong><div class="muted small">'+esc(j.service||"Work")+' · '+money(j.value)+' · '+esc(j.status)+'</div></div><button class="action" onclick="showPage(\'jobs\');openJobDetail(\''+j.id+'\')">Open →</button></div>').join("")+'</div>'+
+'<div class="detail-card"><h3>Next steps</h3><button class="primary" style="width:100%;margin:5px 0" onclick="createQuoteFromEnquiry(\''+e.id+'\')">+ Create quote from enquiry</button>'+(related.customer?'<div class="notice">This enquiry is already linked to a customer.</div>':'<button class="secondary" style="width:100%;margin:5px 0" onclick="convertCustomer(\''+e.id+'\')">Create / match customer</button>')+(related.jobs.length?'<div class="notice">A job is already linked to this enquiry.</div>':'<button class="secondary" style="width:100%;margin:5px 0" onclick="convertJob(\''+e.id+'\')">Convert directly to job</button>')+'</div><button class="danger" onclick="deleteEnquiry(\''+e.id+'\')">Delete this enquiry</button></div></div>';
 $("enquiryDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function closeEnquiry(){$("enquiryDetail").style.display="none";selectedEnquiry=null}
@@ -576,6 +571,7 @@ return c;
 }
 function convertCustomer(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+if(e.convertedCustomerId&&data.customers.some(c=>c.id===e.convertedCustomerId)){alert("This enquiry is already linked to a customer.");return;}
 const c=findOrCreateCustomer(e);
 e.status="Won";e.convertedCustomerId=c.id;syncEnquiryFollowups(e);
 save();renderEnquiries();openEnquiry(id);updateDashboard();
@@ -583,6 +579,7 @@ alert("Customer record created or matched successfully.");
 }
 function convertJob(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
+if(e.convertedJobId&&data.jobs.some(j=>j.id===e.convertedJobId)){alert("This enquiry has already been converted into a job.");return;}
 const c=findOrCreateCustomer(e);
 const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceEnquiryId:e.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
 data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;syncEnquiryFollowups(e);syncJobFollowups(job);
