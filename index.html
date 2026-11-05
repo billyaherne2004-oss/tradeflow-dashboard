@@ -147,7 +147,9 @@ td strong{font-weight:650}
 
 
 .dashboard-kpi{cursor:pointer;transition:transform .15s,border-color .15s}.dashboard-kpi:hover{transform:translateY(-2px);border-color:#b9caf0}.dashboard-kpi:focus-visible{outline:3px solid #3269df55;outline-offset:2px}.dashboard-actions{margin:14px 0 8px}.dashboard-priority{width:100%;text-align:left;background:white;border:0;border-bottom:1px solid var(--line);cursor:pointer}.dashboard-priority:hover{background:#f8faff}
-\n#enquiriesTable .action{white-space:nowrap}#enquiryDetail .detail-card{margin-bottom:14px}#enquiryDetail a.secondary{display:inline-flex;align-items:center;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid var(--line);color:var(--text);font-size:12px}\n</style>
+\n#enquiriesTable .action{white-space:nowrap}#enquiryDetail .detail-card{margin-bottom:14px}#enquiryDetail a.secondary{display:inline-flex;align-items:center;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid var(--line);color:var(--text);font-size:12px}\n
+.enquiry-pipeline-wrap{margin:18px 0 22px}.enquiry-pipeline{display:grid;grid-template-columns:repeat(5,minmax(210px,1fr));gap:12px;overflow-x:auto;padding-bottom:8px}.enquiry-stage{background:var(--panel,#f6f8fc);border:1px solid var(--line);border-radius:12px;padding:10px;min-height:160px}.enquiry-stage-head{display:flex;justify-content:space-between;align-items:center;padding:4px 2px 10px}.enquiry-stage-head span{background:#e8edf6;border-radius:20px;padding:2px 8px;font-size:11px}.enquiry-lead{background:white;border:1px solid var(--line);border-radius:9px;padding:11px;margin-bottom:9px;cursor:pointer;box-shadow:0 1px 2px #15233a08}.enquiry-lead:hover{border-color:#9eb5e6;box-shadow:0 3px 10px #15233a10}.enquiry-lead-value{font-weight:700;margin:9px 0 4px}.enquiry-stage-actions{display:flex;gap:6px;margin-top:9px}.enquiry-stage-actions select{min-width:0;flex:1;font-size:11px;padding:6px}.enquiry-stage-empty{color:var(--muted);font-size:12px;padding:14px 4px}@media(max-width:900px){.enquiry-pipeline{grid-template-columns:repeat(5,minmax(220px,1fr))}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -191,7 +193,7 @@ td strong{font-weight:650}
 </div>
 </section>
 <section class="page" id="enquiries">
-<div class="page-intro">Keep every opportunity organised, follow up at the right time and turn enquiries into paying work.</div>
+<div class="page-intro">Keep every opportunity organised, follow up at the right time and turn enquiries into paying work.</div><div class="enquiry-pipeline-wrap"><div class="split" style="margin:14px 0"><div><h2 style="margin:0">Lead pipeline</h2><div class="muted small">See every opportunity by stage. Open a lead to manage its details.</div></div><div class="muted small">Move leads between stages from their cards</div></div><div id="enquiryPipeline" class="enquiry-pipeline"></div></div>
 <div class="grid">
 <div class="card"><div class="metric-label">Total enquiries</div><div class="metric" id="enquiryTotal">0</div></div>
 <div class="card"><div class="metric-label">New enquiries</div><div class="metric" id="enquiryNew">0</div></div>
@@ -494,6 +496,7 @@ $("enquiryTotal").textContent=data.enquiries.length;
 $("enquiryNew").textContent=data.enquiries.filter(e=>e.status==="New").length;
 $("enquiryQuoted").textContent=data.enquiries.filter(e=>e.status==="Quote Sent").length;
 $("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(e.status)).reduce((sum,e)=>sum+Number(e.value||0),0));
+renderEnquiryPipeline();
 if(!$("enquiriesTable"))return;
 if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match these filters. Try clearing a filter or add a new enquiry.</div>';return}
 $("enquiriesTable").innerHTML='<table><thead><tr><th>ENQUIRY</th><th>SOURCE</th><th>VALUE</th><th>STATUS</th><th>PRIORITY</th><th>FOLLOW-UP</th><th>QUICK ACTION</th><th></th></tr></thead><tbody>'+rows.map(e=>{
@@ -501,7 +504,15 @@ const quick=e.status==="New"?'<button class="action" onclick="quickEnquiryStatus
 return '<tr><td><strong>'+esc(e.name)+'</strong><div class="muted">'+esc(e.service||"Service not specified")+' · '+esc(e.date||"Date not set")+'</div><div class="muted">'+esc(e.phone||e.email||"No contact details")+'</div></td><td>'+esc(e.source||"Other")+'</td><td>'+money(e.value)+'</td><td>'+tag(e.status)+'</td><td>'+tag(e.priority||"Normal")+'</td><td>'+(e.followup?esc(e.followup):'<span class="muted">Not set</span>')+'</td><td>'+quick+'</td><td><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></td></tr>';
 }).join("")+'</tbody></table>';
 }
-function quickEnquiryStatus(id,status){const e=data.enquiries.find(x=>x.id===id);if(!e)return;e.status=status;syncEnquiryFollowups(e);save();renderEnquiries();updateDashboard();if(selectedEnquiry===id)openEnquiry(id)}
+function renderEnquiryPipeline(){
+const stages=["New","Contacted","Quote Sent","Won","Lost"];
+const root=$("enquiryPipeline");if(!root)return;
+root.innerHTML=stages.map(stage=>{
+const items=data.enquiries.filter(e=>(e.status||"New")===stage).sort((a,b)=>({Urgent:0,High:1,Normal:2,Low:3}[a.priority]??2)-({Urgent:0,High:1,Normal:2,Low:3}[b.priority]??2));
+return '<section class="enquiry-stage"><div class="enquiry-stage-head"><strong>'+stage+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>'<article class="enquiry-lead" onclick="openEnquiry(\''+e.id+'\')"><div class="split"><strong>'+esc(e.name)+'</strong>'+tag(e.priority||"Normal")+'</div><div class="muted small">'+esc(e.service||"Service not specified")+'</div><div class="enquiry-lead-value">'+money(e.value)+'</div><div class="muted small">'+esc(e.source||"Other")+' · '+(e.followup?'Follow-up '+esc(e.followup):'No follow-up set')+'</div><div class="enquiry-stage-actions" onclick="event.stopPropagation()"><select aria-label="Move '+esc(e.name)+' to stage" onchange="quickEnquiryStatus(\''+e.id+'\',this.value)">'+stages.map(v=>'<option '+(v===stage?'selected':'')+'>'+v+'</option>').join('')+'</select><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></div></article>').join(""):'<div class="enquiry-stage-empty">No leads in this stage</div>')+'</section>';
+}).join("");
+}
+function quickEnquiryStatus(id,status){const e=data.enquiries.find(x=>x.id===id);if(!e)return;e.status=status;syncEnquiryFollowups(e);save();renderEnquiries();updateDashboard();if(selectedEnquiry===id)openEnquiry(id);renderEnquiryPipeline()}
 let selectedEnquiry=null;
 function openEnquiry(id){
 selectedEnquiry=id;
