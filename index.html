@@ -142,7 +142,8 @@ td strong{font-weight:650}
 .job-editor{max-width:850px}
 .job-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .job-status{min-width:135px}
-@media(max-width:750px){.job-detail-grid{grid-template-columns:1fr}.job-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.followup-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:16px 0}.followup-summary .metric{font-size:25px}.followup-overdue{color:var(--red)!important}.followup-due{color:#b7791f!important}.followup-filters{display:flex;gap:9px;flex-wrap:wrap;align-items:center}.followup-filters .search{min-width:190px}.followup-actions{display:flex;gap:6px;flex-wrap:wrap}.followup-related{font-size:11px;color:var(--muted);margin-top:3px}
+@media(max-width:750px){.job-detail-grid{grid-template-columns:1fr}.job-summary,.followup-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 </style>
 </head>
@@ -253,8 +254,10 @@ td strong{font-weight:650}
 <div class="panel" style="margin-top:16px"><div class="split"><div class="card-title" style="margin:0">Upcoming schedule</div><span class="muted">Next 10 events and jobs</span></div><div id="calendarAgenda" style="margin-top:12px"></div></div>
 </section>
 <section class="page" id="followups">
-<div class="toolbar"><span class="muted">Never let an enquiry or customer go forgotten.</span><button class="primary" onclick="openAdd('followups')">+ Add follow-up</button></div>
-<div class="panel"><div class="table-wrap" id="followupsTable"></div></div>
+<div class="page-intro">One place for every reminder across enquiries, customers, quotes and jobs.</div>
+<div class="followup-summary"><div class="card"><div class="metric-label">Overdue</div><div class="metric followup-overdue" id="followupOverdue">0</div><div class="metric-note">Need attention</div></div><div class="card"><div class="metric-label">Due today</div><div class="metric followup-due" id="followupToday">0</div><div class="metric-note">Action today</div></div><div class="card"><div class="metric-label">Upcoming</div><div class="metric" id="followupUpcoming">0</div><div class="metric-note">Future reminders</div></div><div class="card"><div class="metric-label">Completed</div><div class="metric" id="followupCompleted">0</div><div class="metric-note">Tasks finished</div></div></div>
+<div class="toolbar"><span class="muted">Keep every customer and task moving forward.</span><button class="primary" onclick="openAdd('followups')">+ Add follow-up</button></div>
+<div class="panel"><div class="toolbar"><div class="followup-filters"><input class="search" id="followupSearch" placeholder="Search customer or task..." oninput="renderFollowups()"><select id="followupFilter" onchange="renderFollowups()" style="min-width:145px"><option value="Open">Open follow-ups</option><option value="">All follow-ups</option><option value="Overdue">Overdue</option><option value="Today">Due today</option><option value="Upcoming">Upcoming</option><option value="Completed">Completed</option></select><select id="followupTypeFilter" onchange="renderFollowups()" style="min-width:145px"><option value="">All linked records</option><option>Enquiry</option><option>Customer</option><option>Quote</option><option>Job</option><option>General</option></select></div></div><div class="table-wrap" id="followupsTable"></div></div>
 </section>
 <section class="page" id="revenue">
 <div class="grid">
@@ -414,7 +417,7 @@ x.materialsCost=Number(x.materialsCost)||0;x.labourCost=Number(x.labourCost)||0;
 x.description=x.description||"";x.end=x.end||x.completion||"";x.completedDate=x.completedDate||"";
 x.notes=x.notes||"";x.completionNotes=x.completionNotes||"";
 });
-data.followups.forEach(x=>x.id=x.id||makeId());
+data.followups.forEach(x=>{x.id=x.id||makeId();x.priority=x.priority||"Normal";x.status=x.status==="Overdue"?"Pending":(x.status||"Pending");x.linkType=x.linkType||"General";x.linkId=x.linkId||"";x.notes=x.notes||"";});
 data.events.forEach(x=>x.id=x.id||makeId());
 function save(){localStorage.setItem("tradeflowData",JSON.stringify(data))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
@@ -437,7 +440,8 @@ $("heading").textContent=({overview:"Good morning 👋",enquiries:"Enquiries",cu
 $("crumb").textContent=id.toUpperCase();
 if(id==="enquiries")renderEnquiries();
 if(id==="customers")renderCustomers();
-if(["quotes","jobs","followups"].includes(id))renderTable(id);
+if(["quotes","jobs"].includes(id))renderTable(id);
+if(id==="followups")renderFollowups();
 if(id==="calendar")renderCalendar();
 if(id==="revenue")renderRevenue();
 }
@@ -669,7 +673,7 @@ jobs:[
 ["name","Customer name","text"],["service","Job description","text"],["value","Agreed price (£)","number"],["status","Job status","select",["Upcoming","In progress","On hold","Completed"]],["payment","Payment status","select",["Unpaid","Partially paid","Paid"]],["paid","Amount paid (£)","number"],["start","Start date","date"],["completion","Expected completion date","date"]
 ],
 followups:[
-["name","Customer name","text"],["service","Follow-up task","text"],["date","Due date","date"],["status","Status","select",["Pending","Completed","Overdue"]]
+["name","Customer / contact name","text"],["service","What needs following up?","text"],["date","Due date","date"],["priority","Priority","select",["Low","Normal","High","Urgent"]],["status","Status","select",["Pending","Completed"]],["linkType","Related record type","select",["General","Enquiry","Customer","Quote","Job"]],["linkId","Linked record","select",[""]],["notes","Notes","textarea"]
 ],
 calendar:[
 ["name","Event title","text"],["service","Details","text"],["date","Date","date"],["time","Start time","time"],["location","Location","text"]
@@ -685,13 +689,18 @@ const linkedCustomer=pendingCustomerId?data.customers.find(c=>c.id===pendingCust
 $("modalTitle").textContent=(record?"Edit ":"Add ")+(type==="calendar"?"event":type==="enquiries"?"enquiry":type.slice(0,-1));
 $("formHint").textContent=type==="enquiries"?"You can add contact history and update this enquiry after saving.":linkedCustomer?"This record will be linked to "+linkedCustomer.name+".":"";
 $("formFields").innerHTML=schemas[type].map(([key,label,kind,opts])=>{
-let val=record?.[key]??(linkedCustomer&&key==="name"?linkedCustomer.name:key==="date"&&type!=="calendar"?today():key==="status"?(type==="enquiries"?"New":type==="jobs"?"Upcoming":"Pending"):key==="priority"?"Normal":"");
+let val=record?.[key]??(linkedCustomer&&key==="name"?linkedCustomer.name:key==="date"&&type!=="calendar"?today():key==="status"?(type==="enquiries"?"New":type==="jobs"?"Upcoming":"Pending"):key==="priority"?"Normal":key==="linkType"?"General":"");
 let input=kind==="textarea"?`<textarea name="${key}">${esc(val)}</textarea>`:
 kind==="time"?(()=>{const parts=String(val||"").match(/^(\\d{2}):(\\d{2})$/),hour=parts?Number(parts[1]):"",minute=parts?parts[2]:"00",period=parts?(Number(parts[1])>=12?"PM":"AM"):"AM",displayHour=parts?(Number(parts[1])%12||12):"";return `<input type="hidden" name="${key}" value="${esc(val)}"><div class="calendar-time-picker" style="display:flex;gap:8px;align-items:center;margin-top:6px"><div style="flex:1"><div class="muted small" style="margin-bottom:4px">HOUR</div><select aria-label="Hour" data-clock-hour onchange="updateCalendarTime(this)" style="width:100%;font-size:16px;padding:12px;text-align:center"><option value="">--</option>${Array.from({length:12},(_,i)=>i+1).map(h=>`<option value="${h}" ${Number(displayHour)===h?"selected":""}>${String(h).padStart(2,"0")}</option>`).join("")}</select></div><div style="font-size:20px;font-weight:700;margin-top:18px">:</div><div style="flex:1"><div class="muted small" style="margin-bottom:4px">MINUTES</div><select aria-label="Minutes" data-clock-minute onchange="updateCalendarTime(this)" style="width:100%;font-size:16px;padding:12px;text-align:center">${["00","15","30","45"].map(m=>`<option value="${m}" ${minute===m?"selected":""}>${m}</option>`).join("")}</select></div><div style="width:82px"><div class="muted small" style="margin-bottom:4px">AM / PM</div><select aria-label="AM or PM" data-clock-period onchange="updateCalendarTime(this)" style="width:100%;font-size:16px;padding:12px"><option ${period==="AM"?"selected":""}>AM</option><option ${period==="PM"?"selected":""}>PM</option></select></div></div><div class="muted small" style="margin-top:5px">Choose an hour, minutes and AM/PM.</div>`})():
-kind==="select"?`<select name="${key}">${opts.map(o=>`<option ${val===o?"selected":""}>${o}</option>`).join("")}</select>`:
+kind==="select"?`<select name="${key}">${opts.map(o=>`<option value="${esc(o)}" ${val===o?"selected":""}>${esc(o)||"— No linked record —"}</option>`).join("")}</select>`:
 `<input name="${key}" type="${kind}" value="${esc(val)}" ${key==="name"||key==="service"?"required":""} ${kind==="number"?'min="0" step="0.01"':""}>`;
 return `<label class="field ${kind==="textarea"||key==="service"||key==="notes"||key==="address"?"full":""}">${label}${input}</label>`;
 }).join("");
+if(type==="followups"){
+ const kind=$("formFields").querySelector('[name="linkType"]'),linked=$("formFields").querySelector('[name="linkId"]');
+ const populate=()=>{const k=kind.value,arr=k==="Enquiry"?data.enquiries:k==="Customer"?data.customers:k==="Quote"?data.quotes:k==="Job"?data.jobs:[];linked.innerHTML='<option value="">— No linked record —</option>'+arr.map(x=>{const label=k==="Quote"?(x.number||"Quote")+" · "+(x.name||""):k==="Job"?(x.service||"Job")+" · "+(x.name||""):(x.name||"")+(x.service?" · "+x.service:"");return `<option value="${esc(x.id)}">${esc(label)}</option>`}).join("");linked.disabled=!arr.length;if(record?.linkId&&record.linkType===k)linked.value=record.linkId;};
+ kind.addEventListener("change",populate);populate();
+}
 $("modal").style.display="flex";
 }
 function updateCalendarTime(control){const wrap=control.closest(".calendar-time-picker"),hour=wrap.querySelector("[data-clock-hour]").value,minute=wrap.querySelector("[data-clock-minute]").value,period=wrap.querySelector("[data-clock-period]").value,hidden=wrap.parentElement.querySelector('input[type="hidden"][name="time"]');if(!hour){hidden.value="";return}let h=Number(hour)%12;if(period==="PM")h+=12;hidden.value=String(h).padStart(2,"0")+":"+minute;}
@@ -722,6 +731,7 @@ if(old)Object.assign(old,r);
 }else{
 r.id=makeId();
 if(type==="enquiries"){r.history=[];r.convertedCustomerId="";r.convertedJobId=""}
+ if(type==="followups"){r.priority=r.priority||"Normal";r.linkType=r.linkType||"General";r.linkId=r.linkId||"";r.notes=r.notes||"";r.completedAt=r.status==="Completed"?(r.completedAt||new Date().toISOString()):""}
 if(type==="customers"){r.history=[];r.createdAt=today()}
 if(pendingCustomerId&&type!=="customers")r.customerId=pendingCustomerId;
 data[type].unshift(r);
@@ -745,16 +755,30 @@ updateDashboard();
 function renderTable(type,filter=""){
 if(type==="jobs"){renderJobs();return}
 if(type==="quotes"){renderQuotes();return}
+if(type==="followups"){renderFollowups();return}
 const rows=data[type].filter(r=>Object.values(r).join(" ").toLowerCase().includes(filter.toLowerCase()));
 const cols={quotes:["name","service","value","status","date"],jobs:["name","service","value","status","payment"],followups:["name","service","date","status"]}[type];
 if(!rows.length){$(type+"Table").innerHTML='<div class="empty">No records yet. Add your first record above.</div>';return}
 $(type+"Table").innerHTML=`<table><thead><tr>${cols.map(c=>`<th>${c.toUpperCase()}</th>`).join("")}<th>ACTIONS</th></tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${c==="value"?money(r[c]):["status","payment"].includes(c)?tag(r[c]):esc(r[c]||"—")}</td>`).join("")}<td><div class="actions"><button class="action" onclick="editRecord('${type}','${r.id}')">Edit</button><button class="action" onclick="removeRecord('${type}','${r.id}')">Delete</button></div></td></tr>`).join("")}</tbody></table>`;
 }
 function editRecord(type,id){
+if(type==="followups"){const f=data.followups.find(x=>x.id===id);if(f)openForm("followups",f);return}
 if(type==="jobs"){const j=data.jobs.find(x=>x.id===id);if(j)openJobEditor(j);return}
 const r=data[type].find(x=>x.id===id);
 if(r)openForm(type,r);
 }
+function followupDueState(f){if(f.status==="Completed")return "Completed";if(!f.date)return "Upcoming";if(f.date<today())return "Overdue";if(f.date===today())return "Today";return "Upcoming"}
+function followupLinkedLabel(f){const k=f.linkType||"General",id=f.linkId;if(!id||k==="General")return "General task";const arr=k==="Enquiry"?data.enquiries:k==="Customer"?data.customers:k==="Quote"?data.quotes:k==="Job"?data.jobs:[],x=arr.find(v=>v.id===id);if(!x)return k+" · record unavailable";if(k==="Quote")return "Quote "+(x.number||"")+" · "+(x.name||"");if(k==="Job")return (x.service||"Job")+" · "+(x.name||"");return (x.name||k)+(x.service?" · "+x.service:"")}
+function renderFollowups(){
+const all=data.followups,open=all.filter(f=>f.status!=="Completed");
+$("followupOverdue").textContent=open.filter(f=>followupDueState(f)==="Overdue").length;$("followupToday").textContent=open.filter(f=>followupDueState(f)==="Today").length;$("followupUpcoming").textContent=open.filter(f=>followupDueState(f)==="Upcoming").length;$("followupCompleted").textContent=all.filter(f=>f.status==="Completed").length;
+const search=($("followupSearch")?.value||"").toLowerCase(),filter=$("followupFilter")?.value||"Open",typeFilter=$("followupTypeFilter")?.value||"";
+const rows=all.filter(f=>{const due=followupDueState(f),match=!filter||(filter==="Open"?f.status!=="Completed":due===filter),kind=f.linkType||"General";return match&&(!typeFilter||kind===typeFilter)&&[f.name,f.service,f.notes,followupLinkedLabel(f)].join(" ").toLowerCase().includes(search)}).slice().sort((a,b)=>{const order={Overdue:0,Today:1,Upcoming:2,Completed:3};return order[followupDueState(a)]-order[followupDueState(b)]||(a.date||"9999").localeCompare(b.date||"9999")});
+if(!rows.length){$("followupsTable").innerHTML='<div class="empty">No follow-ups match this view. Add a reminder or change the filters.</div>';return}
+$("followupsTable").innerHTML=`<table><thead><tr><th>DUE</th><th>CUSTOMER / TASK</th><th>RELATED TO</th><th>PRIORITY</th><th>STATUS</th><th>ACTIONS</th></tr></thead><tbody>${rows.map(f=>{const due=followupDueState(f),status=due==="Overdue"?"Overdue":due==="Today"?"Due today":due==="Completed"?"Completed":"Upcoming",k=f.linkType||"General",id=f.linkId,linked=k==="Enquiry"?data.enquiries:k==="Customer"?data.customers:k==="Quote"?data.quotes:k==="Job"?data.jobs:[],record=id?linked.find(x=>x.id===id):null,phone=(k==="Enquiry"||k==="Customer")?record?.phone:"",email=(k==="Enquiry"||k==="Customer")?record?.email:"";return `<tr><td><strong class="${due==="Overdue"?"followup-overdue":due==="Today"?"followup-due":""}">${esc(f.date?fmtDate(f.date):"No date")}</strong><div class="muted">${status}</div></td><td><strong>${esc(f.name||"No name")}</strong><div>${esc(f.service||"Follow-up task")}</div>${f.notes?`<div class="followup-related">${esc(f.notes)}</div>`:""}</td><td>${esc(f.linkId?followupLinkedLabel(f):"General task")}</td><td>${tag(f.priority||"Normal")}</td><td>${tag(f.status==="Completed"?"Completed":due==="Overdue"?"Overdue":"Pending")}</td><td><div class="followup-actions">${f.status!=="Completed"?`<button class="action" onclick="completeFollowup('${f.id}')">✓ Complete</button>`:`<button class="action" onclick="reopenFollowup('${f.id}')">Reopen</button>`}<button class="action" onclick="editRecord('followups','${f.id}')">Edit</button>${phone?`<a class="action" href="tel:${esc(phone)}">Call</a>`:""}${email?`<a class="action" href="mailto:${esc(email)}">Email</a>`:""}<button class="action" onclick="removeRecord('followups','${f.id}')">Delete</button></div></td></tr>`}).join("")}</tbody></table>`;
+}
+function completeFollowup(id){const f=data.followups.find(x=>x.id===id);if(!f)return;f.status="Completed";f.completedAt=new Date().toISOString();save();renderFollowups();updateDashboard()}
+function reopenFollowup(id){const f=data.followups.find(x=>x.id===id);if(!f)return;f.status="Pending";f.completedAt="";save();renderFollowups();updateDashboard()}
 function removeRecord(type,id){
 if(!confirm("Delete this record?"))return;
 data[type]=data[type].filter(r=>r.id!==id);
@@ -1281,7 +1305,7 @@ $("mJobs").textContent=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j
 $("mRevenue").textContent=money(data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status)).reduce((s,j)=>s+Number(j.value||0),0));
 $("mOutstanding").textContent=money(data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0));
 $("priorities").innerHTML=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status)).slice(0,5).map(e=>`<div class="priority"><span>${esc(e.name)} · ${esc(e.service)}</span>${tag(e.priority)}</div>`).join("")||'<div class="empty">No open enquiries. Nice work!</div>';
-$("upcomingOverview").innerHTML=data.followups.filter(f=>f.status!=="Completed").slice(0,5).map(f=>`<div class="priority"><span>${esc(f.name)} · ${esc(f.service)}</span><span class="muted">${esc(f.date)}</span></div>`).join("")||'<div class="empty">No outstanding follow-ups.</div>';
+$("upcomingOverview").innerHTML=data.followups.filter(f=>f.status!=="Completed").slice().sort((a,b)=>(a.date||"9999").localeCompare(b.date||"9999")).slice(0,5).map(f=>`<div class="priority"><span>${esc(f.name)} · ${esc(f.service)}</span><span class="muted">${esc(f.date?fmtDate(f.date):"No date")}</span></div>`).join("")||'<div class="empty">No outstanding follow-ups.</div>';
 $("recentRows").innerHTML=data.enquiries.slice(0,5).length?`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>VALUE</th><th>STATUS</th><th></th></tr></thead><tbody>${data.enquiries.slice(0,5).map(e=>`<tr><td><strong>${esc(e.name)}</strong></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td><button class="action" onclick="showPage('enquiries');openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries yet.</div>';
 renderEnquiries();
 renderQuotes();
