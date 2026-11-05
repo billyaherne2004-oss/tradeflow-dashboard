@@ -147,7 +147,7 @@ td strong{font-weight:650}
 
 
 .dashboard-kpi{cursor:pointer;transition:transform .15s,border-color .15s}.dashboard-kpi:hover{transform:translateY(-2px);border-color:#b9caf0}.dashboard-kpi:focus-visible{outline:3px solid #3269df55;outline-offset:2px}.dashboard-actions{margin:14px 0 8px}.dashboard-priority{width:100%;text-align:left;background:white;border:0;border-bottom:1px solid var(--line);cursor:pointer}.dashboard-priority:hover{background:#f8faff}
-</style>
+\n#enquiriesTable .action{white-space:nowrap}#enquiryDetail .detail-card{margin-bottom:14px}#enquiryDetail a.secondary{display:inline-flex;align-items:center;text-decoration:none;padding:8px 12px;border-radius:8px;border:1px solid var(--line);color:var(--text);font-size:12px}\n</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -203,7 +203,7 @@ td strong{font-weight:650}
 <div class="toolbar"><div class="toolbar-left">
 <input class="search" id="enquirySearch" placeholder="Search name, service, email..." oninput="renderEnquiries()">
 <select id="enquiryFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All statuses</option><option>New</option><option>Contacted</option><option>Quote Sent</option><option>Won</option><option>Lost</option></select>
-<select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>
+<select id="enquiryPriorityFilter" onchange="renderEnquiries()" style="width:140px"><option value="">All priorities</option><option>Urgent</option><option>High</option><option>Normal</option><option>Low</option></select>\n<select id="enquirySourceFilter" onchange="renderEnquiries()" style="width:145px"><option value="">All sources</option><option>Website</option><option>Phone</option><option>Email</option><option>WhatsApp</option><option>Referral</option><option>Social media</option><option>Other</option></select>
 </div></div>
 <div class="table-wrap" id="enquiriesTable"></div>
 </div>
@@ -488,17 +488,20 @@ if(id==="revenue")renderRevenue();
 document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>showPage(n.dataset.page)));
 /* ENQUIRIES */
 function renderEnquiries(){
-const q=($("enquirySearch")?.value||"").toLowerCase();
-const st=$("enquiryFilter")?.value||"";
-const pr=$("enquiryPriorityFilter")?.value||"";
-const rows=data.enquiries.filter(e=>(!st||e.status===st)&&(!pr||e.priority===pr)&&[e.name,e.service,e.email,e.phone,e.source].join(" ").toLowerCase().includes(q));
+const q=($("enquirySearch")?.value||"").toLowerCase().trim(),st=$("enquiryFilter")?.value||"",pr=$("enquiryPriorityFilter")?.value||"",src=$("enquirySourceFilter")?.value||"";
+const rows=data.enquiries.filter(e=>(!st||e.status===st)&&(!pr||e.priority===pr)&&(!src||e.source===src)&&[e.name,e.service,e.email,e.phone,e.source,e.notes].join(" ").toLowerCase().includes(q)).sort((a,b)=>{const order={Urgent:0,High:1,Normal:2,Low:3};return (order[a.priority]??2)-(order[b.priority]??2)||String(b.date||"").localeCompare(String(a.date||""))});
 $("enquiryTotal").textContent=data.enquiries.length;
 $("enquiryNew").textContent=data.enquiries.filter(e=>e.status==="New").length;
 $("enquiryQuoted").textContent=data.enquiries.filter(e=>e.status==="Quote Sent").length;
-$("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(e.status)).reduce((s,e)=>s+Number(e.value||0),0));
-if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match your search. Try changing your filters or add a new enquiry.</div>';return}
-$("enquiriesTable").innerHTML=`<table><thead><tr><th>CUSTOMER</th><th>SERVICE</th><th>EST. VALUE</th><th>STATUS</th><th>PRIORITY</th><th>FOLLOW-UP</th><th></th></tr></thead><tbody>${rows.map(e=>`<tr><td><strong>${esc(e.name)}</strong><div class="muted">${esc(e.phone||e.email||"No contact details")}</div></td><td>${esc(e.service)}</td><td>${money(e.value)}</td><td>${tag(e.status)}</td><td>${tag(e.priority)}</td><td>${e.followup?esc(e.followup):'<span class="muted">Not set</span>'}</td><td><button class="action" onclick="openEnquiry('${e.id}')">Open →</button></td></tr>`).join("")}</tbody></table>`;
+$("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(e.status)).reduce((sum,e)=>sum+Number(e.value||0),0));
+if(!$("enquiriesTable"))return;
+if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match these filters. Try clearing a filter or add a new enquiry.</div>';return}
+$("enquiriesTable").innerHTML='<table><thead><tr><th>ENQUIRY</th><th>SOURCE</th><th>VALUE</th><th>STATUS</th><th>PRIORITY</th><th>FOLLOW-UP</th><th>QUICK ACTION</th><th></th></tr></thead><tbody>'+rows.map(e=>{
+const quick=e.status==="New"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Contacted\')">Mark contacted</button>':e.status==="Contacted"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Quote Sent\')">Mark quote sent</button>':e.status==="Quote Sent"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Won\')">Mark won</button>':'<span class="muted">—</span>';
+return '<tr><td><strong>'+esc(e.name)+'</strong><div class="muted">'+esc(e.service||"Service not specified")+' · '+esc(e.date||"Date not set")+'</div><div class="muted">'+esc(e.phone||e.email||"No contact details")+'</div></td><td>'+esc(e.source||"Other")+'</td><td>'+money(e.value)+'</td><td>'+tag(e.status)+'</td><td>'+tag(e.priority||"Normal")+'</td><td>'+(e.followup?esc(e.followup):'<span class="muted">Not set</span>')+'</td><td>'+quick+'</td><td><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></td></tr>';
+}).join("")+'</tbody></table>';
 }
+function quickEnquiryStatus(id,status){const e=data.enquiries.find(x=>x.id===id);if(!e)return;e.status=status;syncEnquiryFollowups(e);save();renderEnquiries();updateDashboard();if(selectedEnquiry===id)openEnquiry(id)}
 let selectedEnquiry=null;
 function openEnquiry(id){
 selectedEnquiry=id;
