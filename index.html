@@ -522,14 +522,22 @@ const stages=["New","Contacted","Quote Sent","Won","Lost"];
 const root=$("enquiryPipeline");if(!root)return;
 root.innerHTML=stages.map(stage=>{
 const items=data.enquiries.filter(e=>(e.status||"New")===stage).sort((a,b)=>({Urgent:0,High:1,Normal:2,Low:3}[a.priority]??2)-({Urgent:0,High:1,Normal:2,Low:3}[b.priority]??2));
-return '<section class="enquiry-stage"><div class="enquiry-stage-head"><strong>'+stage+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>'<article class="enquiry-lead" onclick="openEnquiry(\''+e.id+'\')"><div class="split"><strong>'+esc(e.name)+'</strong>'+tag(e.priority||"Normal")+'</div><div class="muted small">'+esc(e.service||"Service not specified")+'</div><div class="enquiry-lead-value">'+money(e.value)+'</div><div class="muted small">'+esc(e.source||"Other")+' · '+(e.followup?'Follow-up '+esc(e.followup):'No follow-up set')+'</div><div class="enquiry-stage-actions" onclick="event.stopPropagation()"><select aria-label="Move '+esc(e.name)+' to stage" onchange="quickEnquiryStatus(\''+e.id+'\',this.value)">'+stages.map(v=>'<option '+(v===stage?'selected':'')+'>'+v+'</option>').join('')+'</select><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></div></article>').join(""):'<div class="enquiry-stage-empty">No leads in this stage</div>')+'</section>';
+return '<section class="enquiry-stage"><div class="enquiry-stage-head"><strong>'+stage+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>'<article class="enquiry-lead" onclick="openEnquiry(\''+e.id+'\')"><div class="split"><strong>'+esc(e.name)+'</strong>'+tag(e.priority||"Normal")+'</div><div class="muted small">'+esc(e.service||"Service not specified")+'</div><div class="enquiry-lead-value">'+money(e.value)+'</div><div class="muted small">'+esc(e.source||"Other")+' · '+(e.followup?'Follow-up '+esc(e.followup):'No follow-up set')+'</div><div class="enquiry-stage-actions" onclick="event.stopPropagation()"><select aria-label="Move '+esc(e.name)+' to stage" onclick="event.stopPropagation()" onchange="event.stopPropagation();quickEnquiryStatus(\''+e.id+'\',this.options[this.selectedIndex].value)">'+stages.map(v=>'<option '+(v===stage?'selected':'')+'>'+v+'</option>').join('')+'</select><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></div></article>').join(""):'<div class="enquiry-stage-empty">No leads in this stage</div>')+'</section>';
 }).join("");
 }
 function quickEnquiryStatus(id,status){
 const allowed=["New","Contacted","Quote Sent","Won","Lost"];
-const e=data.enquiries.find(x=>x.id===id);if(!e||!allowed.includes(status))return;
-e.status=status;syncEnquiryFollowups(e);save();renderEnquiries();updateDashboard();
+const e=data.enquiries.find(x=>String(x.id)===String(id));
+if(!e||!allowed.includes(String(status)))return false;
+e.status=String(status);
+syncEnquiryFollowups(e);
+save();
+/* Refresh the board first so the card immediately moves into its new column. */
+renderEnquiryPipeline();
+renderEnquiries();
+updateDashboard();
 if(selectedEnquiry===id)openEnquiry(id);
+return true;
 }
 let selectedEnquiry=null;
 function enquiryRelated(e){
