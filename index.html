@@ -517,19 +517,24 @@ const quick=e.status==="New"?'<button class="action" onclick="quickEnquiryStatus
 return '<tr><td><strong>'+esc(e.name)+'</strong><div class="muted">'+esc(e.service||"Service not specified")+' · '+esc(e.date||"Date not set")+'</div><div class="muted">'+esc(e.phone||e.email||"No contact details")+'</div></td><td>'+esc(e.source||"Other")+'</td><td>'+money(e.value)+'</td><td>'+tag(e.status)+'</td><td>'+tag(e.priority||"Normal")+'</td><td>'+(e.followup?esc(e.followup):'<span class="muted">Not set</span>')+'</td><td>'+quick+'</td><td><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></td></tr>';
 }).join("")+'</tbody></table>';
 }
+function enquiryStageName(value){
+const raw=String(value||"New").trim().toLowerCase();
+return ({"new":"New","contacted":"Contacted","quote sent":"Quote Sent","won":"Won","lost":"Lost"})[raw]||"New";
+}
 function renderEnquiryPipeline(){
 const stages=["New","Contacted","Quote Sent","Won","Lost"];
 const root=$("enquiryPipeline");if(!root)return;
 root.innerHTML=stages.map(stage=>{
-const items=data.enquiries.filter(e=>(e.status||"New")===stage).sort((a,b)=>({Urgent:0,High:1,Normal:2,Low:3}[a.priority]??2)-({Urgent:0,High:1,Normal:2,Low:3}[b.priority]??2));
+const items=data.enquiries.filter(e=>enquiryStageName(e.status)===stage).sort((a,b)=>({Urgent:0,High:1,Normal:2,Low:3}[a.priority]??2)-({Urgent:0,High:1,Normal:2,Low:3}[b.priority]??2));
 return '<section class="enquiry-stage"><div class="enquiry-stage-head"><strong>'+stage+'</strong><span>'+items.length+'</span></div>'+(items.length?items.map(e=>'<article class="enquiry-lead" onclick="openEnquiry(\''+e.id+'\')"><div class="split"><strong>'+esc(e.name)+'</strong>'+tag(e.priority||"Normal")+'</div><div class="muted small">'+esc(e.service||"Service not specified")+'</div><div class="enquiry-lead-value">'+money(e.value)+'</div><div class="muted small">'+esc(e.source||"Other")+' · '+(e.followup?'Follow-up '+esc(e.followup):'No follow-up set')+'</div><div class="enquiry-stage-actions" onclick="event.stopPropagation()"><select aria-label="Move '+esc(e.name)+' to stage" onclick="event.stopPropagation()" onchange="event.stopPropagation();quickEnquiryStatus(\''+e.id+'\',this.options[this.selectedIndex].value)">'+stages.map(v=>'<option '+(v===stage?'selected':'')+'>'+v+'</option>').join('')+'</select><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></div></article>').join(""):'<div class="enquiry-stage-empty">No leads in this stage</div>')+'</section>';
 }).join("");
 }
 function quickEnquiryStatus(id,status){
 const allowed=["New","Contacted","Quote Sent","Won","Lost"];
 const e=data.enquiries.find(x=>String(x.id)===String(id));
-if(!e||!allowed.includes(String(status)))return false;
-e.status=String(status);
+const nextStage=String(status||"").trim();
+if(!e||!allowed.includes(nextStage))return false;
+e.status=nextStage;
 syncEnquiryFollowups(e);
 save();
 /* Refresh the board first so the card immediately moves into its new column. */
