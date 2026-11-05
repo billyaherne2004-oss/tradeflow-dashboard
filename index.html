@@ -419,7 +419,7 @@ data=saved&&typeof saved==="object"?saved:initialData;
 if(!Array.isArray(data[k]))data[k]=initialData[k]||[];
 });
 data.enquiries.forEach(e=>{
-e.id=e.id||makeId();e.priority=e.priority||"Normal";
+e.id=e.id||makeId();e.status=enquiryStageName(e.status);e.priority=e.priority||"Normal";
 e.history=Array.isArray(e.history)?e.history:[];
 e.notes=e.notes||"";e.source=e.source||"Other";
 e.phone=e.phone||"";e.email=e.email||"";
@@ -504,21 +504,21 @@ document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>show
 /* ENQUIRIES */
 function renderEnquiries(){
 const q=($("enquirySearch")?.value||"").toLowerCase().trim(),st=$("enquiryFilter")?.value||"",pr=$("enquiryPriorityFilter")?.value||"",src=$("enquirySourceFilter")?.value||"";
-const rows=data.enquiries.filter(e=>(!st||e.status===st)&&(!pr||e.priority===pr)&&(!src||e.source===src)&&[e.name,e.service,e.email,e.phone,e.source,e.notes].join(" ").toLowerCase().includes(q)).sort((a,b)=>{const order={Urgent:0,High:1,Normal:2,Low:3};return (order[a.priority]??2)-(order[b.priority]??2)||String(b.date||"").localeCompare(String(a.date||""))});
+const rows=data.enquiries.filter(e=>(!st||enquiryStageName(e.status)===st)&&(!pr||e.priority===pr)&&(!src||e.source===src)&&[e.name,e.service,e.email,e.phone,e.source,e.notes].join(" ").toLowerCase().includes(q)).sort((a,b)=>{const order={Urgent:0,High:1,Normal:2,Low:3};return (order[a.priority]??2)-(order[b.priority]??2)||String(b.date||"").localeCompare(String(a.date||""))});
 $("enquiryTotal").textContent=data.enquiries.length;
-$("enquiryNew").textContent=data.enquiries.filter(e=>e.status==="New").length;
-$("enquiryQuoted").textContent=data.enquiries.filter(e=>e.status==="Quote Sent").length;
+$("enquiryNew").textContent=data.enquiries.filter(e=>enquiryStageName(e.status)==="New").length;
+$("enquiryQuoted").textContent=data.enquiries.filter(e=>enquiryStageName(e.status)==="Quote Sent").length;
 $("enquiryValue").textContent=money(data.enquiries.filter(e=>!["Won","Lost"].includes(e.status)).reduce((sum,e)=>sum+Number(e.value||0),0));
 renderEnquiryPipeline();
 if(!$("enquiriesTable"))return;
 if(!rows.length){$("enquiriesTable").innerHTML='<div class="empty">No enquiries match these filters. Try clearing a filter or add a new enquiry.</div>';return}
 $("enquiriesTable").innerHTML='<table><thead><tr><th>ENQUIRY</th><th>SOURCE</th><th>VALUE</th><th>STATUS</th><th>PRIORITY</th><th>FOLLOW-UP</th><th>QUICK ACTION</th><th></th></tr></thead><tbody>'+rows.map(e=>{
-const quick=e.status==="New"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Contacted\')">Mark contacted</button>':e.status==="Contacted"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Quote Sent\')">Mark quote sent</button>':e.status==="Quote Sent"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Won\')">Mark won</button>':'<span class="muted">—</span>';
+const stage=enquiryStageName(e.status);const quick=stage==="New"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Contacted\')">Mark contacted</button>':stage==="Contacted"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Quote Sent\')">Mark quote sent</button>':stage==="Quote Sent"?'<button class="action" onclick="quickEnquiryStatus(\''+e.id+'\',\'Won\')">Mark won</button>':'<span class="muted">—</span>';
 return '<tr><td><strong>'+esc(e.name)+'</strong><div class="muted">'+esc(e.service||"Service not specified")+' · '+esc(e.date||"Date not set")+'</div><div class="muted">'+esc(e.phone||e.email||"No contact details")+'</div></td><td>'+esc(e.source||"Other")+'</td><td>'+money(e.value)+'</td><td>'+tag(e.status)+'</td><td>'+tag(e.priority||"Normal")+'</td><td>'+(e.followup?esc(e.followup):'<span class="muted">Not set</span>')+'</td><td>'+quick+'</td><td><button class="action" onclick="openEnquiry(\''+e.id+'\')">Open →</button></td></tr>';
 }).join("")+'</tbody></table>';
 }
 function enquiryStageName(value){
-const raw=String(value||"New").trim().toLowerCase();
+const raw=String(value??"").trim().toLowerCase();
 return ({"new":"New","contacted":"Contacted","quote sent":"Quote Sent","won":"Won","lost":"Lost"})[raw]||"New";
 }
 function renderEnquiryPipeline(){
@@ -534,7 +534,7 @@ const allowed=["New","Contacted","Quote Sent","Won","Lost"];
 const e=data.enquiries.find(x=>String(x.id)===String(id));
 const nextStage=String(status||"").trim();
 if(!e||!allowed.includes(nextStage))return false;
-e.status=nextStage;
+e.status=enquiryStageName(nextStage);
 syncEnquiryFollowups(e);
 save();
 /* Refresh the board first so the card immediately moves into its new column. */
@@ -549,7 +549,7 @@ function enquiryRelated(e){
 const customer=e.convertedCustomerId?data.customers.find(c=>c.id===e.convertedCustomerId):null;
 return {customer,quotes:data.quotes.filter(q=>q.sourceEnquiryId===e.id||(customer&&q.customerId===customer.id)),jobs:data.jobs.filter(j=>j.sourceEnquiryId===e.id||(customer&&j.customerId===customer.id)),reminders:data.followups.filter(f=>f.linkType==="Enquiry"&&f.linkId===e.id)};
 }
-function createQuoteFromEnquiry(id){const e=data.enquiries.find(x=>x.id===id);if(!e)return;const c=findOrCreateCustomer(e);pendingCustomerId=c.id;openQuote();$("qService").value=e.service||"";$("qNotes").value="Created from enquiry: "+(e.service||"")+(e.notes?"\n\nOriginal enquiry notes: "+e.notes:"");}
+function createQuoteFromEnquiry(id){const e=data.enquiries.find(x=>x.id===id);if(!e)return;const c=findOrCreateCustomer(e);pendingCustomerId=c.id;pendingEnquiryId=e.id;openQuote();$("qService").value=e.service||"";$("qNotes").value="Created from enquiry: "+(e.service||"")+(e.notes?"\n\nOriginal enquiry notes: "+e.notes:"");}
 function addEnquiryFollowup(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;openAdd("followups");
 const fields=$("formFields"),name=fields.querySelector('[name="name"]'),service=fields.querySelector('[name="service"]'),type=fields.querySelector('[name="linkType"]'),link=fields.querySelector('[name="linkId"]');
@@ -585,7 +585,7 @@ $("enquiries").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function changeEnquiryField(id,key,value){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
-e[key]=value;if(key==="status")syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
+e[key]=key==="status"?enquiryStageName(value):value;if(key==="status")syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
 function editEnquiry(id){const e=data.enquiries.find(x=>x.id===id);if(e)openForm("enquiries",e)}
 function addHistory(id){
@@ -594,7 +594,7 @@ const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");i
 const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
 const note=prompt("What happened?");if(note===null)return;
 e.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
-e.status=e.status==="New"?"Contacted":e.status;
+e.status=enquiryStageName(e.status)==="New"?"Contacted":enquiryStageName(e.status);
 syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
 function findOrCreateCustomer(e){
@@ -741,7 +741,7 @@ if(!confirm("Delete "+c.name+" from your customer list? Linked jobs, quotes and 
 data.customers=data.customers.filter(x=>x.id!==id);
 save();closeCustomer();renderCustomers();updateDashboard();
 }
-let pendingCustomerId=null;
+let pendingCustomerId=null,pendingEnquiryId=null;
 function customerAction(type,id){
 pendingCustomerId=id;
 openForm(type,null);
@@ -1147,7 +1147,7 @@ loadJobPhotos(jobId,stage);
 /* QUOTES */
 const QUOTE_TERMS="Payment is due within 14 days of completion unless agreed otherwise. This quote is valid until the date shown. Any extra work will be agreed with you before it is carried out.";
 let qItems=[],qEditingId=null;
-function addDays(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function addDays(baseOrDays,amount){let d,days;if(typeof baseOrDays==="number"&&amount===undefined){d=new Date();days=baseOrDays}else{const base=String(baseOrDays||today());d=new Date(base+"T00:00:00");if(isNaN(d.getTime()))d=new Date();days=Number(amount)||0}d.setDate(d.getDate()+days);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function fmtDate(s){
 if(!s)return "";
 const d=new Date(s+"T00:00:00");
@@ -1243,7 +1243,7 @@ renderQItems();
 $("quoteModal").style.display="flex";
 }
 function closeQuote(){
-$("quoteModal").style.display="none";qEditingId=null;pendingCustomerId=null;
+$("quoteModal").style.display="none";qEditingId=null;pendingCustomerId=null;pendingEnquiryId=null;
 }
 function toggleNewCustomer(){
 $("qNewBox").style.display=$("qCustomer").value==="__new"?"grid":"none";
@@ -1308,6 +1308,7 @@ subtotal:t.subtotal,vat:t.vat,value:t.total,
 notes:$("qNotes").value.trim(),
 terms:$("qTerms").value.trim()
 };
+if(pendingEnquiryId){fields.sourceEnquiryId=pendingEnquiryId;const source=data.enquiries.find(e=>e.id===pendingEnquiryId);if(source)source.convertedCustomerId=cust.id;}
 if(qEditingId){
 const old=data.quotes.find(x=>x.id===qEditingId);
 if(old)Object.assign(old,fields);
@@ -1412,7 +1413,7 @@ if(which==="jobs"){showPage("jobs");$("jobFilter").value="";renderJobs();return;
 showPage("revenue");
 }
 function updateDashboard(){
-const openEnquiries=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(e.status));
+const openEnquiries=data.enquiries.filter(e=>["New","Contacted","Quote Sent"].includes(enquiryStageName(e.status)));
 const activeJobs=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status));
 $("mEnquiries").textContent=openEnquiries.length;
 $("mJobs").textContent=activeJobs.length;
