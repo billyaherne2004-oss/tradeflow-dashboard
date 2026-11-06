@@ -734,6 +734,7 @@ alert("Job created successfully. You can find it in the Jobs section.");
 function deleteEnquiry(id){
 if(!confirm("Are you sure you want to permanently delete this enquiry?"))return;
 data.enquiries=data.enquiries.filter(e=>e.id!==id);
+removeLinkedFollowups("Enquiry",id);
 save();closeEnquiry();renderEnquiries();updateDashboard();
 }
 /* CUSTOMERS */
@@ -987,10 +988,15 @@ return '<article class="followup-task-card '+(due==="Completed"?"is-completed":"
 }
 function completeFollowup(id){const f=data.followups.find(x=>x.id===id);if(!f)return;f.status="Completed";f.completedAt=new Date().toISOString();save();renderFollowups();updateDashboard()}
 function reopenFollowup(id){const f=data.followups.find(x=>x.id===id);if(!f)return;f.status="Pending";f.completedAt="";save();renderFollowups();updateDashboard()}
+function removeLinkedFollowups(type,id){
+data.followups=data.followups.filter(f=>!(f.linkType===type&&f.linkId===id));
+}
 function removeRecord(type,id){
 if(!confirm("Delete this record?"))return;
 data[type]=data[type].filter(r=>r.id!==id);
-save();renderTable(type);updateDashboard();
+const linkedType=({customers:"Customer",quotes:"Quote",jobs:"Job",enquiries:"Enquiry"})[type];
+if(linkedType)removeLinkedFollowups(linkedType,id);
+save();renderTable(type);updateDashboard();renderFollowups();
 }
 
 /* JOB MANAGEMENT */
@@ -1211,8 +1217,9 @@ function closeJobDetail(){$("jobDetail").style.display="none";$("jobs").appendCh
 function deleteJob(id){
 if(!confirm("Delete this job record? This cannot be undone."))return;
 data.jobs=data.jobs.filter(j=>j.id!==id);
+removeLinkedFollowups("Job",id);
 data.quotes.forEach(q=>{if(q.convertedJobId===id)q.convertedJobId=""});
-save();closeJobDetail();renderJobs();updateDashboard();renderRevenue();renderCalendar();
+save();closeJobDetail();renderJobs();renderFollowups();updateDashboard();renderRevenue();renderCalendar();
 }
 let jobPhotoDBPromise=null;
 function jobPhotoDB(){
