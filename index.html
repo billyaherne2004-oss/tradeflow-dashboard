@@ -586,7 +586,7 @@ autoFollowup(prepKey,{name:j.name,service:"Prepare for job · "+(j.service||"Sch
 }else completeAutoFollowup(prepKey);
 if(j.status==="Completed"&&Number(j.value||0)>Number(j.paid||0)){
 autoFollowup(payKey,{name:j.name,service:"Collect remaining job payment · "+(j.service||"Completed job"),date:addDays(j.completedDate||j.end||today(),7),priority:"High",linkType:"Job",linkId:j.id});
-}else if(Number(j.paid||0)>=Number(j.value||0)||j.status==="Cancelled")completeAutoFollowup(payKey);
+}else completeAutoFollowup(payKey);
 }
 function save(){localStorage.setItem("tradeflowData",JSON.stringify(data))}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
