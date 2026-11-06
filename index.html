@@ -160,6 +160,7 @@ body.enquiry-focus .main{margin:0;width:100%;max-width:1100px;padding:32px 28px 
 body.enquiry-focus #enquiryWorkspace{display:block;min-height:80vh}
 body.enquiry-focus #enquiryDetail{display:block!important}
 body.enquiry-focus .enquiry-back-button{position:sticky;top:10px;z-index:3;background:#fff;box-shadow:0 2px 8px #18233812}
+body.customer-focus .sidebar,body.customer-focus .topbar{display:none!important}body.customer-focus .main{margin:0;width:100%;max-width:1100px;padding:32px 28px 70px}body.customer-focus #customerWorkspace{display:block;min-height:80vh}body.customer-focus #customerDetail{display:block!important;margin-top:0!important}body.customer-focus .customer-back-button{position:sticky;top:10px;z-index:3;background:#fff;box-shadow:0 2px 8px #18233812}
 .enquiry-stage-actions select{cursor:pointer}
 .followup-state{display:inline-block;margin-left:5px;font-size:10px;font-weight:700;color:var(--muted)}.followup-state.overdue,.enquiry-card-followup.overdue{color:var(--red)}.followup-state.due,.enquiry-card-followup.due{color:var(--orange)}.enquiry-card-followup{font-size:11px;font-weight:650;color:var(--muted);margin-top:7px}</style>
 </head>
@@ -235,6 +236,7 @@ body.enquiry-focus .enquiry-back-button{position:sticky;top:10px;z-index:3;backg
 <div class="panel"><div class="table-wrap" id="customersTable"></div></div>
 <div id="customerDetail" style="display:none;margin-top:18px"></div>
 </section>
+<section class="page" id="customerWorkspace"><div id="customerWorkspaceContent"></div></section>
 <section class="page" id="quotes">
 <div class="page-intro">Build itemised quotes, send them to customers and turn accepted quotes into jobs.</div>
 <div class="grid">
@@ -484,7 +486,7 @@ let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":
 return `<span class="tag ${c}">${esc(s||"—")}</span>`;
 }
 function showPage(id){
-document.body.classList.remove("enquiry-focus");
+document.body.classList.remove("enquiry-focus","customer-focus");
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 $(id).classList.add("active");
 document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
@@ -663,7 +665,11 @@ const c=data.customers.find(x=>x.id===id);if(!c)return;
 const s=customerStats(c);
 const history=Array.isArray(c.history)?c.history:[];
 $("customerDetail").style.display="block";
+$("customerWorkspaceContent").appendChild($("customerDetail"));
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+$("customerWorkspace").classList.add("active");document.body.classList.add("customer-focus");
 $("customerDetail").innerHTML=`
+<button class="secondary customer-back-button" onclick="closeCustomer()">← Back to customers</button>
 <div class="detail-heading">
 <div><div class="eyebrow">CUSTOMER PROFILE</div><div class="detail-name">${esc(c.name)}</div><div class="muted">Customer since ${esc(c.createdAt||"Date not recorded")}</div></div>
 <div class="actions"><button class="secondary" onclick="editRecord('customers','${c.id}')">Edit customer</button><button class="secondary" onclick="closeCustomer()">Close</button></div>
@@ -717,7 +723,7 @@ ${history.length?history.slice().reverse().map(h=>`<div class="history-item"><di
 </div>`;
 $("customerDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
-function closeCustomer(){$("customerDetail").style.display="none";selectedCustomer=null}
+function closeCustomer(){$("customerDetail").style.display="none";$("customers").appendChild($("customerDetail"));selectedCustomer=null;document.body.classList.remove("customer-focus");showPage("customers");$("customers").scrollIntoView({behavior:"smooth",block:"start"})}
 function addCustomerHistory(id){
 const c=data.customers.find(x=>x.id===id);if(!c)return;
 const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
