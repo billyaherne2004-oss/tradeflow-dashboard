@@ -1481,7 +1481,7 @@ const cust=job?jobCustomer(job):linked;
 $("jCustomer").value=cust?.id||"";
 $("jTitle").value=job?.service||"";
 $("jDescription").value=job?.description||"";
-$("jStatus").value=job?.status||"Scheduled";
+$("jStatus").value=job?.status||"Awaiting scheduling";
 $("jValue").value=job?.value??"";
 $("jStart").value=job?.start||"";
 $("jStartTime").value=job?.startTime||"09:00";
@@ -1530,7 +1530,8 @@ if(fields.start){const candidate={start:fields.start,startTime:fields.startTime|
 if(!fields.service){alert("Please enter a job title.");return}
 const linkedInvoice=editingJobId&&data.invoices.find(i=>i.jobId===editingJobId);if(linkedInvoice){const existingJob=data.jobs.find(j=>j.id===editingJobId);if(existingJob&&fields.customerId!==existingJob.customerId){alert("This job already has invoice "+linkedInvoice.number+". Its customer cannot be changed while that invoice is linked.");return}if(Math.abs(Number(fields.value||0)-Number(linkedInvoice.value||0))>0.01){alert("This job already has invoice "+linkedInvoice.number+". Its agreed value cannot be changed while that invoice is linked.");return}}
 if(fields.start&&fields.end&&fields.end<fields.start){alert("The end date cannot be before the start date.");return}
-if(fields.start&&["Scheduled","In Progress"].includes(status)){if(fields.durationUnit==="days"&&[0,6].includes(new Date(fields.start+"T12:00:00").getDay())){alert("Multi-day jobs must start on a weekday.");return}const existing=editingJobId?data.jobs.find(j=>j.id===editingJobId):null;const candidate={...existing,...fields,start:fields.start,end:fields.end||fields.start};const clashes=data.jobs.filter(j=>j.id!==editingJobId&&["Scheduled","In Progress"].includes(j.status)&&j.start).filter(j=>jobScheduleSegments(j).some(a=>jobScheduleSegments(candidate).some(b=>a.start<b.end&&a.end>b.start)));if(clashes.length){const names=clashes.slice(0,3).map(j=>j.name+" — "+j.service+" ("+fmtDate(j.start)+(j.end?" to "+fmtDate(j.end):"")+")").join("\n");if(!await tradeflowConfirm("Scheduling warning: this job overlaps with "+clashes.length+" other scheduled job"+(clashes.length===1?"":"s")+".\n\n"+names+"\n\nSave anyway? This may be fine if another team member is doing the work.",{title:"Scheduling conflict",confirmText:"Save anyway",cancelText:"Review dates",danger:false}))return}}
+if(fields.start&&fields.durationUnit==="days"&&[0,6].includes(new Date(fields.start+"T12:00:00").getDay())){alert("Multi-day jobs must start on a weekday.");return}
+if(fields.start&&["Scheduled","In Progress"].includes(status)){const existing=editingJobId?data.jobs.find(j=>j.id===editingJobId):null;const candidate={...existing,...fields,start:fields.start,end:fields.end||fields.start};const clashes=data.jobs.filter(j=>j.id!==editingJobId&&["Scheduled","In Progress"].includes(j.status)&&j.start).filter(j=>jobScheduleSegments(j).some(a=>jobScheduleSegments(candidate).some(b=>a.start<b.end&&a.end>b.start)));if(clashes.length){const names=clashes.slice(0,3).map(j=>j.name+" — "+j.service+" ("+fmtDate(j.start)+(j.end?" to "+fmtDate(j.end):"")+")").join("\n");if(!await tradeflowConfirm("Scheduling warning: this job overlaps with "+clashes.length+" other scheduled job"+(clashes.length===1?"":"s")+".\n\n"+names+"\n\nSave anyway? This may be fine if another team member is doing the work.",{title:"Scheduling conflict",confirmText:"Save anyway",cancelText:"Review dates",danger:false}))return}}
 if(fields.paid<0){alert("Amount paid cannot be negative.");return}
 if(fields.paid>fields.value+0.001){alert("Amount paid cannot be greater than the agreed job value.");return}
 if(fields.paid>=fields.value&&fields.value>0)fields.payment="Paid";
@@ -2047,7 +2048,7 @@ function changeCalendarMonth(step){
 function goCalendarToday(){calendarMonthOffset=0;selectedCalendarDate=calendarDateKey(new Date());renderCalendar()}
 function selectCalendarDate(date){selectedCalendarDate=date;renderCalendar()}
 function addCalendarEvent(date=selectedCalendarDate){openForm("calendar",{date})}
-function addCalendarJob(date=selectedCalendarDate){pendingCustomerId=null;openJobEditor(null);setTimeout(()=>{if($("jStart")){$("jStart").value=date;updateJobSchedulePreview();}},0)}
+function addCalendarJob(date=selectedCalendarDate){pendingCustomerId=null;openJobEditor(null);setTimeout(()=>{if($("jStart")){$("jStart").value=date;$("jStatus").value="Scheduled";updateJobSchedulePreview();}},0)}
 function openCalendarEvent(id){const e=data.events.find(x=>x.id===id);if(e)openForm("calendar",e)}
 function openCalendarJob(id){const j=data.jobs.find(x=>x.id===id);if(!j)return;showPage("jobs");openJobDetail(id);setTimeout(()=>$("jobDetail").scrollIntoView({behavior:"smooth",block:"start"}),50)}
 function calendarItemsForDate(date,filter){
