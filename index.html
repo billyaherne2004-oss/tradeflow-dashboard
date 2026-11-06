@@ -1221,6 +1221,7 @@ otherCost:Number($("jOther").value)||0,notes:$("jNotes").value.trim(),
 completionNotes:$("jCompletionNotes").value.trim()
 };
 if(!fields.service){alert("Please enter a job title.");return}
+const linkedInvoice=editingJobId&&data.invoices.find(i=>i.jobId===editingJobId);if(linkedInvoice&&Math.abs(Number(fields.value||0)-Number(linkedInvoice.value||0))>0.01){alert("This job already has invoice "+linkedInvoice.number+". Its agreed value cannot be changed while that invoice is linked.");return}
 if(fields.start&&fields.end&&fields.end<fields.start){alert("The end date cannot be before the start date.");return}
 if(fields.start&&["Scheduled","In Progress"].includes(status)){const end=fields.end||fields.start;const clashes=data.jobs.filter(j=>j.id!==editingJobId&&["Scheduled","In Progress"].includes(j.status)&&j.start&&fields.start<=(j.end||j.start)&&end>=(j.start||""));if(clashes.length){const names=clashes.slice(0,3).map(j=>j.name+" — "+j.service+" ("+fmtDate(j.start)+(j.end?" to "+fmtDate(j.end):"")+")").join("\n");if(!confirm("Scheduling warning: this job overlaps with "+clashes.length+" other scheduled job"+(clashes.length===1?"":"s")+".\n\n"+names+"\n\nSave anyway? This may be fine if another team member is doing the work."))return}}
 if(fields.paid<0){alert("Amount paid cannot be negative.");return}
@@ -1308,6 +1309,7 @@ $("jobDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function closeJobDetail(){$("jobDetail").style.display="none";$("jobs").appendChild($("jobDetail"));selectedJobId=null;document.body.classList.remove("job-focus");showPage("jobs");$("jobs").scrollIntoView({behavior:"smooth",block:"start"})}
 function deleteJob(id){
+if(data.invoices.some(i=>i.jobId===id)){alert("This job has an invoice linked to it. Keep the job record so the invoice and payment history remain accurate.");return}
 if(!confirm("Delete this job record? This cannot be undone."))return;
 data.jobs=data.jobs.filter(j=>j.id!==id);
 removeLinkedFollowups("Job",id);
@@ -1779,6 +1781,7 @@ function invoiceBalance(inv){return Math.max(0,Math.round(((Number(inv.value)||0
 function invoiceStatus(inv){const p=invoicePaid(inv),b=invoiceBalance(inv);if(b<=0.009&&Number(inv.value)>0)return "Paid";if(p>0)return "Part-paid";if(inv.status==="Draft")return "Draft";if(inv.dueDate&&inv.dueDate<today())return "Overdue";return "Sent"}
 function openInvoice(jobId=""){
 const available=data.jobs.filter(j=>j.status!=="Cancelled"&&!data.invoices.some(i=>i.jobId===j.id));
+if(!available.length){alert("There are no jobs ready to invoice. Add a job with an agreed price first.");return}
 $("iJob").innerHTML='<option value="">— Select a job —</option>'+available.map(j=>'<option value="'+esc(j.id)+'">'+esc(j.name+" · "+(j.service||"Job")+" · "+money(j.value))+'</option>').join("");
 $("iJob").value=jobId||"";$("iDate").value=today();$("iDue").value=addDays(14);$("iPaymentDetails").value="";$("iNotes").value="";
 $("invoiceModal").style.display="flex";updateInvoicePreview();
@@ -1875,8 +1878,9 @@ function restoreBackup(event){
 const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();
 reader.onload=async function(){try{
 const parsed=JSON.parse(String(reader.result||""));const incoming=parsed&&parsed.data?parsed.data:parsed;
-const required=["enquiries","customers","quotes","jobs","events","followups","invoices"];
+const required=["enquiries","customers","quotes","jobs","events","followups"];
 if(!incoming||typeof incoming!=="object"||!required.every(function(k){return Array.isArray(incoming[k]);}))throw new Error("This file does not look like a valid Tradeflow backup.");
+if(!Array.isArray(incoming.invoices))incoming.invoices=[];
 if(!required.every(function(k){return incoming[k].every(function(item){return item&&typeof item==="object"&&!Array.isArray(item);});}))throw new Error("The backup contains an invalid record. Your current records have not been changed.");
 const photoBackup=parsed&&parsed.data?parsed.jobPhotos:undefined;
 if(photoBackup!==undefined&&(!Array.isArray(photoBackup)||!photoBackup.every(function(p){return p&&typeof p==="object"&&p.id&&p.jobId&&p.stage&&typeof p.dataUrl==="string"&&p.dataUrl.startsWith("data:image/");})))throw new Error("The backup contains invalid job photo data. Your current records have not been changed.");
