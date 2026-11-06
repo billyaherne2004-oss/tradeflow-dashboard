@@ -687,8 +687,11 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <label class="field full">Description<textarea id="jDescription" placeholder="Scope of work and important details"></textarea></label>
 <label class="field">Job status<select id="jStatus"><option>Awaiting scheduling</option><option>Scheduled</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select></label>
 <label class="field">Agreed job price (£)<input id="jValue" type="number" min="0" step="0.01"></label>
-<label class="field">Start date<input id="jStart" type="date"></label>
-<label class="field">End date<input id="jEnd" type="date"></label>
+<label class="field">Start date<input id="jStart" type="date" onchange="updateJobSchedulePreview()"></label>
+<label class="field">Start time<input id="jStartTime" type="time" value="09:00" onchange="updateJobSchedulePreview()"></label>
+<label class="field">Duration unit<select id="jDurationUnit" onchange="updateJobSchedulePreview()"><option value="hours">Hours</option><option value="days">Working days</option></select></label>
+<label class="field">Estimated duration<input id="jDuration" type="number" min="0.5" max="240" step="0.5" value="2" onchange="updateJobSchedulePreview()"></label>
+<div class="field"><span>Estimated finish</span><strong id="jSchedulePreview" style="padding:10px 0;color:var(--ink)">Not scheduled yet</strong></div>
 <label class="field">Completion date<input id="jCompletedDate" type="date"></label>
 <label class="field">Amount paid (£)<input id="jPaid" type="number" min="0" step="0.01"></label>
 <label class="field">Payment status<select id="jPayment"><option>Unpaid</option><option>Partially paid</option><option>Paid</option></select></label>
@@ -1481,7 +1484,12 @@ $("jDescription").value=job?.description||"";
 $("jStatus").value=job?.status||"Scheduled";
 $("jValue").value=job?.value??"";
 $("jStart").value=job?.start||"";
+$("jStartTime").value=job?.startTime||"09:00";
+$("jDurationUnit").value=job?.durationUnit||(job?.start&&!job?.startTime?"days":"hours");
+const legacyDays=job?.start?Math.max(1,Math.round((new Date((job.end||job.completion||job.start)+"T00:00:00")-new Date(job.start+"T00:00:00"))/86400000)+1):1;
+$("jDuration").value=job?.durationUnit==="days"?(job.durationDays||legacyDays):job?.durationHours||2;
 $("jEnd").value=job?.end||job?.completion||"";
+updateJobSchedulePreview();
 $("jCompletedDate").value=job?.completedDate||"";
 $("jPaid").value=job?.paid??0;
 $("jPayment").value=job?.payment||"Unpaid";
@@ -1491,9 +1499,11 @@ $("jOther").value=job?.otherCost??0;
 $("jNotes").value=job?.notes||"";
 $("jCompletionNotes").value=job?.completionNotes||"";
 ["jValue","jMaterials","jLabour","jOther"].forEach(id=>$(id).oninput=updateJobProfitPreview);
+["jStart","jStartTime","jDurationUnit","jDuration"].forEach(id=>$(id).onchange=updateJobSchedulePreview);
 updateJobProfitPreview();
 $("jobModal").style.display="flex";
 }
+function updateJobSchedulePreview(){const date=$("jStart").value,time=$("jStartTime").value||"09:00",unit=$("jDurationUnit").value||"hours",duration=Number($("jDuration").value)||(unit==="days"?1:2);if(!date){$("jSchedulePreview").textContent="Not scheduled yet";return}if(unit==="days"&&[0,6].includes(new Date(date+"T12:00:00").getDay())){$("jSchedulePreview").textContent="Choose a weekday start date";return}const candidate={start:date,startTime:time,durationUnit:unit,durationHours:unit==="hours"?duration:0,durationDays:unit==="days"?Math.round(duration):0,end:date};const segments=jobScheduleSegments(candidate),last=segments[segments.length-1];if(!last){$("jSchedulePreview").textContent="Add a duration";return}const endTime=String(last.end.getHours()).padStart(2,"0")+":"+String(last.end.getMinutes()).padStart(2,"0");$("jSchedulePreview").textContent=fmtDate(date)+" at "+time+" → "+fmtDate(last.date)+" at "+endTime+" ("+jobDuration(candidate)+")"}
 function updateJobProfitPreview(){
 const price=Number($("jValue").value)||0;
 const costs=["jMaterials","jLabour","jOther"].reduce((sum,id)=>sum+(Number($(id).value)||0),0);
@@ -1510,17 +1520,18 @@ const status=$("jStatus").value;
 const fields={
 name:customer.name,customerId:customer.id,service:$("jTitle").value.trim(),
 description:$("jDescription").value.trim(),status,value:Number($("jValue").value)||0,
-start:$("jStart").value,end:$("jEnd").value,completion:$("jEnd").value,
+start:$("jStart").value,startTime:$("jStart").value?$("jStartTime").value:"",durationUnit:$("jStart").value?$("jDurationUnit").value:"",durationHours:$("jStart").value&&$("jDurationUnit").value==="hours"?Number($("jDuration").value)||2:0,durationDays:$("jStart").value&&$("jDurationUnit").value==="days"?Math.max(1,Math.round(Number($("jDuration").value)||1)):0,end:"",completion:"",
 completedDate:$("jCompletedDate").value||(status==="Completed"?today():""),
 paid:Number($("jPaid").value)||0,payment:$("jPayment").value,
 materialsCost:Number($("jMaterials").value)||0,labourCost:Number($("jLabour").value)||0,
 otherCost:Number($("jOther").value)||0,notes:$("jNotes").value.trim(),
 completionNotes:$("jCompletionNotes").value.trim()
 };
+if(fields.start){const candidate={start:fields.start,startTime:fields.startTime||"09:00",durationUnit:fields.durationUnit||"hours",durationHours:fields.durationHours,durationDays:fields.durationDays,end:fields.start};const segments=jobScheduleSegments(candidate),last=segments[segments.length-1];if(last){fields.end=last.date;fields.completion=last.date;fields.endTime=String(last.end.getHours()).padStart(2,"0")+":"+String(last.end.getMinutes()).padStart(2,"0");}}else{fields.end="";fields.endTime="";}
 if(!fields.service){alert("Please enter a job title.");return}
 const linkedInvoice=editingJobId&&data.invoices.find(i=>i.jobId===editingJobId);if(linkedInvoice){const existingJob=data.jobs.find(j=>j.id===editingJobId);if(existingJob&&fields.customerId!==existingJob.customerId){alert("This job already has invoice "+linkedInvoice.number+". Its customer cannot be changed while that invoice is linked.");return}if(Math.abs(Number(fields.value||0)-Number(linkedInvoice.value||0))>0.01){alert("This job already has invoice "+linkedInvoice.number+". Its agreed value cannot be changed while that invoice is linked.");return}}
 if(fields.start&&fields.end&&fields.end<fields.start){alert("The end date cannot be before the start date.");return}
-if(fields.start&&["Scheduled","In Progress"].includes(status)){const existing=editingJobId?data.jobs.find(j=>j.id===editingJobId):null;const candidate={...existing,...fields,start:fields.start,end:fields.end||fields.start};const clashes=data.jobs.filter(j=>j.id!==editingJobId&&["Scheduled","In Progress"].includes(j.status)&&j.start).filter(j=>jobScheduleSegments(j).some(a=>jobScheduleSegments(candidate).some(b=>a.start<b.end&&a.end>b.start)));if(clashes.length){const names=clashes.slice(0,3).map(j=>j.name+" — "+j.service+" ("+fmtDate(j.start)+(j.end?" to "+fmtDate(j.end):"")+")").join("\n");if(!await tradeflowConfirm("Scheduling warning: this job overlaps with "+clashes.length+" other scheduled job"+(clashes.length===1?"":"s")+".\n\n"+names+"\n\nSave anyway? This may be fine if another team member is doing the work.",{title:"Scheduling conflict",confirmText:"Save anyway",cancelText:"Review dates",danger:false}))return}}
+if(fields.start&&["Scheduled","In Progress"].includes(status)){if(fields.durationUnit==="days"&&[0,6].includes(new Date(fields.start+"T12:00:00").getDay())){alert("Multi-day jobs must start on a weekday.");return}const existing=editingJobId?data.jobs.find(j=>j.id===editingJobId):null;const candidate={...existing,...fields,start:fields.start,end:fields.end||fields.start};const clashes=data.jobs.filter(j=>j.id!==editingJobId&&["Scheduled","In Progress"].includes(j.status)&&j.start).filter(j=>jobScheduleSegments(j).some(a=>jobScheduleSegments(candidate).some(b=>a.start<b.end&&a.end>b.start)));if(clashes.length){const names=clashes.slice(0,3).map(j=>j.name+" — "+j.service+" ("+fmtDate(j.start)+(j.end?" to "+fmtDate(j.end):"")+")").join("\n");if(!await tradeflowConfirm("Scheduling warning: this job overlaps with "+clashes.length+" other scheduled job"+(clashes.length===1?"":"s")+".\n\n"+names+"\n\nSave anyway? This may be fine if another team member is doing the work.",{title:"Scheduling conflict",confirmText:"Save anyway",cancelText:"Review dates",danger:false}))return}}
 if(fields.paid<0){alert("Amount paid cannot be negative.");return}
 if(fields.paid>fields.value+0.001){alert("Amount paid cannot be greater than the agreed job value.");return}
 if(fields.paid>=fields.value&&fields.value>0)fields.payment="Paid";
