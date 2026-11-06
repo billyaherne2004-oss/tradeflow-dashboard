@@ -539,7 +539,7 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <div class="card"><div class="metric-label">Completed jobs</div><div class="metric" id="jobCompletedCount">0</div><div class="metric-note">Finished work</div></div>
 <div class="card"><div class="metric-label">Active job value</div><div class="metric" id="jobActiveValue">£0</div><div class="metric-note">Value of active work</div></div>
 </div>
-<div class="toolbar"><div class="toolbar-left"><input class="search" id="jobSearch" placeholder="Search customer, job or address..." oninput="renderJobs()"><select id="jobFilter" class="job-status" onchange="renderJobs()"><option value="">All statuses</option><option>Scheduled</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select></div><button class="primary" onclick="openJobEditor()">+ Add job</button></div>
+<div class="toolbar"><div class="toolbar-left"><input class="search" id="jobSearch" placeholder="Search customer, job or address..." oninput="renderJobs()"><select id="jobFilter" class="job-status" onchange="renderJobs()"><option value="">All statuses</option><option>Awaiting scheduling</option><option>Scheduled</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select></div><button class="primary" onclick="openJobEditor()">+ Add job</button></div>
 <div class="panel"><div class="table-wrap" id="jobsTable"></div></div>
 </section>
 <section class="page" id="jobWorkspace"><div id="jobDetail" style="display:none"></div></section>
@@ -1756,6 +1756,7 @@ q.status=status;
 const c=quoteCustomer(q);
 addCustomerTimeline(c,"Quote","Quote "+(q.number||"")+" marked "+status,(q.service||"Quote")+" · "+money(q.value)+(previous?" · Previous status: "+previous:""));
 syncQuoteFollowup(q);save();renderQuotes();updateDashboard();
+if(status==="Accepted"&&previous!=="Accepted")quoteToJob(q.id);
 }
 function duplicateQuote(id){
 const q=data.quotes.find(x=>x.id===id);if(!q)return;
@@ -1910,6 +1911,7 @@ h3{font-size:13px;margin:28px 0 6px}
 <div class="totals"><div><span>Subtotal</span><span>${money(q.subtotal)}</span></div>${q.vatOn?`<div><span>VAT (${esc(q.vatRate)}%)</span><span>${money(q.vat)}</span></div>`:""}<div class="grand"><span>Total</span><span>${money(q.value)}</span></div></div>
 ${q.notes?`<h3>Notes</h3><div class="pre">${esc(q.notes)}</div>`:""}
 ${q.terms?`<h3>Terms</h3><div class="pre small">${esc(q.terms)}</div>`:""}
+<div class="modal-backdrop" id="jobSchedulingModal" role="dialog" aria-modal="true" aria-labelledby="scheduleJobHeading"><div class="modal" style="max-width:480px"><div class="modal-head"><div><div class="modal-title" id="scheduleJobHeading">Schedule job</div><div class="muted small" id="scheduleJobCustomer"></div></div><button class="secondary" type="button" onclick="closeJobScheduling()">Close</button></div><input type="hidden" id="scheduleJobId"><div class="form-grid"><label class="field">Start date<input type="date" id="scheduleJobDate" required onchange="updateScheduleSuggestion()"></label><label class="field">Estimated duration (calendar days)<input type="number" id="scheduleJobDuration" min="1" max="365" value="1" onchange="updateScheduleSuggestion()" oninput="updateScheduleSuggestion()"></label></div><div class="notice" id="scheduleSuggestion" style="margin-top:12px">Suggested next available day</div><div class="toolbar"><span class="muted small">You can change the dates later from the job or calendar.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeJobScheduling()">Not now</button><button class="primary" type="button" onclick="saveJobScheduling()">Confirm booking</button></div></div></div></div>
 </body></html>`;
 }
 function printQuote(id){
@@ -1939,18 +1941,24 @@ tradeflowConfirm("Mark quote "+q.number+" as Sent?",{title:"Update quote status"
 function quoteToJob(id){
 const q=data.quotes.find(x=>x.id===id);if(!q)return;
 if(q.status!=="Accepted"){alert("Only accepted quotes can be converted into jobs.");return}
-const existingJob=data.jobs.find(j=>j.id===q.convertedJobId||j.sourceQuoteId===q.id);
-if(existingJob){q.convertedJobId=existingJob.id;save();renderQuotes();alert("This quote has already been converted into a job.");return}
+let job=data.jobs.find(j=>j.id===q.convertedJobId||j.sourceQuoteId===q.id);
+if(!job){
 let c=quoteCustomer(q);
 if(!c)c=findOrCreateCustomer({name:q.name,phone:"",email:"",service:q.service});
-const job={id:makeId(),name:c.name,service:q.service,value:Number(q.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceQuoteId:q.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
-data.jobs.push(job);
-q.convertedJobId=job.id;q.customerId=c.id;
+job={id:makeId(),name:c.name,service:q.service,value:Number(q.value)||0,status:"Awaiting scheduling",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceQuoteId:q.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
+data.jobs.push(job);q.convertedJobId=job.id;q.customerId=c.id;
 addCustomerTimeline(c,"Quote","Accepted quote converted to job",(q.number||"Quote")+" · "+(job.service||"Job")+" · "+money(job.value));
-syncJobFollowups(job);
-save();renderQuotes();updateDashboard();
-alert("Job created. You can find it in the Jobs section.");
+syncJobFollowups(job);save();
 }
+renderQuotes();renderJobs();updateDashboard();openJobScheduling(job.id);
+}
+function scheduleQuoteJob(id){const q=data.quotes.find(x=>x.id===id);if(!q)return;const job=data.jobs.find(j=>j.id===q.convertedJobId||j.sourceQuoteId===q.id);if(job){if(job.status==="Awaiting scheduling"||!job.start)openJobScheduling(job.id);else{showPage("jobs");openJobDetail(job.id)}}else quoteToJob(id)}
+function addCalendarDays(key,days){const d=new Date(key+"T12:00:00");d.setDate(d.getDate()+days);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function nextAvailableJobStart(duration=1,ignoreId=""){const days=Math.max(1,Math.min(365,Number(duration)||1)),base=calendarDateKey(new Date());for(let offset=0;offset<366;offset++){const candidate=addCalendarDays(base,offset),weekday=new Date(candidate+"T12:00:00").getDay();if(weekday===0||weekday===6)continue;const end=addCalendarDays(candidate,days-1);const clash=data.jobs.some(j=>j.id!==ignoreId&&["Scheduled","In Progress"].includes(j.status)&&j.start&&candidate<=(j.end||j.completion||j.start)&&end>=(j.start||""));if(!clash)return candidate}return base}
+function openJobScheduling(id){const job=data.jobs.find(j=>j.id===id);if(!job)return;$("scheduleJobId").value=id;$("scheduleJobHeading").textContent="Schedule "+(job.service||"job");$("scheduleJobCustomer").textContent=job.name+" · "+money(job.value);$("scheduleJobDuration").value=job.start&&job.end?Math.max(1,Math.round((new Date(job.end+"T12:00:00")-new Date(job.start+"T12:00:00"))/86400000)+1):1;$("scheduleJobDate").value=job.start||nextAvailableJobStart($("scheduleJobDuration").value,id);updateScheduleSuggestion();$("jobSchedulingModal").style.display="flex"}
+function updateScheduleSuggestion(){const id=$("scheduleJobId").value,days=Number($("scheduleJobDuration").value)||1;$("scheduleSuggestion").textContent="Suggested next available working day: "+fmtDate(nextAvailableJobStart(days,id))}
+function closeJobScheduling(){$("jobSchedulingModal").style.display="none"}
+async function saveJobScheduling(){const id=$("scheduleJobId").value,job=data.jobs.find(j=>j.id===id);if(!job)return;const start=$("scheduleJobDate").value,days=Math.max(1,Math.min(365,Number($("scheduleJobDuration").value)||1));if(!start){alert("Please choose a start date.");return}const end=addCalendarDays(start,days-1);const clashes=data.jobs.filter(j=>j.id!==id&&["Scheduled","In Progress"].includes(j.status)&&j.start&&start<=(j.end||j.completion||j.start)&&end>=(j.start||""));if(clashes.length&&!await tradeflowConfirm("These dates overlap with "+clashes.length+" existing scheduled job"+(clashes.length===1?"":"s")+". Would you still like to save this booking?",{title:"Check your calendar",confirmText:"Save anyway",cancelText:"Choose another date",danger:false}))return;job.start=start;job.end=end;job.completion=end;job.status="Scheduled";addCustomerTimeline(jobCustomer(job),"Schedule","Job scheduled",(job.service||"Job")+" · "+fmtDate(start)+(days>1?" to "+fmtDate(end):""));save();closeJobScheduling();renderQuotes();renderJobs();renderCalendar();updateDashboard();showPage("calendar");selectCalendarDate(start)}
 /* DASHBOARD */
 function openDashboardLink(type,id){
 if(!id)return;
