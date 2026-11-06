@@ -1453,6 +1453,8 @@ syncJobFollowups(j);save();closeJobActionModal();renderJobs();updateDashboard();
 function quickJobSchedule(id){openJobActionModal("schedule",id)}
 function quickJobPayment(id,mode){
 const j=data.jobs.find(x=>x.id===id);if(!j)return;
+const linkedInvoice=data.invoices.find(i=>i.jobId===id);
+if(linkedInvoice){const remaining=invoiceBalance(linkedInvoice);if(remaining<=0){alert("This invoice is already paid in full.");return}openInvoicePayment(linkedInvoice.id);if(mode==="partial")$("invoicePaymentAmount").value=(remaining/2).toFixed(2);return;}
 const remaining=Math.max(0,(Number(j.value)||0)-(Number(j.paid)||0));
 if(remaining<=0){alert("This job is already paid in full.");return}
 openJobActionModal("payment",id);
@@ -1538,6 +1540,7 @@ savedId=makeId();data.jobs.unshift({...fields,id:savedId,sourceQuoteId:"",source
 const savedJob=data.jobs.find(j=>j.id===savedId);
 if(savedJob){
 syncEditedJobPaymentLedger(savedJob,previousPaid,previousPayments);
+if(linkedInvoice&&Number(savedJob.paid||0)>previousPaid){const latestPayment=savedJob.payments?.[savedJob.payments.length-1];if(latestPayment)latestPayment.type="Invoice "+linkedInvoice.number+" · Payment recorded in job editor";}
 syncJobFollowups(savedJob);
 const historyCustomer=data.customers.find(c=>c.id===savedJob.customerId);
 if(!previousJob)addCustomerTimeline(historyCustomer,"Job","Job created",(savedJob.service||"Job")+" · "+money(savedJob.value));
@@ -2098,7 +2101,7 @@ const q=data.quotes.find(x=>x.id===j.sourceQuoteId&&x.status==="Accepted"),items
 if(Math.abs(t.total-Number(j.value))>0.02){alert("The linked job value does not match its accepted quote. Please review the job value before invoicing.");return}
 const c=jobCustomer(j);if(!c){alert("This job needs a customer record before an invoice can be created.");return}
 const inv={id:makeId(),number:invoiceNumber(),jobId:j.id,customerId:c.id,name:c.name,service:j.service||"Work",date:$("iDate").value||today(),dueDate:$("iDue").value||addDays(14),items,vatOn,vatRate,subtotal:t.subtotal,vat:t.vat,value:t.total,service:$("iService").value.trim()||j.service||"Work",amountPaid:0,status:"Draft",paymentDetails:$("iPaymentDetails").value.trim(),notes:$("iNotes").value.trim(),createdAt:new Date().toISOString()};
-data.invoices.unshift(inv);addCustomerTimeline(c,"Invoice","Invoice "+inv.number+" created",inv.service+" · "+money(inv.value));save();closeInvoice();renderInvoices();alert("Invoice "+inv.number+" has been created. You can now print it or email it to the customer.");
+if(Array.isArray(j.payments)){j.payments.forEach(p=>{if(!String(p.type||"").includes("Invoice "+inv.number))p.type="Invoice "+inv.number+" · "+(p.type||"Payment recorded");});}data.invoices.unshift(inv);addCustomerTimeline(c,"Invoice","Invoice "+inv.number+" created",inv.service+" · "+money(inv.value));save();closeInvoice();renderInvoices();alert("Invoice "+inv.number+" has been created. You can now print it or email it to the customer.");
 }
 function renderInvoices(){
 const all=data.invoices||[],q=($("invoiceSearch")?.value||"").toLowerCase().trim(),filter=$("invoiceFilter")?.value||"",rows=all.filter(i=>(!filter||invoiceStatus(i)===filter)&&[i.number,i.name,i.service,invoiceStatus(i)].join(" ").toLowerCase().includes(q)),overdue=all.filter(i=>invoiceStatus(i)==="Overdue"),open=all.filter(i=>invoiceBalance(i)>0);
