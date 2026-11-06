@@ -749,7 +749,7 @@ function customerStats(c){
 const jobs=customerRecords(c,"jobs"),quotes=customerRecords(c,"quotes"),enquiries=customerRecords(c,"enquiries");
 const followups=data.followups.filter(f=>(f.linkType==="Customer"&&f.linkId===c.id)||(f.linkType==="Job"&&jobs.some(r=>r.id===f.linkId))||(f.linkType==="Quote"&&quotes.some(r=>r.id===f.linkId))||(f.linkType==="Enquiry"&&enquiries.some(r=>r.id===f.linkId))||(!f.linkType&&!f.linkId&&String(f.name||"").trim().toLowerCase()===String(c.name||"").trim().toLowerCase()));
 const lifetime=jobs.filter(j=>j.status==="Completed").reduce((sum,j)=>sum+Number(j.value||0),0);
-const outstanding=jobs.reduce((sum,j)=>sum+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
+const outstanding=jobs.filter(j=>j.status!=="Cancelled").reduce((sum,j)=>sum+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
 return {jobs,quotes,enquiries,followups,lifetime,outstanding};
 }
 function renderCustomers(){
@@ -850,7 +850,8 @@ function deleteCustomer(id){
 const c=data.customers.find(x=>x.id===id);if(!c)return;
 if(!confirm("Delete "+c.name+" from your customer list? Linked jobs, quotes and enquiries will not be deleted."))return;
 data.customers=data.customers.filter(x=>x.id!==id);
-save();closeCustomer();renderCustomers();updateDashboard();
+removeLinkedFollowups("Customer",id);
+save();closeCustomer();renderCustomers();renderFollowups();updateDashboard();
 }
 let pendingCustomerId=null,pendingEnquiryId=null;
 function customerAction(type,id){
@@ -1005,6 +1006,23 @@ const jobStatuses=["Scheduled","In Progress","On Hold","Completed","Cancelled"];
 function jobCustomer(j){
 return data.customers.find(c=>c.id===j.customerId)||data.customers.find(c=>String(c.name||"").trim().toLowerCase()===String(j.name||"").trim().toLowerCase())||null;
 }
+function syncEditedJobPaymentLedger(job,previousPaid,previousPayments){
+const nextPaid=Math.round((Number(job.paid)||0)*100)/100;
+const previous=Math.round((Number(previousPaid)||0)*100)/100;
+let ledger=Array.isArray(previousPayments)?previousPayments.map(p=>({...p})):[];
+if(!ledger.length&&previous>0)ledger.push({id:makeId(),amount:previous,date:"",recordedAt:"",type:"Previously recorded payment (date unknown)"});
+let delta=Math.round((nextPaid-previous)*100)/100;
+if(delta>0.001)ledger.push({id:makeId(),amount:delta,date:today(),recordedAt:new Date().toISOString(),type:"Payment added in job editor"});
+else if(delta< -0.001){
+let reduction=-delta;
+for(let i=ledger.length-1;i>=0&&reduction>0.001;i--){
+const amount=Math.max(0,Number(ledger[i].amount)||0),take=Math.min(amount,reduction);
+ledger[i].amount=Math.round((amount-take)*100)/100;reduction=Math.round((reduction-take)*100)/100;
+}
+ledger=ledger.filter(p=>Number(p.amount)>0.001);
+}
+job.payments=ledger;
+}
 function jobCosts(j){
 return Number(j.materialsCost||0)+Number(j.labourCost||0)+Number(j.otherCost||0);
 }
@@ -1151,16 +1169,21 @@ completionNotes:$("jCompletionNotes").value.trim()
 if(!fields.service){alert("Please enter a job title.");return}
 if(fields.start&&fields.end&&fields.end<fields.start){alert("The end date cannot be before the start date.");return}
 if(fields.start&&["Scheduled","In Progress"].includes(status)){const end=fields.end||fields.start;const clashes=data.jobs.filter(j=>j.id!==editingJobId&&["Scheduled","In Progress"].includes(j.status)&&j.start&&fields.start<=(j.end||j.start)&&end>=(j.start||""));if(clashes.length){const names=clashes.slice(0,3).map(j=>j.name+" — "+j.service+" ("+fmtDate(j.start)+(j.end?" to "+fmtDate(j.end):"")+")").join("\n");if(!confirm("Scheduling warning: this job overlaps with "+clashes.length+" other scheduled job"+(clashes.length===1?"":"s")+".\n\n"+names+"\n\nSave anyway? This may be fine if another team member is doing the work."))return}}
+if(fields.paid<0){alert("Amount paid cannot be negative.");return}
+if(fields.paid>fields.value+0.001){alert("Amount paid cannot be greater than the agreed job value.");return}
 if(fields.paid>=fields.value&&fields.value>0)fields.payment="Paid";
 else if(fields.paid>0)fields.payment="Partially paid";
 else fields.payment="Unpaid";
 let savedId=editingJobId;
+let previousPaid=0,previousPayments=[];
 if(savedId){
-const old=data.jobs.find(j=>j.id===savedId);if(old)Object.assign(old,fields);
+const old=data.jobs.find(j=>j.id===savedId);
+if(old){previousPaid=Math.max(0,Number(old.paid)||0);previousPayments=Array.isArray(old.payments)?JSON.parse(JSON.stringify(old.payments)):[];Object.assign(old,fields);}
 }else{
 savedId=makeId();data.jobs.unshift({...fields,id:savedId,sourceQuoteId:"",sourceEnquiryId:""});
 }
-const savedJob=data.jobs.find(j=>j.id===savedId);if(savedJob)syncJobFollowups(savedJob);
+const savedJob=data.jobs.find(j=>j.id===savedId);
+if(savedJob){syncEditedJobPaymentLedger(savedJob,previousPaid,previousPayments);syncJobFollowups(savedJob);}
 save();closeJobEditor();renderJobs();updateDashboard();renderRevenue();renderCalendar();
 if(selectedCustomer&&$("customers").classList.contains("active"))openCustomer(selectedCustomer);
 if(selectedJobId===savedId)openJobDetail(savedId);
