@@ -776,7 +776,7 @@ ${s.followups.filter(f=>f.status!=="Completed").length?`<div class="table-wrap">
 <button class="secondary" onclick="customerAction('followups','${c.id}')">+ Add follow-up</button>
 </div>
 </div>
-<div class="detail-card"><div class="split"><h3>Communication history</h3><button class="primary" onclick="addCustomerHistory('${c.id}')">+ Log contact</button></div>
+<div class="detail-card"><div class="split"><div><h3>Customer timeline</h3><div class="muted">${history.length} recorded interactions · calls, emails, visits and payments</div></div><button class="primary" onclick="addCustomerHistory('${c.id}')">+ Log contact</button></div>
 ${history.length?history.slice().reverse().map(h=>`<div class="history-item"><div class="history-date">${esc(h.date)} · ${esc(h.method)}</div><div class="history-type">${esc(h.title)}</div><div>${esc(h.note)}</div></div>`).join(""):'<div class="empty">No contact history yet. Record phone calls, emails and messages here.</div>'}
 </div>
 <div class="detail-card"><h3>Customer account</h3>
