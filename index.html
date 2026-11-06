@@ -1543,7 +1543,7 @@ const old=data.jobs.find(j=>j.id===savedId);
 if(old){
 previousPaid=Math.max(0,Number(old.paid)||0);
 previousPayments=Array.isArray(old.payments)?JSON.parse(JSON.stringify(old.payments)):[];
-previousJob={status:old.status,start:old.start,end:old.end,paid:Number(old.paid)||0};
+previousJob={status:old.status,start:old.start,end:old.end,startTime:old.startTime||"",durationUnit:old.durationUnit||"",durationHours:Number(old.durationHours)||0,durationDays:Number(old.durationDays)||0,paid:Number(old.paid)||0};
 Object.assign(old,fields);
 if(old.startTime&&old.durationUnit==="hours"&&Number(old.durationHours)>0){const range=jobScheduleRange(old);if(range){old.end=calendarDateKey(new Date(range.end.getTime()-1));old.completion=old.end;old.endTime=String(range.end.getHours()).padStart(2,"0")+":"+String(range.end.getMinutes()).padStart(2,"0");}}
 if(old.startTime&&old.durationUnit==="days"&&Number(old.durationDays)>0){const segments=jobScheduleSegments(old),last=segments[segments.length-1];if(last){old.end=last.date;old.completion=old.end;old.endTime=String(last.end.getHours()).padStart(2,"0")+":"+String(last.end.getMinutes()).padStart(2,"0");}}
@@ -1560,7 +1560,7 @@ const historyCustomer=data.customers.find(c=>c.id===savedJob.customerId);
 if(!previousJob)addCustomerTimeline(historyCustomer,"Job","Job created",(savedJob.service||"Job")+" · "+money(savedJob.value));
 else{
 if(previousJob.status!==savedJob.status)addCustomerTimeline(historyCustomer,"Job","Job status changed to "+savedJob.status,(savedJob.service||"Job")+" · Previous status: "+previousJob.status);
-if(previousJob.start!==savedJob.start||previousJob.end!==savedJob.end)addCustomerTimeline(historyCustomer,"Schedule","Job schedule updated",(savedJob.service||"Job")+" · "+(savedJob.start?fmtDate(savedJob.start):"No start date")+(savedJob.end?" to "+fmtDate(savedJob.end):""));
+if(previousJob.start!==savedJob.start||previousJob.end!==savedJob.end||previousJob.startTime!==savedJob.startTime||previousJob.durationUnit!==savedJob.durationUnit||previousJob.durationHours!==Number(savedJob.durationHours||0)||previousJob.durationDays!==Number(savedJob.durationDays||0))addCustomerTimeline(historyCustomer,"Schedule","Job schedule updated",(savedJob.service||"Job")+" · "+(savedJob.start?fmtDate(savedJob.start):"No start date")+(savedJob.startTime?" at "+savedJob.startTime:"")+(savedJob.end?" to "+fmtDate(savedJob.end):"")+" · "+jobDuration(savedJob));
 const paidDelta=Math.round((Number(savedJob.paid||0)-previousJob.paid)*100)/100;
 if(Math.abs(paidDelta)>0.001)addCustomerTimeline(historyCustomer,"Payment",paidDelta>0?"Payment recorded":"Payment amount adjusted",(savedJob.service||"Job")+" · "+(paidDelta>0?"+":"")+money(paidDelta));
 }
@@ -1591,6 +1591,7 @@ $("jobDetail").innerHTML=`
 <div class="detail-line"><span class="muted">Address</span><strong>${esc([c?.address,c?.postcode].filter(Boolean).join(", ")||"Not provided")}</strong></div>
 <div class="detail-line"><span class="muted">Start date</span><strong>${esc(fmtDate(j.start)||"Not set")}</strong></div>
 <div class="detail-line"><span class="muted">End date</span><strong>${esc(fmtDate(j.end||j.completion)||"Not set")}</strong></div>
+${j.startTime?`<div class="detail-line"><span class="muted">${j.durationUnit==="days"?"Daily working hours":"Booked time"}</span><strong>${esc(j.startTime+(j.endTime?"–"+j.endTime:""))}${j.durationUnit==="days"?" each weekday":""}</strong></div>`:""}
 <div class="detail-line"><span class="muted">Duration</span><strong>${esc(jobDuration(j))}</strong></div>
 <div class="detail-line"><span class="muted">Agreed price</span><strong>${money(j.value)}</strong></div>
 <div class="detail-line"><span class="muted">Payment received</span><strong>${money(j.paid)}</strong></div><div class="detail-card"><h3>Payment history</h3>${Array.isArray(j.payments)&&j.payments.length?j.payments.slice().reverse().map(p=>`<div class="detail-line"><span>${esc(p.type||"Payment")} · ${esc(fmtDate(p.date)||p.date||"")}</span><strong>${money(p.amount)}</strong></div>`).join(""):'<div class="muted">No individual payment records yet. Payments recorded from now on will appear here.</div>'}</div>
@@ -2046,7 +2047,7 @@ function changeCalendarMonth(step){
 function goCalendarToday(){calendarMonthOffset=0;selectedCalendarDate=calendarDateKey(new Date());renderCalendar()}
 function selectCalendarDate(date){selectedCalendarDate=date;renderCalendar()}
 function addCalendarEvent(date=selectedCalendarDate){openForm("calendar",{date})}
-function addCalendarJob(date=selectedCalendarDate){pendingCustomerId=null;openJobEditor(null);setTimeout(()=>{if($("jStart"))$("jStart").value=date;},0)}
+function addCalendarJob(date=selectedCalendarDate){pendingCustomerId=null;openJobEditor(null);setTimeout(()=>{if($("jStart")){$("jStart").value=date;updateJobSchedulePreview();}},0)}
 function openCalendarEvent(id){const e=data.events.find(x=>x.id===id);if(e)openForm("calendar",e)}
 function openCalendarJob(id){const j=data.jobs.find(x=>x.id===id);if(!j)return;showPage("jobs");openJobDetail(id);setTimeout(()=>$("jobDetail").scrollIntoView({behavior:"smooth",block:"start"}),50)}
 function calendarItemsForDate(date,filter){
