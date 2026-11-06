@@ -329,6 +329,38 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 .theme-toggle:focus-visible{outline:3px solid #82aaff66;outline-offset:2px}
 @media(max-width:560px){.topright{gap:7px}.theme-toggle{padding:7px 8px;gap:6px}.theme-toggle .theme-label{display:none}}
 
+
+/* DARK MODE — final workspace and component consistency pass */
+:root[data-theme="dark"] .sidebar,:root[data-theme="dark"] .card,:root[data-theme="dark"] .panel,:root[data-theme="dark"] .detail-card,:root[data-theme="dark"] .customer-list-panel,:root[data-theme="dark"] .customer-profile-card,:root[data-theme="dark"] .job-card,:root[data-theme="dark"] .job-detail-card,:root[data-theme="dark"] .invoice-card,:root[data-theme="dark"] .followup-task-card,:root[data-theme="dark"] .enquiry-lead,:root[data-theme="dark"] .modal,:root[data-theme="dark"] .modal-content,:root[data-theme="dark"] .job-more-menu,:root[data-theme="dark"] .tradeflow-dialog,:root[data-theme="dark"] .tradeflow-toast{background:var(--surface,#1b2637)!important;color:var(--ink)!important;border-color:var(--line)!important}
+:root[data-theme="dark"] .detail-card,:root[data-theme="dark"] .profile-stat,:root[data-theme="dark"] .job-photo,:root[data-theme="dark"] .job-payment-summary,:root[data-theme="dark"] .job-action-summary,:root[data-theme="dark"] .calendar-list-item,:root[data-theme="dark"] .calendar-view-switch,:root[data-theme="dark"] .followup-kind,:root[data-theme="dark"] .customer-directory-note,:root[data-theme="dark"] .enquiry-stage,:root[data-theme="dark"] .enquiry-stage-head span,:root[data-theme="dark"] .notice,:root[data-theme="dark"] .message,:root[data-theme="dark"] .job-more summary,:root[data-theme="dark"] .quote-status-select,:root[data-theme="dark"] .tab,:root[data-theme="dark"] .secondary,:root[data-theme="dark"] .action,:root[data-theme="dark"] .filter-btn{background:var(--surface-raised,#202d40)!important;color:var(--ink)!important;border-color:var(--line)!important}
+:root[data-theme="dark"] .day,:root[data-theme="dark"] .calendar-day,:root[data-theme="dark"] .calendar-cell,:root[data-theme="dark"] .day-cell{background:var(--surface,#1b2637)!important;color:var(--ink)!important;border-color:var(--line)!important}
+:root[data-theme="dark"] .day.other-month{background:#151f2e!important;color:#78869b!important}
+:root[data-theme="dark"] .day:hover,:root[data-theme="dark"] .day.selected,:root[data-theme="dark"] .calendar-day:hover,:root[data-theme="dark"] .calendar-cell:hover,:root[data-theme="dark"] .calendar-list-item:hover,:root[data-theme="dark"] .calendar-agenda-row:hover,:root[data-theme="dark"] tbody tr:hover,:root[data-theme="dark"] .dashboard-priority:hover,:root[data-theme="dark"] .job-more-menu button:hover{background:#26364d!important}
+:root[data-theme="dark"] .dashboard-priority,:root[data-theme="dark"] .job-more-menu button{background:transparent!important;color:var(--ink)!important}
+:root[data-theme="dark"] .job-more[open] summary,:root[data-theme="dark"] .calendar-view-btn.active,:root[data-theme="dark"] .tab.active,:root[data-theme="dark"] .followup-view-tab.active{background:#263b5c!important;color:#b9ceff!important;border-color:#405a83!important}
+:root[data-theme="dark"] .job-back-button,:root[data-theme="dark"] .customer-back-button,:root[data-theme="dark"] .enquiry-back-button{background:#202d40!important;color:var(--ink)!important;border-color:var(--line)!important}
+:root[data-theme="dark"] input,:root[data-theme="dark"] select,:root[data-theme="dark"] textarea,:root[data-theme="dark"] .job-action-fields input,:root[data-theme="dark"] .tradeflow-dialog input,:root[data-theme="dark"] .tradeflow-dialog textarea{background:#121d2c!important;color:var(--ink)!important;border-color:#40516a!important}
+:root[data-theme="dark"] input::placeholder,:root[data-theme="dark"] textarea::placeholder{color:#91a0b5!important}
+:root[data-theme="dark"] .customer-list-panel th,:root[data-theme="dark"] th{background:#172235!important;color:#aebbd0!important;border-color:var(--line)!important}
+:root[data-theme="dark"] td,:root[data-theme="dark"] .detail-line,:root[data-theme="dark"] .priority,:root[data-theme="dark"] .agenda-row,:root[data-theme="dark"] .linked-record{border-color:var(--line)!important}
+:root[data-theme="dark"] .customer-list-panel .customer-name,:root[data-theme="dark"] #customerDetail .profile-stat strong,:root[data-theme="dark"] .job-more-menu button,:root[data-theme="dark"] .tradeflow-toast-title,:root[data-theme="dark"] .tradeflow-dialog h2,:root[data-theme="dark"] .tradeflow-dialog-field span{color:var(--ink)!important}
+:root[data-theme="dark"] .calendar-item{background:#263b5c!important;color:#b9ceff!important}
+:root[data-theme="dark"] .calendar-item.job,:root[data-theme="dark"] .tag.green,:root[data-theme="dark"] .invoice-status.paid{background:#173d36!important;color:#83dfbd!important}
+:root[data-theme="dark"] .calendar-item.event,:root[data-theme="dark"] .tag.orange,:root[data-theme="dark"] .invoice-status.sent,:root[data-theme="dark"] .invoice-status.part{background:#49351f!important;color:#f1c17e!important}
+:root[data-theme="dark"] .tag.red,:root[data-theme="dark"] .invoice-status.overdue,:root[data-theme="dark"] .danger,:root[data-theme="dark"] .qremove,:root[data-theme="dark"] .invoice-actions .danger{background:#482a32!important;color:#ffaaaa!important;border-color:#70404b!important}
+:root[data-theme="dark"] .tag.grey,:root[data-theme="dark"] .invoice-status.draft{background:#303b4d!important;color:#c0cad8!important}
+:root[data-theme="dark"] .tag{background:#263b5c;color:#b9ceff}
+:root[data-theme="dark"] .avatar,:root[data-theme="dark"] .revenue-ledger-icon{background:#263b5c!important;color:#b9ceff!important}
+:root[data-theme="dark"] .bar{background:#45679f!important}
+:root[data-theme="dark"] .tradeflow-toast-message,:root[data-theme="dark"] .tradeflow-dialog-copy{color:#c0cad8!important}
+:root[data-theme="dark"] .tradeflow-dialog-actions .tradeflow-dialog-cancel{background:#26364b!important;color:var(--ink)!important;border-color:#40516a!important}
+:root[data-theme="dark"] .empty,:root[data-theme="dark"] .empty-state{color:var(--muted)!important}
+:root[data-theme="dark"] a:not(.primary):not(.secondary){color:#9bbaff}
+:root[data-theme="dark"] .followup-task-card.is-completed{background:#172235!important}
+:root[data-theme="dark"] .followup-view-tab:hover{background:#26364d!important;color:var(--ink)!important}
+:root[data-theme="dark"] .invoice-status{background:#303b4d;color:#c0cad8}
+:root[data-theme="dark"] .theme-switch:after{background:#fff}
+
 </style>
 <style id="dark-mode-polish">
 /* DARK MODE FINISHING PASS — consistent surfaces across every workspace */
