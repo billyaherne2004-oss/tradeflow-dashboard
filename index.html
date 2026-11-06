@@ -279,6 +279,26 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 @keyframes tradeflowToastIn{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:560px){#tradeflowToastRegion{top:12px;right:12px;width:calc(100vw - 24px)}}
 @media(prefers-reduced-motion:reduce){.tradeflow-toast{animation:none;transition:none}}
+
+/* TRADEFLOW BRANDED DIALOGS */
+#tradeflowDialogRoot{position:fixed;inset:0;z-index:11000;display:flex;align-items:center;justify-content:center;padding:18px;background:#15223875;backdrop-filter:blur(3px)}
+.tradeflow-dialog{width:min(460px,100%);background:#fff;border:1px solid #e7ecf3;border-radius:16px;box-shadow:0 24px 80px #10182840;padding:23px;animation:tradeflowDialogIn .18s ease-out}
+.tradeflow-dialog-mark{width:38px;height:38px;border-radius:11px;background:#edf3ff;color:#3269df;display:grid;place-items:center;font-size:18px;font-weight:800;margin-bottom:15px}
+.tradeflow-dialog-mark.danger{background:#fff0ef;color:#c94f4f}
+.tradeflow-dialog h2{font-size:17px;letter-spacing:-.3px;margin:0 0 8px;color:#243249}
+.tradeflow-dialog-copy{font-size:13px;line-height:1.6;color:#68768b;white-space:pre-wrap;overflow-wrap:anywhere}
+.tradeflow-dialog-field{display:block;margin-top:16px}
+.tradeflow-dialog-field span{display:block;font-size:11px;font-weight:700;color:#536178;margin-bottom:7px}
+.tradeflow-dialog-field input,.tradeflow-dialog-field textarea{font-size:13px;padding:11px 12px;border-radius:9px}
+.tradeflow-dialog-field textarea{min-height:105px}
+.tradeflow-dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:22px}
+.tradeflow-dialog-actions button{min-width:92px;padding:10px 15px;border-radius:8px;font-size:12px;font-weight:700}
+.tradeflow-dialog-actions .tradeflow-dialog-cancel{background:#fff;border:1px solid #dfe5ee;color:#4c5b72}
+.tradeflow-dialog-actions .tradeflow-dialog-confirm{background:#3269df;border:1px solid #3269df;color:#fff}
+.tradeflow-dialog-actions .tradeflow-dialog-confirm.danger{background:#c94f4f;border-color:#c94f4f}
+@keyframes tradeflowDialogIn{from{opacity:0;transform:translateY(7px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(max-width:560px){#tradeflowDialogRoot{align-items:flex-end;padding:12px}.tradeflow-dialog{border-radius:16px 16px 12px 12px;padding:20px}}
+@media(prefers-reduced-motion:reduce){.tradeflow-dialog{animation:none}}
 </style>
 </head>
 <body>
@@ -548,6 +568,49 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 </form></div></div>
 <script>
 
+/* BRANDED, ACCESSIBLE CONFIRMATION AND INPUT DIALOGS */
+async function tradeflowConfirm(message,options={}){
+ return new Promise(resolve=>{
+  const danger=options.danger!==undefined?options.danger:/delete|remove|replace|restore|permanently/i.test(message);
+  const root=document.createElement("div");root.id="tradeflowDialogRoot";root.setAttribute("role","presentation");
+  const panel=document.createElement("section");panel.className="tradeflow-dialog";panel.setAttribute("role","alertdialog");panel.setAttribute("aria-modal","true");panel.setAttribute("aria-labelledby","tradeflowDialogTitle");
+  const mark=document.createElement("div");mark.className="tradeflow-dialog-mark"+(danger?" danger":"");mark.textContent=danger?"!":"?";
+  const heading=document.createElement("h2");heading.id="tradeflowDialogTitle";heading.textContent=options.title||(danger?"Please confirm this action":"Are you sure?");
+  const copy=document.createElement("div");copy.className="tradeflow-dialog-copy";copy.textContent=message;
+  const actions=document.createElement("div");actions.className="tradeflow-dialog-actions";
+  const cancel=document.createElement("button");cancel.type="button";cancel.className="tradeflow-dialog-cancel";cancel.textContent=options.cancelText||"Cancel";
+  const ok=document.createElement("button");ok.type="button";ok.className="tradeflow-dialog-confirm"+(danger?" danger":"");ok.textContent=options.confirmText||(danger?"Continue":"Confirm");
+  actions.append(cancel,ok);panel.append(mark,heading,copy,actions);root.appendChild(panel);document.body.appendChild(root);
+  let done=false;function finish(value){if(done)return;done=true;document.removeEventListener("keydown",keyHandler);root.remove();resolve(value)}
+  function keyHandler(e){if(e.key==="Escape"){e.preventDefault();finish(false)}}
+  document.addEventListener("keydown",keyHandler);root.addEventListener("click",e=>{if(e.target===root)finish(false)});
+  cancel.addEventListener("click",()=>finish(false));ok.addEventListener("click",()=>finish(true));ok.focus();
+ });
+}
+async function tradeflowPrompt(title,message,defaultValue="",multiline=false){
+ return new Promise(resolve=>{
+  const root=document.createElement("div");root.id="tradeflowDialogRoot";root.setAttribute("role","presentation");
+  const panel=document.createElement("section");panel.className="tradeflow-dialog";panel.setAttribute("role","dialog");panel.setAttribute("aria-modal","true");panel.setAttribute("aria-labelledby","tradeflowDialogTitle");
+  const mark=document.createElement("div");mark.className="tradeflow-dialog-mark";mark.textContent="✎";
+  const heading=document.createElement("h2");heading.id="tradeflowDialogTitle";heading.textContent=title;
+  const copy=document.createElement("div");copy.className="tradeflow-dialog-copy";copy.textContent=message;
+  const field=document.createElement("label");field.className="tradeflow-dialog-field";
+  const label=document.createElement("span");label.textContent=multiline?"Your note":"Your answer";
+  const input=document.createElement(multiline?"textarea":"input");if(!multiline)input.type="text";input.value=defaultValue||"";input.placeholder=multiline?"Type your note here…":"Enter here…";
+  field.append(label,input);
+  const actions=document.createElement("div");actions.className="tradeflow-dialog-actions";
+  const cancel=document.createElement("button");cancel.type="button";cancel.className="tradeflow-dialog-cancel";cancel.textContent="Cancel";
+  const saveButton=document.createElement("button");saveButton.type="button";saveButton.className="tradeflow-dialog-confirm";saveButton.textContent="Save";
+  actions.append(cancel,saveButton);panel.append(mark,heading,copy,field,actions);root.appendChild(panel);document.body.appendChild(root);
+  let done=false;function finish(value){if(done)return;done=true;document.removeEventListener("keydown",keyHandler);root.remove();resolve(value)}
+  function keyHandler(e){if(e.key==="Escape"){e.preventDefault();finish(null)}else if(e.key==="Enter"&&!multiline){e.preventDefault();finish(input.value)}}
+  document.addEventListener("keydown",keyHandler);root.addEventListener("click",e=>{if(e.target===root)finish(null)});
+  cancel.addEventListener("click",()=>finish(null));saveButton.addEventListener("click",()=>finish(input.value));input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!multiline){e.preventDefault();finish(input.value)}});
+  input.focus();input.select();
+ });
+}
+
+
 /* GLOBAL IN-APP FEEDBACK: replaces disruptive browser alert boxes throughout Tradeflow */
 (function(){
   let region;
@@ -790,11 +853,11 @@ const e=data.enquiries.find(x=>x.id===id);if(!e)return;
 e[key]=key==="status"?enquiryStageName(value):value;if(key==="status")syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
 }
 function editEnquiry(id){const e=data.enquiries.find(x=>x.id===id);if(e)openForm("enquiries",e)}
-function addHistory(id){
+async function addHistory(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
-const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
-const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
-const note=prompt("What happened?");if(note===null)return;
+const method=await tradeflowPrompt("Log a customer contact","How did you contact them? Choose Phone, Email, WhatsApp or Other.","Phone");if(!method)return;
+const title=await tradeflowPrompt("Give this contact a title","For example: Customer contacted","Customer contacted");if(!title)return;
+const note=await tradeflowPrompt("Add a contact note","What happened during the conversation?","",true);if(note===null)return;
 e.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
 e.status=enquiryStageName(e.status)==="New"?"Contacted":enquiryStageName(e.status);
 syncEnquiryFollowups(e);save();renderEnquiries();openEnquiry(id);updateDashboard();
@@ -836,8 +899,8 @@ e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;syncEnquiryFol
 save();renderEnquiries();openEnquiry(id);updateDashboard();
 alert("Job created successfully. You can find it in the Jobs section.");
 }
-function deleteEnquiry(id){
-if(!confirm("Are you sure you want to permanently delete this enquiry?"))return;
+async function deleteEnquiry(id){
+if(!await tradeflowConfirm("Are you sure you want to permanently delete this enquiry?"))return;
 data.enquiries=data.enquiries.filter(e=>e.id!==id);
 removeLinkedFollowups("Enquiry",id);
 save();closeEnquiry();renderEnquiries();updateDashboard();
@@ -946,7 +1009,7 @@ ${history.length?history.slice().reverse().map(h=>`<div class="history-item"><di
 $("customerDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function closeCustomer(){$("customerDetail").style.display="none";$("customers").appendChild($("customerDetail"));selectedCustomer=null;document.body.classList.remove("customer-focus");showPage("customers");$("customers").scrollIntoView({behavior:"smooth",block:"start"})}
-function addCustomerHistory(id){
+async function addCustomerHistory(id){
 const c=data.customers.find(x=>x.id===id);if(!c)return;
 const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
 const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
@@ -955,9 +1018,9 @@ c.history=c.history||[];
 c.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
 save();openCustomer(id);
 }
-function deleteCustomer(id){
+async function deleteCustomer(id){
 const c=data.customers.find(x=>x.id===id);if(!c)return;
-if(!confirm("Delete "+c.name+" from your customer list? Linked jobs, quotes and enquiries will not be deleted."))return;
+if(!await tradeflowConfirm("Delete "+c.name+" from your customer list? Linked jobs, quotes and enquiries will not be deleted."))return;
 data.customers=data.customers.filter(x=>x.id!==id);
 removeLinkedFollowups("Customer",id);
 save();closeCustomer();renderCustomers();renderFollowups();updateDashboard();
@@ -1023,10 +1086,10 @@ toolbar.insertBefore(del,toolbar.lastElementChild);
 }
 $("modal").style.display="flex";
 }
-function deleteCalendarEvent(id){
+async function deleteCalendarEvent(id){
 const eventRecord=data.events.find(x=>x.id===id);
 if(!eventRecord)return;
-if(!confirm("Delete this calendar event permanently?"))return;
+if(!await tradeflowConfirm("Delete this calendar event permanently?"))return;
 data.events=data.events.filter(x=>x.id!==id);
 save();closeModal();renderCalendar();
 }
@@ -1119,8 +1182,8 @@ function reopenFollowup(id){const f=data.followups.find(x=>x.id===id);if(!f)retu
 function removeLinkedFollowups(type,id){
 data.followups=data.followups.filter(f=>!(f.linkType===type&&f.linkId===id));
 }
-function removeRecord(type,id){
-if(!confirm("Delete this record?"))return;
+async function removeRecord(type,id){
+if(!await tradeflowConfirm("Delete this record?"))return;
 data[type]=data[type].filter(r=>r.id!==id);
 const linkedType=({customers:"Customer",quotes:"Quote",jobs:"Job",enquiries:"Enquiry"})[type];
 if(linkedType)removeLinkedFollowups(linkedType,id);
@@ -1238,9 +1301,9 @@ if(remaining<=0){alert("This job is already paid in full.");return}
 openJobActionModal("payment",id);
 if(mode==="partial")$("jobActionAmount").value=(remaining/2).toFixed(2);
 }
-function quickJobNote(id){
+async function quickJobNote(id){
 const j=data.jobs.find(x=>x.id===id);if(!j)return;
-const note=prompt("Add an internal job note:");
+const note=await tradeflowPrompt("Add an internal job note","This note will be saved in the job history.","",true);
 if(note===null||!note.trim())return;
 j.notes=(j.notes?j.notes+"\\n":"")+today()+": "+note.trim();
 save();if(selectedJobId===id)openJobDetail(id);alert("Note added.");
@@ -1278,7 +1341,7 @@ $("jProfitPreview").textContent=money(price-costs);
 function closeJobEditor(){
 $("jobModal").style.display="none";editingJobId=null;pendingCustomerId=null;
 }
-$("jobForm").addEventListener("submit",ev=>{
+$("jobForm").addEventListener("submit",async ev=>{
 ev.preventDefault();
 const customer=data.customers.find(c=>c.id===$("jCustomer").value);
 if(!customer){alert("Please choose a customer first. You can add customers in the Customers section.");return}
@@ -1296,7 +1359,7 @@ completionNotes:$("jCompletionNotes").value.trim()
 if(!fields.service){alert("Please enter a job title.");return}
 const linkedInvoice=editingJobId&&data.invoices.find(i=>i.jobId===editingJobId);if(linkedInvoice&&Math.abs(Number(fields.value||0)-Number(linkedInvoice.value||0))>0.01){alert("This job already has invoice "+linkedInvoice.number+". Its agreed value cannot be changed while that invoice is linked.");return}
 if(fields.start&&fields.end&&fields.end<fields.start){alert("The end date cannot be before the start date.");return}
-if(fields.start&&["Scheduled","In Progress"].includes(status)){const end=fields.end||fields.start;const clashes=data.jobs.filter(j=>j.id!==editingJobId&&["Scheduled","In Progress"].includes(j.status)&&j.start&&fields.start<=(j.end||j.start)&&end>=(j.start||""));if(clashes.length){const names=clashes.slice(0,3).map(j=>j.name+" — "+j.service+" ("+fmtDate(j.start)+(j.end?" to "+fmtDate(j.end):"")+")").join("\n");if(!confirm("Scheduling warning: this job overlaps with "+clashes.length+" other scheduled job"+(clashes.length===1?"":"s")+".\n\n"+names+"\n\nSave anyway? This may be fine if another team member is doing the work."))return}}
+if(fields.start&&["Scheduled","In Progress"].includes(status)){const end=fields.end||fields.start;const clashes=data.jobs.filter(j=>j.id!==editingJobId&&["Scheduled","In Progress"].includes(j.status)&&j.start&&fields.start<=(j.end||j.start)&&end>=(j.start||""));if(clashes.length){const names=clashes.slice(0,3).map(j=>j.name+" — "+j.service+" ("+fmtDate(j.start)+(j.end?" to "+fmtDate(j.end):"")+")").join("\n");if(!await tradeflowConfirm("Scheduling warning: this job overlaps with "+clashes.length+" other scheduled job"+(clashes.length===1?"":"s")+".\n\n"+names+"\n\nSave anyway? This may be fine if another team member is doing the work.",{title:"Scheduling conflict",confirmText:"Save anyway",cancelText:"Review dates",danger:false}))return}}
 if(fields.paid<0){alert("Amount paid cannot be negative.");return}
 if(fields.paid>fields.value+0.001){alert("Amount paid cannot be greater than the agreed job value.");return}
 if(fields.paid>=fields.value&&fields.value>0)fields.payment="Paid";
@@ -1381,9 +1444,9 @@ photos.forEach(([key])=>loadJobPhotos(j.id,key));
 $("jobDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
 function closeJobDetail(){$("jobDetail").style.display="none";$("jobs").appendChild($("jobDetail"));selectedJobId=null;document.body.classList.remove("job-focus");showPage("jobs");$("jobs").scrollIntoView({behavior:"smooth",block:"start"})}
-function deleteJob(id){
+async function deleteJob(id){
 if(data.invoices.some(i=>i.jobId===id)){alert("This job has an invoice linked to it. Keep the job record so the invoice and payment history remain accurate.");return}
-if(!confirm("Delete this job record? This cannot be undone."))return;
+if(!await tradeflowConfirm("Delete this job record? This cannot be undone."))return;
 data.jobs=data.jobs.filter(j=>j.id!==id);
 removeLinkedFollowups("Job",id);
 data.quotes.forEach(q=>{if(q.convertedJobId===id)q.convertedJobId=""});
@@ -1445,7 +1508,7 @@ current.innerHTML=records.length?records.map(p=>`<div class="job-photo"><img src
 }catch(e){target.innerHTML='<div class="muted small">Photo storage unavailable in this browser.</div>'}
 }
 async function deleteJobPhoto(photoId,jobId,stage){
-if(!confirm("Remove this photo from the job?"))return;
+if(!await tradeflowConfirm("Remove this photo from the job?"))return;
 try{
 const db=await jobPhotoDB();
 await new Promise((resolve,reject)=>{const tx=db.transaction("photos","readwrite");tx.objectStore("photos").delete(photoId);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});
@@ -1709,7 +1772,7 @@ const body="Hi "+(c?c.name:q.name)+",\n\nThank you for your enquiry. Here is quo
 window.location.href="mailto:"+to+"?subject="+encodeURIComponent("Quote "+q.number+" from "+b.name)+"&body="+encodeURIComponent(body);
 if(q.status==="Draft"){
 setTimeout(()=>{
-if(confirm("Mark quote "+q.number+" as Sent?")){q.status="Sent";syncQuoteFollowup(q);save();renderQuotes();updateDashboard()}
+tradeflowConfirm("Mark quote "+q.number+" as Sent?",{title:"Update quote status",confirmText:"Mark as sent",danger:false}).then(ok=>{if(ok){q.status="Sent";syncQuoteFollowup(q);save();renderQuotes();updateDashboard()}})
 },800);
 }
 }
@@ -1886,7 +1949,7 @@ $("invoiceCount").textContent=all.length;$("invoiceAwaiting").textContent=money(
 if(!rows.length){$("invoicesTable").innerHTML='<div class="invoice-empty"><div class="invoice-empty-icon">▤</div><strong>'+(all.length?"No matching invoices":"Your invoices will appear here")+'</strong><p>'+(all.length?"Try another search or choose a different status.":"Create an invoice from a job to get started. Tradeflow will fill in the customer and agreed job amount for you.")+'</p></div>';return}
 $("invoicesTable").innerHTML='<div class="invoice-list">'+rows.map(i=>{const st=invoiceStatus(i),cls=st==="Paid"?"paid":st==="Overdue"?"overdue":st==="Draft"?"draft":st==="Part-paid"?"part":"sent",b=invoiceBalance(i),hasPayments=invoicePaid(i)>0;return '<article class="invoice-row"><div class="invoice-main"><div class="invoice-id"><strong>'+esc(i.number)+'</strong><span class="invoice-status '+cls+'">'+st+'</span></div><div class="invoice-customer"><strong>'+esc(i.name||"Customer")+'</strong><span>'+esc(i.service||"Job")+'</span></div><div class="invoice-dates"><span>Issued <strong>'+esc(fmtDate(i.date))+'</strong></span><span>Due <strong>'+esc(fmtDate(i.dueDate))+'</strong></span></div></div><div class="invoice-money"><span>Total</span><strong>'+money(i.value)+'</strong><span class="invoice-balance-label">'+(b>0?"Balance due":"Paid in full")+'</span><strong class="invoice-balance">'+money(b)+'</strong></div><div class="invoice-actions"><button class="primary small" onclick="editInvoice(\''+i.id+'\')">Open / edit</button><button class="secondary small" onclick="printInvoice(\''+i.id+'\')">Print</button><button class="secondary small" onclick="emailInvoice(\''+i.id+'\')">Email</button>'+(st==="Draft"?'<button class="secondary small" onclick="markInvoiceSent(\''+i.id+'\')">Mark as sent</button>':"")+(b>0?'<button class="secondary small" onclick="openInvoicePayment(\''+i.id+'\')">Record payment</button>':"")+(hasPayments?'<button class="secondary small" disabled title="An invoice with recorded payments cannot be deleted">Delete locked</button>':'<button class="danger small" onclick="deleteInvoice(\''+i.id+'\')">Delete</button>')+'</div></article>'}).join("")+'</div>';
 }
-function deleteInvoice(id){const i=data.invoices.find(x=>x.id===id);if(!i)return;if(invoicePaid(i)>0){alert("This invoice has payments recorded against it. It cannot be deleted because that would damage your payment and Revenue history.");return}if(!confirm("Delete invoice "+i.number+"? This cannot be undone."))return;const c=invoiceCustomer(i);data.invoices=data.invoices.filter(x=>x.id!==id);addCustomerTimeline(c,"Invoice","Invoice "+i.number+" deleted","Invoice record removed; no payments had been recorded.");save();renderInvoices()}
+async function deleteInvoice(id){const i=data.invoices.find(x=>x.id===id);if(!i)return;if(invoicePaid(i)>0){alert("This invoice has payments recorded against it. It cannot be deleted because that would damage your payment and Revenue history.");return}if(!await tradeflowConfirm("Delete invoice "+i.number+"? This cannot be undone."))return;const c=invoiceCustomer(i);data.invoices=data.invoices.filter(x=>x.id!==id);addCustomerTimeline(c,"Invoice","Invoice "+i.number+" deleted","Invoice record removed; no payments had been recorded.");save();renderInvoices()}
 function markInvoiceSent(id){const i=data.invoices.find(x=>x.id===id);if(!i)return;if(i.status==="Draft"){i.status="Sent";i.sentAt=today();addCustomerTimeline(invoiceCustomer(i),"Invoice","Invoice "+i.number+" marked as sent",money(i.value)+" · Due "+fmtDate(i.dueDate));save();renderInvoices();}}
 function openInvoicePayment(id){const i=data.invoices.find(x=>x.id===id);if(!i)return;invoicePaymentId=id;$("invoicePaymentTitle").textContent="Record payment · "+i.number;$("invoicePaymentAmount").value=invoiceBalance(i).toFixed(2);$("invoicePaymentAmount").max=invoiceBalance(i).toFixed(2);$("invoicePaymentDate").value=today();$("invoicePaymentMethod").value="";$("invoicePaymentBalance").textContent="Remaining balance: "+money(invoiceBalance(i));$("invoicePaymentModal").style.display="flex"}
 function closeInvoicePayment(){invoicePaymentId="";$("invoicePaymentModal").style.display="none"}
@@ -1962,7 +2025,7 @@ if(!Array.isArray(incoming.invoices))incoming.invoices=[];
 if(!required.every(function(k){return incoming[k].every(function(item){return item&&typeof item==="object"&&!Array.isArray(item);});}))throw new Error("The backup contains an invalid record. Your current records have not been changed.");
 const photoBackup=parsed&&parsed.data?parsed.jobPhotos:undefined;
 if(photoBackup!==undefined&&(!Array.isArray(photoBackup)||!photoBackup.every(function(p){return p&&typeof p==="object"&&p.id&&p.jobId&&p.stage&&typeof p.dataUrl==="string"&&p.dataUrl.startsWith("data:image/");})))throw new Error("The backup contains invalid job photo data. Your current records have not been changed.");
-if(!confirm("Restore this backup? It will replace the records currently saved in this browser."+(photoBackup!==undefined?" It will also replace saved job photos.":" This older backup does not contain job photos.")+" Download a backup of your current records first if you may need them."))return;
+if(!await tradeflowConfirm("Restore this backup? It will replace the records currently saved in this browser."+(photoBackup!==undefined?" It will also replace saved job photos.":" This older backup does not contain job photos.")+" Download a backup of your current records first if you may need them."))return;
 const restored=Object.assign({},data,incoming);
 required.forEach(function(k){restored[k].forEach(function(item){if(!item.id)item.id=makeId();});});
 restored.customers.forEach(function(c){c.history=Array.isArray(c.history)?c.history:[];});
@@ -1982,8 +2045,8 @@ $("backupStatus").textContent="Backup restored successfully.";
 }catch(err){alert(err.message||"Could not restore this backup.");}finally{event.target.value="";}};
 reader.onerror=function(){alert("Could not read that backup file.");event.target.value="";};reader.readAsText(file);
 }
-function replaceWithDemoData(){
-if(!confirm("Replace all current sample records (enquiries, customers, quotes, jobs, follow-ups and calendar events) with the new 20-customer demo workspace? Business and website settings will be kept. Export a backup first if you may need the old records."))return;
+async function replaceWithDemoData(){
+if(!await tradeflowConfirm("Replace all current sample records (enquiries, customers, quotes, jobs, follow-ups and calendar events) with the new 20-customer demo workspace? Business and website settings will be kept. Export a backup first if you may need the old records."))return;
 const base=new Date();base.setHours(12,0,0,0);
 const day=n=>{const d=new Date(base);d.setDate(d.getDate()+n);return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const rows=[
