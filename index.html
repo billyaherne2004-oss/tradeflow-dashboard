@@ -299,6 +299,36 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 @keyframes tradeflowDialogIn{from{opacity:0;transform:translateY(7px) scale(.99)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(max-width:560px){#tradeflowDialogRoot{align-items:flex-end;padding:12px}.tradeflow-dialog{border-radius:16px 16px 12px 12px;padding:20px}}
 @media(prefers-reduced-motion:reduce){.tradeflow-dialog{animation:none}}
+
+/* DARK MODE */
+:root[data-theme="dark"]{color-scheme:dark;--blue:#82aaff;--blue-light:#263b5c;--ink:#e7edf7;--muted:#a5b1c3;--bg:#111827;--line:#2b374a;--white:#1b2637;--green:#4ac69a;--red:#ff8585;--orange:#e8ae63;--shadow:0 3px 15px #00000030}
+:root[data-theme="dark"] body{background:var(--bg);color:var(--ink)}
+:root[data-theme="dark"] .sidebar,:root[data-theme="dark"] .card,:root[data-theme="dark"] .detail-card,:root[data-theme="dark"] .profile-stat,:root[data-theme="dark"] .metric,:root[data-theme="dark"] .panel,:root[data-theme="dark"] .modal-content,:root[data-theme="dark"] .calendar-panel,:root[data-theme="dark"] .followup-card,:root[data-theme="dark"] .invoice-card,:root[data-theme="dark"] .quote-card,:root[data-theme="dark"] .job-card,:root[data-theme="dark"] .customer-card,:root[data-theme="dark"] .enquiry-card{background:#1b2637;color:var(--ink);border-color:var(--line)}
+:root[data-theme="dark"] .main,:root[data-theme="dark"] .page{color:var(--ink)}
+:root[data-theme="dark"] .nav{color:#b5c0d1}
+:root[data-theme="dark"] .nav:hover,:root[data-theme="dark"] .nav.active{background:var(--blue-light);color:#a9c4ff}
+:root[data-theme="dark"] .secondary,:root[data-theme="dark"] input,:root[data-theme="dark"] select,:root[data-theme="dark"] textarea,:root[data-theme="dark"] .action,:root[data-theme="dark"] .filter-btn{background:#202d40;color:var(--ink);border-color:#3a4960}
+:root[data-theme="dark"] input::placeholder,:root[data-theme="dark"] textarea::placeholder{color:#8c9bb0}
+:root[data-theme="dark"] table th{color:#aab7ca;border-color:var(--line)}
+:root[data-theme="dark"] table td,:root[data-theme="dark"] hr{border-color:var(--line)}
+:root[data-theme="dark"] .avatar{background:#263b5c;color:#a9c4ff}
+:root[data-theme="dark"] .topbar{border-color:var(--line)}
+:root[data-theme="dark"] .calendar-day,:root[data-theme="dark"] .calendar-cell,:root[data-theme="dark"] .day-cell{background:#1b2637;border-color:var(--line);color:var(--ink)}
+:root[data-theme="dark"] .calendar-day:hover,:root[data-theme="dark"] .calendar-cell:hover{background:#26364d}
+:root[data-theme="dark"] .tradeflow-dialog{background:#1b2637;color:var(--ink);border:1px solid var(--line)}
+:root[data-theme="dark"] .tradeflow-dialog-copy{color:#c0cad8}
+:root[data-theme="dark"] .tradeflow-dialog-cancel{background:#26364b;color:var(--ink);border-color:#40516a}
+:root[data-theme="dark"] .tradeflow-toast{background:#1b2637;color:var(--ink);border-color:var(--line)}
+:root[data-theme="dark"] .empty,:root[data-theme="dark"] .empty-state{color:var(--muted)}
+:root[data-theme="dark"] .tag,:root[data-theme="dark"] .status{filter:brightness(.88) saturate(.9)}
+.theme-toggle{display:inline-flex;align-items:center;gap:9px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;background:var(--white);color:var(--ink);font-size:12px;font-weight:700;white-space:nowrap}
+.theme-switch{width:34px;height:19px;border-radius:20px;background:#c8d0dc;position:relative;transition:background .2s;flex:none}
+.theme-switch:after{content:"";position:absolute;width:15px;height:15px;left:2px;top:2px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .2s}
+.theme-toggle[aria-checked="true"] .theme-switch{background:var(--blue)}
+.theme-toggle[aria-checked="true"] .theme-switch:after{transform:translateX(15px)}
+.theme-toggle:focus-visible{outline:3px solid #82aaff66;outline-offset:2px}
+@media(max-width:560px){.topright{gap:7px}.theme-toggle{padding:7px 8px;gap:6px}.theme-toggle .theme-label{display:none}}
+
 </style>
 </head>
 <body>
@@ -323,7 +353,7 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <main class="main">
 <header class="topbar">
 <div><div class="eyebrow">BUSINESS WORKSPACE / <span id="crumb">OVERVIEW</span></div><h1 id="heading">Good morning 👋</h1></div>
-<div class="topright"><button class="primary" onclick="openAdd()">+ Add new</button><div class="avatar">T</div></div>
+<div class="topright"><button class="theme-toggle" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="Switch to dark mode" onclick="toggleTheme()"><span class="theme-icon" id="themeIcon" aria-hidden="true">☾</span><span class="theme-label" id="themeLabel">Dark mode</span><span class="theme-switch" aria-hidden="true"></span></button><button class="primary" onclick="openAdd()">+ Add new</button><div class="avatar">T</div></div>
 </header>
 <section class="page active" id="overview">
 <div class="muted">Your daily business command centre. See what needs attention and jump straight into the work.</div>
@@ -2162,7 +2192,23 @@ $("settingVat").value=s.vat||"No";
 }catch(e){}
 $("settingCurrency").value=localStorage.getItem("tradeflowCurrency")||"GBP";
 }
+function applyTheme(theme){
+const dark=theme==="dark";
+document.documentElement.setAttribute("data-theme",dark?"dark":"light");
+const toggle=$("themeToggle"),icon=$("themeIcon"),label=$("themeLabel");
+if(toggle){toggle.setAttribute("aria-checked",String(dark));toggle.setAttribute("aria-label",dark?"Switch to light mode":"Switch to dark mode");}
+if(icon)icon.textContent=dark?"☀":"☾";
+if(label)label.textContent=dark?"Light mode":"Dark mode";
+}
+function toggleTheme(){
+const next=document.documentElement.getAttribute("data-theme")==="dark"?"light":"dark";
+try{localStorage.setItem("tradeflowTheme",next);}catch(e){}
+applyTheme(next);
+}
 function boot(){
+let savedTheme="light";
+try{savedTheme=localStorage.getItem("tradeflowTheme")==="dark"?"dark":"light";}catch(e){}
+applyTheme(savedTheme);
 prepareQuotes();save();loadSavedDetails();updateDashboard();renderCustomers();renderJobs();renderCalendar();renderRevenue();
 }
 boot();
