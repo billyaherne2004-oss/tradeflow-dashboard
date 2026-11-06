@@ -1011,9 +1011,9 @@ $("customerDetail").scrollIntoView({behavior:"smooth",block:"start"});
 function closeCustomer(){$("customerDetail").style.display="none";$("customers").appendChild($("customerDetail"));selectedCustomer=null;document.body.classList.remove("customer-focus");showPage("customers");$("customers").scrollIntoView({behavior:"smooth",block:"start"})}
 async function addCustomerHistory(id){
 const c=data.customers.find(x=>x.id===id);if(!c)return;
-const method=prompt("Contact method: Phone, Email, WhatsApp or Other","Phone");if(!method)return;
-const title=prompt("Short title for this contact","Customer contacted");if(!title)return;
-const note=prompt("What happened?");if(note===null)return;
+const method=await tradeflowPrompt("Log a customer contact","How did you contact them? Choose Phone, Email, WhatsApp or Other.","Phone");if(!method)return;
+const title=await tradeflowPrompt("Give this contact a title","For example: Customer contacted","Customer contacted");if(!title)return;
+const note=await tradeflowPrompt("Add a contact note","What happened during the conversation?","",true);if(note===null)return;
 c.history=c.history||[];
 c.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
 save();openCustomer(id);
