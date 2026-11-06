@@ -1912,7 +1912,7 @@ h3{font-size:13px;margin:28px 0 6px}
 <div class="totals"><div><span>Subtotal</span><span>${money(q.subtotal)}</span></div>${q.vatOn?`<div><span>VAT (${esc(q.vatRate)}%)</span><span>${money(q.vat)}</span></div>`:""}<div class="grand"><span>Total</span><span>${money(q.value)}</span></div></div>
 ${q.notes?`<h3>Notes</h3><div class="pre">${esc(q.notes)}</div>`:""}
 ${q.terms?`<h3>Terms</h3><div class="pre small">${esc(q.terms)}</div>`:""}
-<div class="modal-backdrop" id="jobSchedulingModal" role="dialog" aria-modal="true" aria-labelledby="scheduleJobHeading"><div class="modal" style="max-width:480px"><div class="modal-head"><div><div class="modal-title" id="scheduleJobHeading">Schedule job</div><div class="muted small" id="scheduleJobCustomer"></div></div><button class="secondary" type="button" onclick="closeJobScheduling()">Close</button></div><input type="hidden" id="scheduleJobId"><div class="form-grid"><label class="field">Start date<input type="date" id="scheduleJobDate" required onchange="updateScheduleSuggestion()"></label><label class="field">Estimated duration (calendar days)<input type="number" id="scheduleJobDuration" min="1" max="365" value="1" onchange="updateScheduleSuggestion()" oninput="updateScheduleSuggestion()"></label></div><div class="notice" id="scheduleSuggestion" style="margin-top:12px">Suggested next available day</div><div class="toolbar"><span class="muted small">You can change the dates later from the job or calendar.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeJobScheduling()">Not now</button><button class="primary" type="button" onclick="saveJobScheduling()">Confirm booking</button></div></div></div></div>
+
 </body></html>`;
 }
 function printQuote(id){
@@ -2352,5 +2352,6 @@ prepareQuotes();save();loadSavedDetails();updateDashboard();renderCustomers();re
 }
 boot();
 </script>
+<div class="modal-backdrop" id="jobSchedulingModal" role="dialog" aria-modal="true" aria-labelledby="scheduleJobHeading"><div class="modal" style="max-width:480px"><div class="modal-head"><div><div class="modal-title" id="scheduleJobHeading">Schedule job</div><div class="muted small" id="scheduleJobCustomer"></div></div><button class="secondary" type="button" onclick="closeJobScheduling()">Close</button></div><input type="hidden" id="scheduleJobId"><div class="form-grid"><label class="field">Start date<input type="date" id="scheduleJobDate" required onchange="updateScheduleSuggestion()"></label><label class="field">Estimated duration (calendar days)<input type="number" id="scheduleJobDuration" min="1" max="365" value="1" onchange="updateScheduleSuggestion()" oninput="updateScheduleSuggestion()"></label></div><div class="notice" id="scheduleSuggestion" style="margin-top:12px">Suggested next available day</div><div class="toolbar"><span class="muted small">You can change the dates later from the job or calendar.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeJobScheduling()">Not now</button><button class="primary" type="button" onclick="saveJobScheduling()">Confirm booking</button></div></div></div></div>
 </body>
 </html>
