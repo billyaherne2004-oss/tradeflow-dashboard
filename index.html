@@ -1782,7 +1782,7 @@ jobPhotos=await new Promise((resolve,reject)=>{
 const tx=db.transaction("photos","readonly"),req=tx.objectStore("photos").getAll();
 req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);
 });
-}catch(photoError){$("backupStatus").textContent="Records backed up, but job photos could not be read. Check photo storage before relying on this backup.";}
+}catch(photoError){throw new Error("Job photos could not be read, so no backup was created.");}
 const payload={product:"Tradeflow",formatVersion:2,exportedAt:new Date().toISOString(),data:data,jobPhotos};
 const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
 const url=URL.createObjectURL(blob),a=document.createElement("a");
@@ -1806,7 +1806,7 @@ restored.customers.forEach(function(c){c.history=Array.isArray(c.history)?c.hist
 restored.enquiries.forEach(function(e){e.history=Array.isArray(e.history)?e.history:[];});
 restored.jobs.forEach(function(j){j.payments=Array.isArray(j.payments)?j.payments:[];});
 restored.quotes.forEach(function(q){q.items=Array.isArray(q.items)?q.items:[];});
-if(photoBackup!==undefined){
+if(photoBackup!==undefined&&(photoBackup.length||("indexedDB" in window))){
 const db=await jobPhotoDB();
 await new Promise(function(resolve,reject){
 const tx=db.transaction("photos","readwrite"),store=tx.objectStore("photos");
