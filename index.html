@@ -165,7 +165,26 @@ body.enquiry-focus #enquiryDetail{display:block!important}
 body.enquiry-focus .enquiry-back-button{position:sticky;top:10px;z-index:3;background:#fff;box-shadow:0 2px 8px #18233812}
 body.customer-focus .sidebar,body.customer-focus .topbar{display:none!important}body.customer-focus .main{margin:0;width:100%;max-width:1100px;padding:32px 28px 70px}body.customer-focus #customerWorkspace{display:block;min-height:80vh}body.customer-focus #customerDetail{display:block!important;margin-top:0!important}body.customer-focus .customer-back-button{position:sticky;top:10px;z-index:3;background:#fff;box-shadow:0 2px 8px #18233812}
 .enquiry-stage-actions select{cursor:pointer}
-.followup-state{display:inline-block;margin-left:5px;font-size:10px;font-weight:700;color:var(--muted)}.followup-state.overdue,.enquiry-card-followup.overdue{color:var(--red)}.followup-state.due,.enquiry-card-followup.due{color:var(--orange)}.enquiry-card-followup{font-size:11px;font-weight:650;color:var(--muted);margin-top:7px}</style>
+.followup-state{display:inline-block;margin-left:5px;font-size:10px;font-weight:700;color:var(--muted)}.followup-state.overdue,.enquiry-card-followup.overdue{color:var(--red)}.followup-state.due,.enquiry-card-followup.due{color:var(--orange)}.enquiry-card-followup{font-size:11px;font-weight:650;color:var(--muted);margin-top:7px}
+.job-row-actions{display:flex;align-items:center;gap:7px;min-width:205px;flex-wrap:wrap}
+.job-open-button{padding:8px 11px;font-size:11px;white-space:nowrap}
+.job-open-button span{margin-left:5px}
+.job-status-select{min-width:125px;max-width:145px}
+.job-more{position:relative}
+.job-more summary{list-style:none;cursor:pointer;border:1px solid #dce4ef;border-radius:8px;padding:7px 10px;color:#43516a;background:#fff;font-size:11px;font-weight:650;white-space:nowrap}
+.job-more summary::-webkit-details-marker{display:none}
+.job-more summary:after{content:" ▾";color:#8491a5}
+.job-more[open] summary{background:#f5f7fb;border-color:#b9c8dc}
+.job-more-menu{position:absolute;right:0;top:calc(100% + 5px);z-index:8;min-width:190px;padding:5px;background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 28px #172b4d18}
+.job-more-menu button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:9px 10px;border-radius:6px;color:#34445d;font-size:11px;cursor:pointer}
+.job-more-menu button:hover{background:#f3f6fb}
+body.job-focus .sidebar,body.job-focus .topbar{display:none!important}
+body.job-focus .main{margin:0;width:100%;max-width:1100px;padding:32px 28px 70px}
+body.job-focus #jobWorkspace{display:block;min-height:80vh}
+body.job-focus #jobDetail{display:block!important;margin:0!important}
+body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#fff;box-shadow:0 2px 8px #18233812}
+@media(max-width:700px){.job-row-actions{min-width:180px}.job-status-select{min-width:120px}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -267,8 +286,8 @@ body.customer-focus .sidebar,body.customer-focus .topbar{display:none!important}
 </div>
 <div class="toolbar"><div class="toolbar-left"><input class="search" id="jobSearch" placeholder="Search customer, job or address..." oninput="renderJobs()"><select id="jobFilter" class="job-status" onchange="renderJobs()"><option value="">All statuses</option><option>Scheduled</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select></div><button class="primary" onclick="openJobEditor()">+ Add job</button></div>
 <div class="panel"><div class="table-wrap" id="jobsTable"></div></div>
-<div id="jobDetail" style="display:none;margin-top:18px"></div>
 </section>
+<section class="page" id="jobWorkspace"><div id="jobDetail" style="display:none"></div></section>
 <section class="page" id="calendar">
 <div class="page-intro">Plan appointments, see booked jobs and keep your work schedule organised.</div>
 <div class="toolbar"><div class="toolbar-left"><button class="secondary" onclick="changeCalendarMonth(-1)">← Previous</button><button class="secondary" onclick="goCalendarToday()">Today</button><button class="secondary" onclick="changeCalendarMonth(1)">Next →</button><strong id="monthTitle"></strong></div><div class="toolbar-left"><button class="secondary" onclick="addCalendarJob()">+ Schedule job</button><button class="primary" onclick="addCalendarEvent()">+ Add event</button></div></div>
@@ -916,7 +935,7 @@ $("jobsTable").innerHTML=`<table><thead><tr><th>CUSTOMER / JOB</th><th>SCHEDULE<
 <tr><td><strong>${esc(j.name||"Customer")}</strong><div class="muted">${esc(j.service||"Job")}</div></td>
 <td>${esc(j.start?fmtDate(j.start):"Not set")}<div class="muted">${j.end||j.completion?"to "+esc(fmtDate(j.end||j.completion)):"End date not set"}</div></td>
 <td>${esc(jobDuration(j))}</td><td>${tag(j.status)}</td><td><strong>${money(j.value)}</strong></td><td><strong>${money(j.paid||0)}</strong></td><td><strong>${money(Math.max(0,Number(j.value||0)-Number(j.paid||0)))}</strong></td><td>${money(jobProfit(j))}</td><td>${tag(j.payment||"Unpaid")}</td>
-<td><div class="actions"><button class="action" onclick="openJobDetail('${j.id}')">Open</button><button class="action" onclick="quickJobStatus('${j.id}','Completed')">Complete</button><button class="action" onclick="quickJobPayment('${j.id}','full')">Paid in full</button><button class="action" onclick="quickJobPayment('${j.id}','partial')">Part payment</button><button class="action" onclick="quickJobSchedule('${j.id}')">Date</button><button class="action" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit</button></div><div style="margin-top:6px"><select aria-label="Change job status" style="font-size:10px;padding:5px;width:145px" onchange="quickJobStatus('${j.id}',this.value)"><option value="">Change status…</option>${jobStatuses.map(s=>`<option value="${s}" ${j.status===s?"selected":""}>${s}</option>`).join("")} </select></div></td></tr>`).join("")}</tbody></table>`;
+<td><div class="job-row-actions"><button class="primary job-open-button" onclick="openJobDetail('${j.id}')">Open job <span>→</span></button><select class="quote-status-select job-status-select" aria-label="Change job status" title="Change job status" onchange="quickJobStatus('${j.id}',this.value)"><option value="" disabled selected>Update status</option>${jobStatuses.map(s=>`<option value="${s}" ${j.status===s?"selected":""}>${s}</option>`).join("")}</select><details class="job-more"><summary>More</summary><div class="job-more-menu"><button onclick="quickJobPayment('${j.id}','full')">Record full payment</button><button onclick="quickJobPayment('${j.id}','partial')">Record part payment</button><button onclick="quickJobSchedule('${j.id}')">Change dates</button><button onclick="quickJobNote('${j.id}')">Add internal note</button><button onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit job details</button></div></details></div></td></tr>`).join("")}</tbody></table>`;
 }
 function quickJobStatus(id,status){
 const j=data.jobs.find(x=>x.id===id);if(!j||!jobStatuses.includes(status))return;
@@ -1039,7 +1058,12 @@ const c=jobCustomer(j);
 const costs=jobCosts(j),profit=jobProfit(j),margin=Number(j.value)>0?(profit/Number(j.value))*100:0;
 const photos=[["before","Before work"],["during","During work"],["after","After work"]];
 $("jobDetail").style.display="block";
+$("jobWorkspace").appendChild($("jobDetail"));
+document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+$("jobWorkspace").classList.add("active");document.body.classList.add("job-focus");
 $("jobDetail").innerHTML=`
+<button class="secondary job-back-button" onclick="closeJobDetail()">← Back to jobs</button>
+
 <div class="detail-heading"><div><div class="eyebrow">JOB RECORD</div><div class="detail-name">${esc(j.service||"Job")}</div><div class="muted">${esc(j.name)} · ${tag(j.status)}</div></div><div class="actions"><button class="primary" onclick="openJobEditor(data.jobs.find(x=>x.id==='${j.id}'))">Edit job</button><button class="secondary" onclick="closeJobDetail()">Close</button></div></div>
 <div class="job-detail-grid"><div>
 <div class="detail-card"><h3>Job information</h3>
@@ -1075,7 +1099,7 @@ ${photos.map(([key,label])=>`<div class="section-label">${label}</div><div id="j
 photos.forEach(([key])=>loadJobPhotos(j.id,key));
 $("jobDetail").scrollIntoView({behavior:"smooth",block:"start"});
 }
-function closeJobDetail(){$("jobDetail").style.display="none";selectedJobId=null}
+function closeJobDetail(){$("jobDetail").style.display="none";$("jobs").appendChild($("jobDetail"));selectedJobId=null;document.body.classList.remove("job-focus");showPage("jobs");$("jobs").scrollIntoView({behavior:"smooth",block:"start"})}
 function deleteJob(id){
 if(!confirm("Delete this job record? This cannot be undone."))return;
 data.jobs=data.jobs.filter(j=>j.id!==id);
