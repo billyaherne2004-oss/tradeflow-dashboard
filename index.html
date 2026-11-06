@@ -713,10 +713,16 @@ data.customers.push(c);
 }
 return c;
 }
+function addCustomerTimeline(c,method,title,note){
+if(!c)return;
+if(!Array.isArray(c.history))c.history=[];
+c.history.push({date:new Date().toLocaleString("en-GB"),method,title,note});
+}
 function convertCustomer(id){
 const e=data.enquiries.find(x=>x.id===id);if(!e)return;
 if(e.convertedCustomerId&&data.customers.some(c=>c.id===e.convertedCustomerId)){alert("This enquiry is already linked to a customer.");return;}
 const c=findOrCreateCustomer(e);
+addCustomerTimeline(c,"Enquiry","Enquiry added to customer record",(e.service||"Enquiry")+" · "+(e.date||today()));
 e.status="Won";e.convertedCustomerId=c.id;syncEnquiryFollowups(e);
 save();renderEnquiries();openEnquiry(id);updateDashboard();
 alert("Customer record created or matched successfully.");
@@ -727,7 +733,9 @@ const existingJob=data.jobs.find(j=>j.id===e.convertedJobId||j.sourceEnquiryId==
 if(existingJob){e.convertedJobId=existingJob.id;save();openEnquiry(id);alert("This enquiry has already been converted into a job.");return;}
 const c=findOrCreateCustomer(e);
 const job={id:makeId(),name:e.name,service:e.service,value:Number(e.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceEnquiryId:e.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
-data.jobs.push(job);e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;syncEnquiryFollowups(e);syncJobFollowups(job);
+data.jobs.push(job);
+addCustomerTimeline(c,"Job","Job created from enquiry",(job.service||"Job")+" · "+money(job.value));
+e.status="Won";e.convertedJobId=job.id;e.convertedCustomerId=c.id;syncEnquiryFollowups(e);syncJobFollowups(job);
 save();renderEnquiries();openEnquiry(id);updateDashboard();
 alert("Job created successfully. You can find it in the Jobs section.");
 }
@@ -1382,7 +1390,12 @@ return `<tr><td><strong>${esc(q.number)}</strong><div class="muted">${esc(q.date
 function updateQuoteStatus(id,status){
 const q=data.quotes.find(x=>x.id===id);if(!q)return;
 if(!["Draft","Sent","Accepted","Rejected","Expired"].includes(status))return;
-q.status=status;syncQuoteFollowup(q);save();renderQuotes();updateDashboard();
+const previous=q.status;
+if(previous===status)return;
+q.status=status;
+const c=quoteCustomer(q);
+addCustomerTimeline(c,"Quote","Quote "+(q.number||"")+" marked "+status,(q.service||"Quote")+" · "+money(q.value)+(previous?" · Previous status: "+previous:""));
+syncQuoteFollowup(q);save();renderQuotes();updateDashboard();
 }
 function duplicateQuote(id){
 const q=data.quotes.find(x=>x.id===id);if(!q)return;
@@ -1559,12 +1572,14 @@ if(confirm("Mark quote "+q.number+" as Sent?")){q.status="Sent";syncQuoteFollowu
 function quoteToJob(id){
 const q=data.quotes.find(x=>x.id===id);if(!q)return;
 if(q.status!=="Accepted"){alert("Only accepted quotes can be converted into jobs.");return}
-if(q.convertedJobId&&data.jobs.some(j=>j.id===q.convertedJobId)){alert("This quote has already been converted into a job.");return}
+const existingJob=data.jobs.find(j=>j.id===q.convertedJobId||j.sourceQuoteId===q.id);
+if(existingJob){q.convertedJobId=existingJob.id;save();renderQuotes();alert("This quote has already been converted into a job.");return}
 let c=quoteCustomer(q);
 if(!c)c=findOrCreateCustomer({name:q.name,phone:"",email:"",service:q.service});
 const job={id:makeId(),name:c.name,service:q.service,value:Number(q.value)||0,status:"Scheduled",payment:"Unpaid",paid:0,start:"",completion:"",end:"",customerId:c.id,sourceQuoteId:q.id,materialsCost:0,labourCost:0,otherCost:0,description:"",notes:"",completionNotes:""};
 data.jobs.push(job);
 q.convertedJobId=job.id;q.customerId=c.id;
+addCustomerTimeline(c,"Quote","Accepted quote converted to job",(q.number||"Quote")+" · "+(job.service||"Job")+" · "+money(job.value));
 syncJobFollowups(job);
 save();renderQuotes();updateDashboard();
 alert("Job created. You can find it in the Jobs section.");
