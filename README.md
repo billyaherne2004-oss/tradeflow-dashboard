@@ -13,3 +13,4 @@ Features planned:
 - Revenue tracking
 - Business website management
 - AI business assistant
+
