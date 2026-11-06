@@ -569,7 +569,10 @@ function syncQuoteFollowup(q){
 const key="quote:"+q.id;
 if(q.status==="Sent"){
 autoFollowup(key,{name:q.name,service:"Chase quote "+(q.number||"")+" · "+(q.service||"Quote"),date:addDays(q.date||today(),3),priority:"Normal",linkType:"Quote",linkId:q.id});
-}else if(["Accepted","Rejected","Expired"].includes(q.status))completeAutoFollowup(key);
+}else{
+/* A quote moved back to Draft no longer needs a chase reminder. */
+completeAutoFollowup(key);
+}
 }
 function syncJobFollowups(j){
 const prepKey="job-prep:"+j.id,payKey="job-payment:"+j.id;
