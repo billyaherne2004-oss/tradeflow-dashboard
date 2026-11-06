@@ -1873,6 +1873,7 @@ syncQuoteFollowup(savedQuote);
 }
 const sourceEnquiryId=pendingEnquiryId;
 save();closeQuote();renderQuotes();updateDashboard();
+if(savedQuote&&savedQuote.status==="Accepted"&&previousStatus!=="Accepted")quoteToJob(savedQuote.id);
 if(sourceEnquiryId)openEnquiry(sourceEnquiryId);
 else if(selectedCustomer&&$("customers").classList.contains("active"))openCustomer(selectedCustomer);
 }
