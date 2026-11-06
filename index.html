@@ -395,6 +395,31 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 :root[data-theme="dark"] .customer-list-panel,:root[data-theme="dark"] .table-wrap{color:var(--ink)}
 :root[data-theme="dark"] a:not(.primary):not(.secondary){color:#9bbaff}
 </style>
+<style id="mobile-navigation">
+.mobile-nav-wrap{display:none}
+@media(max-width:700px){
+  .sidebar{display:none!important}
+  .main{margin:0!important;width:100%!important;max-width:none;padding:20px 15px 104px!important}
+  .mobile-nav-wrap{display:block;position:fixed;z-index:40;left:0;right:0;bottom:0;padding:8px 12px calc(8px + env(safe-area-inset-bottom));background:var(--white,#fff);border-top:1px solid var(--line);box-shadow:0 -5px 22px rgba(20,35,60,.09)}
+  .mobile-nav{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:3px;max-width:620px;margin:0 auto}
+  .mobile-nav-item{min-width:0;min-height:48px;border:0;border-radius:10px;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font:600 10px inherit;cursor:pointer;padding:5px 2px}
+  .mobile-nav-icon{font-size:18px;line-height:20px}
+  .mobile-nav-item.active{background:var(--blue-light);color:var(--blue);font-weight:800}
+  .mobile-nav-item:focus-visible,.mobile-more-item:focus-visible{outline:3px solid #82aaff88;outline-offset:2px}
+  .mobile-more-menu{position:absolute;right:12px;bottom:calc(76px + env(safe-area-inset-bottom));width:min(260px,calc(100vw - 24px));max-height:min(65vh,460px);overflow-y:auto;padding:8px;background:var(--white,#fff);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 38px rgba(20,35,60,.2)}
+  .mobile-more-item{width:100%;display:flex;align-items:center;gap:12px;padding:12px;border:0;border-radius:9px;background:transparent;color:var(--ink);text-align:left;font:600 13px inherit;cursor:pointer}
+  .mobile-more-item span{width:22px;text-align:center;font-size:16px;color:var(--muted)}
+  .mobile-more-item.active{background:var(--blue-light);color:var(--blue)}
+  .mobile-more-item.active span{color:var(--blue)}
+  .mobile-more-trigger[aria-expanded="true"]{background:var(--blue-light);color:var(--blue)}
+  body.enquiry-focus .mobile-nav-wrap,body.customer-focus .mobile-nav-wrap,body.job-focus .mobile-nav-wrap{display:none!important}
+}
+:root[data-theme="dark"] .mobile-nav-wrap,:root[data-theme="dark"] .mobile-more-menu{background:var(--surface,#1b2637);border-color:var(--line);color:var(--ink)}
+:root[data-theme="dark"] .mobile-nav-item{color:var(--muted)}
+:root[data-theme="dark"] .mobile-nav-item.active,:root[data-theme="dark"] .mobile-more-item.active,:root[data-theme="dark"] .mobile-more-trigger[aria-expanded="true"]{background:#263b5c;color:#b9ceff}
+:root[data-theme="dark"] .mobile-more-item{color:var(--ink)}
+@media(min-width:701px){.mobile-nav-wrap{display:none!important}}
+</style>
 </head>
 <body>
 <aside class="sidebar">
@@ -415,6 +440,25 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <div class="nav-label">ACCOUNT</div>
 <button class="nav" data-page="settings"><span class="ico">⚙</span> Settings</button>
 </aside>
+<div class="mobile-nav-wrap" id="mobileNavWrap">
+  <div class="mobile-more-menu" id="mobileMoreMenu" hidden aria-label="More sections">
+    <button class="mobile-more-item" data-page="customers" onclick="showPage('customers')"><span>♙</span> Customers</button>
+    <button class="mobile-more-item" data-page="quotes" onclick="showPage('quotes')"><span>▤</span> Quotes</button>
+    <button class="mobile-more-item" data-page="followups" onclick="showPage('followups')"><span>↗</span> Follow-ups</button>
+    <button class="mobile-more-item" data-page="invoices" onclick="showPage('invoices')"><span>▤</span> Invoices</button>
+    <button class="mobile-more-item" data-page="revenue" onclick="showPage('revenue')"><span>£</span> Revenue</button>
+    <button class="mobile-more-item" data-page="website" onclick="showPage('website')"><span>◎</span> Website</button>
+    <button class="mobile-more-item" data-page="assistant" onclick="showPage('assistant')"><span>✧</span> Assistant</button>
+    <button class="mobile-more-item" data-page="settings" onclick="showPage('settings')"><span>⚙</span> Settings</button>
+  </div>
+  <nav class="mobile-nav" aria-label="Main navigation">
+    <button class="mobile-nav-item active" data-page="overview" onclick="showPage('overview')"><span class="mobile-nav-icon">▦</span><span>Home</span></button>
+    <button class="mobile-nav-item" data-page="enquiries" onclick="showPage('enquiries')"><span class="mobile-nav-icon">✉</span><span>Enquiries</span></button>
+    <button class="mobile-nav-item" data-page="jobs" onclick="showPage('jobs')"><span class="mobile-nav-icon">🔧</span><span>Jobs</span></button>
+    <button class="mobile-nav-item" data-page="calendar" onclick="showPage('calendar')"><span class="mobile-nav-icon">▦</span><span>Calendar</span></button>
+    <button class="mobile-nav-item mobile-more-trigger" id="mobileMoreTrigger" type="button" aria-expanded="false" aria-controls="mobileMoreMenu" onclick="toggleMobileMore()"><span class="mobile-nav-icon">•••</span><span>More</span></button>
+  </nav>
+</div>
 <main class="main">
 <header class="topbar">
 <div><div class="eyebrow">BUSINESS WORKSPACE / <span id="crumb">OVERVIEW</span></div><h1 id="heading">Good morning 👋</h1></div>
@@ -851,11 +895,29 @@ let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":
 ["Draft","Expired"].includes(s)?"grey":"";
 return `<span class="tag ${c}">${esc(s||"—")}</span>`;
 }
+function closeMobileMore(){
+const menu=$("mobileMoreMenu"),trigger=$("mobileMoreTrigger");
+if(menu)menu.hidden=true;
+if(trigger)trigger.setAttribute("aria-expanded","false");
+}
+function toggleMobileMore(){
+const menu=$("mobileMoreMenu"),trigger=$("mobileMoreTrigger");
+if(!menu||!trigger)return;
+menu.hidden=!menu.hidden;
+trigger.setAttribute("aria-expanded",String(!menu.hidden));
+}
+document.addEventListener("click",e=>{if(!e.target.closest("#mobileNavWrap"))closeMobileMore()});
 function showPage(id){
-document.body.classList.remove("enquiry-focus","customer-focus");
+document.body.classList.remove("enquiry-focus","customer-focus","job-focus");
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 $(id).classList.add("active");
 document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
+document.querySelectorAll(".mobile-nav-item[data-page]").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
+document.querySelectorAll(".mobile-more-item").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
+const morePages=["customers","quotes","followups","invoices","revenue","website","assistant","settings"];
+const moreTrigger=$("mobileMoreTrigger");
+if(moreTrigger){moreTrigger.classList.toggle("active",morePages.includes(id));moreTrigger.setAttribute("aria-expanded","false")}
+closeMobileMore();
 $("heading").textContent=({overview:"Good morning 👋",enquiries:"Enquiries",customers:"Customers",quotes:"Quotes",jobs:"Jobs",calendar:"Calendar",followups:"Follow-ups",invoices:"Invoices",revenue:"Revenue",website:"Website Management",assistant:"AI Assistant",settings:"Settings"})[id];
 $("crumb").textContent=id.toUpperCase();
 if(id==="enquiries")renderEnquiries();
