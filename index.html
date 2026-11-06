@@ -229,6 +229,15 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 .revenue-lower-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.revenue-ledger-panel,.revenue-outstanding-panel{padding:17px 18px;min-width:0}.revenue-ledger,.revenue-outstanding-list{display:grid}.revenue-ledger-row,.revenue-outstanding-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;align-items:center;gap:9px;padding:11px 0;border-top:1px solid var(--line)}.revenue-outstanding-row{grid-template-columns:minmax(0,1fr) auto auto}.revenue-ledger-icon{width:27px;height:27px;border-radius:8px;background:#edf4ff;color:#315fae;display:grid;place-items:center;font-size:13px;font-weight:750}.revenue-ledger-main,.revenue-outstanding-main{min-width:0;display:grid;gap:3px}.revenue-ledger-main strong,.revenue-outstanding-main strong{font-size:11px}.revenue-ledger-main span,.revenue-outstanding-main span{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.revenue-ledger-amount,.revenue-outstanding-amount{font-size:12px;font-weight:750;white-space:nowrap}.revenue-empty{padding:24px 8px;text-align:center;color:var(--muted);font-size:11px;line-height:1.5}.revenue-disclaimer{font-size:10px;color:var(--muted);margin:14px 2px 4px;line-height:1.5}
 @media(max-width:900px){.revenue-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.revenue-lower-grid{grid-template-columns:1fr}}
 @media(max-width:560px){.revenue-summary .metric{font-size:21px}.revenue-chart-panel,.revenue-ledger-panel,.revenue-outstanding-panel{padding:13px}.revenue-section-heading{align-items:flex-start;flex-direction:column}.revenue-ledger-row{grid-template-columns:27px minmax(0,1fr) auto}.revenue-ledger-row .action{grid-column:2 / 4;justify-self:start}.revenue-outstanding-row{grid-template-columns:minmax(0,1fr) auto}.revenue-outstanding-row .action{grid-column:1 / 3;justify-self:start}}
+
+/* INVOICES */
+.invoice-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0}
+.invoice-status{display:inline-flex;align-items:center;padding:5px 9px;border-radius:20px;font-size:11px;font-weight:700;background:#f0f2f5;color:#596579}
+.invoice-status.paid{background:#e9f7ef;color:#237447}.invoice-status.overdue{background:#fff0ef;color:#b93832}.invoice-status.sent,.invoice-status.part{background:#fff5e6;color:#9a620b}
+.invoice-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.invoice-actions button{white-space:nowrap}
+.invoice-preview-line{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid var(--line)}
+@media(max-width:900px){.invoice-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.invoice-summary{gap:8px}.invoice-summary .card{padding:12px}.invoice-actions{min-width:170px}}
 </style>
 </head>
 <body>
@@ -243,6 +252,7 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <button class="nav" data-page="calendar"><span class="ico">▦</span> Calendar</button>
 <button class="nav" data-page="followups"><span class="ico">↗</span> Follow-ups</button>
 <div class="nav-label">BUSINESS</div>
+<button class="nav" data-page="invoices"><span class="ico">▤</span> Invoices</button>
 <button class="nav" data-page="revenue"><span class="ico">£</span> Revenue</button>
 <button class="nav" data-page="website"><span class="ico">◎</span> Website Management</button>
 <button class="nav" data-page="assistant"><span class="ico">✧</span> AI Assistant</button>
@@ -371,6 +381,11 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <div id="followupsTable" class="followup-card-list"></div>
 </div>
 </section>
+<section class="page" id="invoices">
+<div class="page-intro">Create clear, professional invoices from your jobs, keep track of what has been sent and record payments in one place.</div>
+<div class="invoice-summary"><div class="card"><div class="metric-label">Invoices created</div><div class="metric" id="invoiceCount">0</div><div class="metric-note">All invoice records</div></div><div class="card"><div class="metric-label">Awaiting payment</div><div class="metric" id="invoiceAwaiting">£0</div><div class="metric-note" id="invoiceAwaitingNote">Unpaid invoice balances</div></div><div class="card"><div class="metric-label">Overdue</div><div class="metric revenue-warning" id="invoiceOverdue">£0</div><div class="metric-note" id="invoiceOverdueNote">Past their due date</div></div><div class="card"><div class="metric-label">Paid invoices</div><div class="metric" id="invoicePaid">0</div><div class="metric-note">Fully paid</div></div></div>
+<div class="toolbar"><div class="toolbar-left"><input class="search" id="invoiceSearch" placeholder="Search invoice, customer or job..." oninput="renderInvoices()"><select id="invoiceFilter" onchange="renderInvoices()" aria-label="Filter invoices"><option value="">All invoices</option><option>Draft</option><option>Sent</option><option>Part-paid</option><option>Paid</option><option>Overdue</option></select></div><button class="primary" onclick="openInvoice()">+ Create invoice</button></div><div class="panel"><div class="table-wrap" id="invoicesTable"></div></div><div class="notice">Invoices are linked to jobs. Payments recorded here also update the job payment history and Revenue figures. Tradeflow currently stores records in this browser; it does not yet send invoices automatically or provide online payment collection.</div>
+</section>
 <section class="page" id="revenue">
 <div class="page-intro">A clear picture of money coming in, work still to be paid for and the payments you've recorded.</div>
 <div class="revenue-summary">
@@ -453,6 +468,8 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <div class="toolbar"><span class="muted">You can print, email or convert this quote to a job after saving.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeQuote()">Cancel</button><button class="primary" type="button" onclick="saveQuote()">Save quote</button></div></div>
 </div>
 </div>
+<div class="modal-backdrop" id="invoiceModal"><div class="modal wide"><div class="modal-head"><div><div class="modal-title">Create invoice</div><div class="muted small">A clear breakdown of the work and amount due.</div></div><button class="secondary" type="button" onclick="closeInvoice()">Close</button></div><div class="form-grid"><label class="field">Job<select id="iJob" onchange="updateInvoicePreview()"></select></label><label class="field">Invoice date<input id="iDate" type="date"></label><label class="field">Payment due<input id="iDue" type="date"></label><label class="field full">Payment instructions<textarea id="iPaymentDetails" placeholder="Bank transfer details or how the customer can pay (optional)"></textarea></label><label class="field full">Note for the customer<textarea id="iNotes" placeholder="Optional message to include on the invoice"></textarea></label></div><div class="detail-card" style="margin-top:12px"><h3>Invoice preview</h3><div id="invoicePreview" class="muted">Choose a job to preview the invoice.</div></div><div class="toolbar"><span class="muted small">Totals are copied from the linked job or accepted quote.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeInvoice()">Cancel</button><button class="primary" type="button" onclick="saveInvoice()">Create invoice</button></div></div></div></div>
+<div class="modal-backdrop" id="invoicePaymentModal"><div class="modal"><div class="modal-head"><div class="modal-title" id="invoicePaymentTitle">Record payment</div><button class="secondary" type="button" onclick="closeInvoicePayment()">Close</button></div><div class="form-grid"><label class="field">Amount received (£)<input id="invoicePaymentAmount" type="number" min="0.01" step="0.01"></label><label class="field">Payment date<input id="invoicePaymentDate" type="date"></label><label class="field full">Payment method / note<input id="invoicePaymentMethod" placeholder="e.g. Bank transfer"></label></div><div class="toolbar"><span class="muted small" id="invoicePaymentBalance"></span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeInvoicePayment()">Cancel</button><button class="primary" type="button" onclick="saveInvoicePayment()">Record payment</button></div></div></div></div>
 <div class="modal-backdrop" id="jobActionModal">
 <div class="modal job-action-modal">
 <div class="modal-head"><div><div class="modal-title" id="jobActionTitle">Job action</div><div class="muted small" id="jobActionSubtitle"></div></div><button class="secondary" type="button" onclick="closeJobActionModal()">Close</button></div>
@@ -516,14 +533,15 @@ followups:[
 {id:makeId(),name:"James Wilson",service:"Follow up on enquiry",date:today(),status:"Pending"},
 {id:makeId(),name:"David Brown",service:"Check quote response",date:today(),status:"Pending"}
 ],
-events:[]
+events:[],
+invoices:[]
 };
 let data;
 try{
 const saved=JSON.parse(localStorage.getItem("tradeflowData"));
 data=saved&&typeof saved==="object"?saved:initialData;
 }catch(e){data=initialData}
-["enquiries","customers","quotes","jobs","followups","events"].forEach(k=>{
+["enquiries","customers","quotes","jobs","followups","events","invoices"].forEach(k=>{
 if(!Array.isArray(data[k]))data[k]=initialData[k]||[];
 });
 data.enquiries.forEach(e=>{
@@ -548,6 +566,7 @@ x.notes=x.notes||"";x.completionNotes=x.completionNotes||"";
 });
 data.followups.forEach(x=>{x.id=x.id||makeId();x.priority=x.priority||"Normal";x.status=x.status==="Overdue"?"Pending":(x.status||"Pending");x.linkType=x.linkType||"General";x.linkId=x.linkId||"";x.notes=x.notes||"";});
 data.events.forEach(x=>x.id=x.id||makeId());
+data.invoices.forEach(x=>{x.id=x.id||makeId();x.items=Array.isArray(x.items)?x.items:[];x.amountPaid=Number(x.amountPaid)||0;x.status=x.status||"Draft";});
 function autoFollowup(key,fields){
 let f=data.followups.find(x=>x.autoKey===key);
 if(f){
@@ -606,13 +625,14 @@ document.body.classList.remove("enquiry-focus","customer-focus");
 document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
 $(id).classList.add("active");
 document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===id));
-$("heading").textContent=({overview:"Good morning 👋",enquiries:"Enquiries",customers:"Customers",quotes:"Quotes",jobs:"Jobs",calendar:"Calendar",followups:"Follow-ups",revenue:"Revenue",website:"Website Management",assistant:"AI Assistant",settings:"Settings"})[id];
+$("heading").textContent=({overview:"Good morning 👋",enquiries:"Enquiries",customers:"Customers",quotes:"Quotes",jobs:"Jobs",calendar:"Calendar",followups:"Follow-ups",invoices:"Invoices",revenue:"Revenue",website:"Website Management",assistant:"AI Assistant",settings:"Settings"})[id];
 $("crumb").textContent=id.toUpperCase();
 if(id==="enquiries")renderEnquiries();
 if(id==="customers")renderCustomers();
 if(["quotes","jobs"].includes(id))renderTable(id);
 if(id==="followups")renderFollowups();
 if(id==="calendar")renderCalendar();
+if(id==="invoices")renderInvoices();
 if(id==="revenue")renderRevenue();
 }
 document.querySelectorAll(".nav").forEach(n=>n.addEventListener("click",()=>showPage(n.dataset.page)));
@@ -1794,7 +1814,7 @@ function restoreBackup(event){
 const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();
 reader.onload=async function(){try{
 const parsed=JSON.parse(String(reader.result||""));const incoming=parsed&&parsed.data?parsed.data:parsed;
-const required=["enquiries","customers","quotes","jobs","events","followups"];
+const required=["enquiries","customers","quotes","jobs","events","followups","invoices"];
 if(!incoming||typeof incoming!=="object"||!required.every(function(k){return Array.isArray(incoming[k]);}))throw new Error("This file does not look like a valid Tradeflow backup.");
 if(!required.every(function(k){return incoming[k].every(function(item){return item&&typeof item==="object"&&!Array.isArray(item);});}))throw new Error("The backup contains an invalid record. Your current records have not been changed.");
 const photoBackup=parsed&&parsed.data?parsed.jobPhotos:undefined;
@@ -1883,7 +1903,7 @@ const enquiryIndexes=[8,14,19,5,10],enquiries=enquiryIndexes.map((idx,n)=>{const
 const quoteIndexes=[5,10,11,19,15],quotes=quoteIndexes.map((idx,n)=>{const r=rows[idx-1],c=customers[idx-1];return{id:"demo-quote-"+(n+1),customerId:c.id,name:c.name,service:r[2],value:r[5],status:n<2?"Sent":"Draft",date:day(-n),validUntil:day(14-n),notes:"DEMO DATA — Itemised quotation for the agreed scope, labour and materials.",demoBatch:"flowpilot-demo-v1"}});
 const followups=[...enquiries.map((e,i)=>({id:"demo-fu-e-"+i,name:e.name,service:"Follow up on "+e.service,date:e.followup,status:"Pending",priority:e.priority,linkType:"Enquiry",linkId:e.id,notes:"DEMO DATA — Confirm requirements and agree next step.",demoBatch:"flowpilot-demo-v1"})),...customers.slice(0,7).map((c,i)=>({id:"demo-fu-c-"+i,name:c.name,service:["Confirm access arrangements","Check customer satisfaction","Confirm materials delivery","Request review","Arrange final inspection","Check quote decision","Confirm payment date"][i],date:day(i+1),status:i===1?"Completed":"Pending",priority:i===2?"High":"Normal",linkType:"Customer",linkId:c.id,notes:"DEMO DATA — Example relationship reminder.",demoBatch:"flowpilot-demo-v1"}))];
 const events=[["Supplier materials collection",2,"08:30","Collect materials for scheduled work"],["Site survey · George Bennett",1,"10:00","Measure replacement windows"],["Customer review · Oliver Williams",5,"15:00","Review decking progress"],["Tool maintenance",7,"09:00","Routine equipment check"]].map((e,i)=>({id:"demo-event-"+i,name:e[0],date:day(e[1]),time:e[2],service:e[3],location:"Demo workspace",demoBatch:"flowpilot-demo-v1"}));
-data={enquiries,customers,quotes,jobs,followups,events};save();
+data={enquiries,customers,quotes,jobs,followups,events,invoices:[]};save();
 selectedCustomer=null;selectedJobId=null;selectedEnquiry=null;
 ["customerDetail","jobDetail","enquiryDetail"].forEach(id=>{if($(id))$(id).style.display="none"});
 updateDashboard();renderEnquiries();renderCustomers();renderTable("quotes");renderJobs();renderFollowups();renderCalendar();renderRevenue();
