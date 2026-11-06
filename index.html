@@ -1595,7 +1595,7 @@ const activeJobs=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.statu
 $("mEnquiries").textContent=openEnquiries.length;
 $("mJobs").textContent=activeJobs.length;
 $("mRevenue").textContent=money(activeJobs.reduce((sum,j)=>sum+(Number(j.value)||0),0));
-$("mOutstanding").textContent=money(data.jobs.reduce((sum,j)=>sum+Math.max(0,(Number(j.value)||0)-(Number(j.paid)||0)),0));
+$("mOutstanding").textContent=money(data.jobs.filter(j=>j.status!=="Cancelled").reduce((sum,j)=>sum+Math.max(0,(Number(j.value)||0)-(Number(j.paid)||0)),0));
 const rank={Urgent:0,High:1,Normal:2,Low:3};
 const due=data.followups.filter(f=>f.status!=="Completed"&&["Overdue","Today"].includes(followupDueState(f))).sort((a,b)=>(rank[a.priority||"Normal"]??2)-(rank[b.priority||"Normal"]??2)||(a.date||"").localeCompare(b.date||""));
 const todayJobs=data.jobs.filter(j=>j.start===today()&&!["Completed","Cancelled"].includes(j.status));
@@ -1821,7 +1821,7 @@ a=`You currently have ${data.quotes.length} quote records. Make sure every quote
 }else if(/job/i.test(lower)){
 a=`You have ${data.jobs.length} jobs recorded, including ${data.jobs.filter(j=>j.status==="Completed").length} completed jobs. Keep job dates, progress and payment records up to date.`;
 }else if(/revenue|money|sales|outstanding/i.test(lower)){
-const due=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
+const due=data.jobs.filter(j=>j.status!=="Cancelled").reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
 a=`Based on your recorded jobs, the outstanding balance is ${money(due)}. This is calculated from job values less payments recorded.`;
 }
 $("chat").innerHTML+=`<div style="margin-top:12px"><strong>You:</strong> ${esc(q)}</div><div class="message">${esc(a)}</div>`;
