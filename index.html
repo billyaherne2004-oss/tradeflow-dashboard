@@ -249,7 +249,7 @@ body.customer-focus .sidebar,body.customer-focus .topbar{display:none!important}
 <div class="panel">
 <div class="toolbar"><div class="toolbar-left">
 <input class="search" id="quoteSearch" placeholder="Search quote number, customer, work..." oninput="renderQuotes()">
-<select id="quoteFilter" onchange="renderQuotes()" style="width:150px"><option value="">All statuses</option><option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option><option>Expired</option></select>
+<select id="quoteFilter" onchange="renderQuotes()" style="width:150px"><option value="">All statuses</option><option>Draft</option><option>Sent</option><option>Accepted</option><option>Rejected</option><option>Expired</option><option value="__past">Expired / past validity</option></select>
 </div></div>
 <div class="table-wrap" id="quotesTable"></div>
 </div>
@@ -692,7 +692,7 @@ $("customerDetail").innerHTML=`
 ${s.jobs.length?`<table><thead><tr><th>JOB</th><th>STATUS</th><th>VALUE</th><th>PAID</th></tr></thead><tbody>${s.jobs.map(j=>`<tr><td>${esc(j.service||"Job")}</td><td>${tag(j.status)}</td><td>${money(j.value)}</td><td>${money(j.paid)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No jobs linked to this customer yet.</div>'}
 </div>
 <div class="detail-card"><h3>Quotes</h3>
-${s.quotes.length?`<table><thead><tr><th>DESCRIPTION</th><th>STATUS</th><th>VALUE</th><th>DATE</th></tr></thead><tbody>${s.quotes.map(q=>`<tr><td>${esc(q.service||"Quote")}</td><td>${tag(q.status)}</td><td>${money(q.value)}</td><td>${esc(q.date||"—")}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No quotes linked to this customer yet.</div>'}
+${s.quotes.length?`<table><thead><tr><th>DESCRIPTION</th><th>STATUS</th><th>VALUE</th><th>DATE</th></tr></thead><tbody>${s.quotes.map(q=>`<tr><td>${esc(q.service||"Quote")}</td><td><select class="action" aria-label="Change quote status" onchange="updateQuoteStatus('${q.id}',this.value)">${["Draft","Sent","Accepted","Rejected","Expired"].map(x=>`<option ${q.status===x?"selected":""}>${x}</option>`).join("")}</select>${past?'<div class="small" style="color:var(--red)">Past validity</div>':""}</td><td>${money(q.value)}</td><td>${esc(q.date||"—")}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No quotes linked to this customer yet.</div>'}
 </div>
 <div class="detail-card"><h3>Related enquiries</h3>
 ${s.enquiries.length?`<table><thead><tr><th>SERVICE</th><th>STATUS</th><th>VALUE</th></tr></thead><tbody>${s.enquiries.map(e=>`<tr><td>${esc(e.service)}</td><td>${tag(e.status)}</td><td>${money(e.value)}</td></tr>`).join("")}</tbody></table>`:'<div class="empty">No enquiries linked to this customer.</div>'}
@@ -1201,7 +1201,7 @@ $("quoteAwaiting").textContent=sent.length;
 $("quoteAwaitingNote").textContent=money(sum(sent))+" waiting";
 $("quoteAccepted").textContent=acc.length;
 $("quoteAcceptedValue").textContent=money(sum(acc));
-const rows=all.filter(q=>(!st||q.status===st)&&[q.number,q.name,q.service,q.status].join(" ").toLowerCase().includes(qs));
+const rows=all.filter(q=>{const past=!!(q.validUntil&&q.validUntil<today()&&["Draft","Sent"].includes(q.status));const statusMatch=!st||(st==="__past"?past:q.status===st);return statusMatch&&[q.number,q.name,q.service,q.status,past?"expired":""].join(" ").toLowerCase().includes(qs)});
 if(!rows.length){
 $("quotesTable").innerHTML='<div class="empty">No quotes found. Click "+ Create quote" to build your first one.</div>';
 return;
@@ -1211,8 +1211,18 @@ const past=q.validUntil&&q.validUntil<today()&&["Draft","Sent"].includes(q.statu
 const valid=q.validUntil?(past?`<span style="color:var(--red)">${esc(q.validUntil)} (past)</span>`:esc(q.validUntil)):"—";
 const jobExists=q.convertedJobId&&data.jobs.some(j=>j.id===q.convertedJobId);
 const convert=q.status==="Accepted"?(jobExists?'<span class="muted small">Job created</span>':`<button class="action" onclick="quoteToJob('${q.id}')">Convert to job</button>`):"";
-return `<tr><td><strong>${esc(q.number)}</strong><div class="muted">${esc(q.date)}</div></td><td>${esc(q.name)}</td><td>${esc(q.service)}</td><td>${valid}</td><td><strong>${money(q.value)}</strong></td><td>${tag(q.status)}</td><td><div class="actions"><button class="action" onclick="openQuote('${q.id}')">Edit</button><button class="action" onclick="printQuote('${q.id}')">Print / PDF</button><button class="action" onclick="emailQuote('${q.id}')">Email</button>${convert}<button class="action" onclick="removeRecord('quotes','${q.id}')">Delete</button></div></td></tr>`;
+return `<tr><td><strong>${esc(q.number)}</strong><div class="muted">${esc(q.date)}</div></td><td>${esc(q.name)}</td><td>${esc(q.service)}</td><td>${valid}</td><td><strong>${money(q.value)}</strong></td><td>${tag(q.status)}</td><td><div class="actions"><button class="action" onclick="openQuote('${q.id}')">Edit</button><button class="action" onclick="duplicateQuote('${q.id}')">Duplicate</button><button class="action" onclick="printQuote('${q.id}')">Print / PDF</button><button class="action" onclick="emailQuote('${q.id}')">Email</button>${convert}<button class="action" onclick="removeRecord('quotes','${q.id}')">Delete</button></div></td></tr>`;
 }).join("")}</tbody></table>`;
+}
+function updateQuoteStatus(id,status){
+const q=data.quotes.find(x=>x.id===id);if(!q)return;
+if(!["Draft","Sent","Accepted","Rejected","Expired"].includes(status))return;
+q.status=status;syncQuoteFollowup(q);save();renderQuotes();updateDashboard();
+}
+function duplicateQuote(id){
+const q=data.quotes.find(x=>x.id===id);if(!q)return;
+const copy=JSON.parse(JSON.stringify(q));copy.id=makeId();copy.number=nextQuoteNumber();copy.date=today();copy.validUntil=addDays(30);copy.status="Draft";copy.convertedJobId="";copy.items=(q.items||[]).map(i=>({...i}));
+data.quotes.unshift(copy);save();renderQuotes();updateDashboard();
 }
 function vatDefault(){
 try{const s=JSON.parse(localStorage.getItem("tradeflowSettings")||"{}")||{};return s.vat==="Yes"}catch(e){return false}
