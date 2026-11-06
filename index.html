@@ -1496,13 +1496,20 @@ notes:$("qNotes").value.trim(),
 terms:$("qTerms").value.trim()
 };
 if(pendingEnquiryId){fields.sourceEnquiryId=pendingEnquiryId;const source=data.enquiries.find(e=>e.id===pendingEnquiryId);if(source)source.convertedCustomerId=cust.id;}
+const previousQuote=qEditingId?data.quotes.find(x=>x.id===qEditingId):null;
+const previousStatus=previousQuote?.status||"";
 if(qEditingId){
 const old=data.quotes.find(x=>x.id===qEditingId);
 if(old)Object.assign(old,fields);
 }else{
 data.quotes.unshift(Object.assign({id:makeId(),number:nextQuoteNumber(),convertedJobId:""},fields));
 }
-const savedQuote=data.quotes.find(x=>x.id===(qEditingId||data.quotes[0]?.id));if(savedQuote)syncQuoteFollowup(savedQuote);
+const savedQuote=data.quotes.find(x=>x.id===(qEditingId||data.quotes[0]?.id));
+if(savedQuote){
+if(!previousQuote)addCustomerTimeline(cust,"Quote","Quote created",(savedQuote.number||"Quote")+" · "+(savedQuote.service||"Work")+" · "+money(savedQuote.value)+" · "+savedQuote.status);
+else if(previousStatus!==savedQuote.status)addCustomerTimeline(cust,"Quote","Quote status changed to "+savedQuote.status,(savedQuote.number||"Quote")+" · "+(savedQuote.service||"Work")+" · Previous status: "+previousStatus);
+syncQuoteFollowup(savedQuote);
+}
 const sourceEnquiryId=pendingEnquiryId;
 save();closeQuote();renderQuotes();updateDashboard();
 if(sourceEnquiryId)openEnquiry(sourceEnquiryId);
