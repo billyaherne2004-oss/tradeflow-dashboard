@@ -1773,27 +1773,47 @@ const obj={name:$("siteName").value,description:$("siteDescription").value,phone
 localStorage.setItem("tradeflowWebsite",JSON.stringify(obj));
 $("siteSaved").textContent="Website details saved in this browser.";
 }
-function exportBackup(){
-const payload={product:"Tradeflow",formatVersion:1,exportedAt:new Date().toISOString(),data:data};
+async function exportBackup(){
+try{
+let jobPhotos=[];
+try{
+const db=await jobPhotoDB();
+jobPhotos=await new Promise((resolve,reject)=>{
+const tx=db.transaction("photos","readonly"),req=tx.objectStore("photos").getAll();
+req.onsuccess=()=>resolve(req.result||[]);req.onerror=()=>reject(req.error);
+});
+}catch(photoError){$("backupStatus").textContent="Records backed up, but job photos could not be read. Check photo storage before relying on this backup.";}
+const payload={product:"Tradeflow",formatVersion:2,exportedAt:new Date().toISOString(),data:data,jobPhotos};
 const blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
-const url=URL.createObjectURL(blob);const a=document.createElement("a");
+const url=URL.createObjectURL(blob),a=document.createElement("a");
 a.href=url;a.download="tradeflow-backup-"+today()+".json";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
-$("backupStatus").textContent="Backup downloaded. Keep this file somewhere safe.";
+$("backupStatus").textContent="Backup downloaded, including "+jobPhotos.length+" job photo"+(jobPhotos.length===1?"":"s")+". Keep this file somewhere safe.";
+}catch(err){$("backupStatus").textContent="Backup could not be created. Please try again.";}
 }
 function restoreBackup(event){
 const file=event.target.files&&event.target.files[0];if(!file)return;const reader=new FileReader();
-reader.onload=function(){try{
+reader.onload=async function(){try{
 const parsed=JSON.parse(String(reader.result||""));const incoming=parsed&&parsed.data?parsed.data:parsed;
 const required=["enquiries","customers","quotes","jobs","events","followups"];
 if(!incoming||typeof incoming!=="object"||!required.every(function(k){return Array.isArray(incoming[k]);}))throw new Error("This file does not look like a valid Tradeflow backup.");
 if(!required.every(function(k){return incoming[k].every(function(item){return item&&typeof item==="object"&&!Array.isArray(item);});}))throw new Error("The backup contains an invalid record. Your current records have not been changed.");
-if(!confirm("Restore this backup? It will replace the records currently saved in this browser. Download a backup of your current records first if you may need them."))return;
+const photoBackup=parsed&&parsed.data?parsed.jobPhotos:undefined;
+if(photoBackup!==undefined&&(!Array.isArray(photoBackup)||!photoBackup.every(function(p){return p&&typeof p==="object"&&p.id&&p.jobId&&p.stage&&typeof p.dataUrl==="string"&&p.dataUrl.startsWith("data:image/");})))throw new Error("The backup contains invalid job photo data. Your current records have not been changed.");
+if(!confirm("Restore this backup? It will replace the records currently saved in this browser."+(photoBackup!==undefined?" It will also replace saved job photos.":" This older backup does not contain job photos.")+" Download a backup of your current records first if you may need them."))return;
 const restored=Object.assign({},data,incoming);
 required.forEach(function(k){restored[k].forEach(function(item){if(!item.id)item.id=makeId();});});
 restored.customers.forEach(function(c){c.history=Array.isArray(c.history)?c.history:[];});
 restored.enquiries.forEach(function(e){e.history=Array.isArray(e.history)?e.history:[];});
 restored.jobs.forEach(function(j){j.payments=Array.isArray(j.payments)?j.payments:[];});
 restored.quotes.forEach(function(q){q.items=Array.isArray(q.items)?q.items:[];});
+if(photoBackup!==undefined){
+const db=await jobPhotoDB();
+await new Promise(function(resolve,reject){
+const tx=db.transaction("photos","readwrite"),store=tx.objectStore("photos");
+store.clear();photoBackup.forEach(function(p){store.put(p);});
+tx.oncomplete=resolve;tx.onerror=function(){reject(tx.error)};tx.onabort=function(){reject(tx.error||new Error("Photo restore was cancelled"))};
+});
+}
 data=restored;save();updateDashboard();renderCustomers();renderJobs();renderCalendar();renderFollowups();renderRevenue();
 $("backupStatus").textContent="Backup restored successfully.";
 }catch(err){alert(err.message||"Could not restore this backup.");}finally{event.target.value="";}};
