@@ -263,6 +263,22 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 .invoice-actions .danger{background:#fff0ef;color:#b93832;border:1px solid #f2d4d1}
 @media(max-width:1000px){.invoice-row{grid-template-columns:minmax(170px,1fr) minmax(120px,.55fr)}.invoice-actions{grid-column:1/-1;justify-content:flex-start}}
 @media(max-width:620px){.invoice-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.invoice-row{grid-template-columns:1fr;gap:12px;padding:15px}.invoice-money{max-width:260px}.invoice-actions{grid-column:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}.invoice-actions button{width:100%}#invoices .toolbar{align-items:stretch;flex-direction:column}#invoices .toolbar-left{display:grid;grid-template-columns:1fr;width:100%}#invoices .search{min-width:0;width:100%}}
+
+/* TRADEFLOW GLOBAL NOTIFICATIONS */
+#tradeflowToastRegion{position:fixed;top:22px;right:22px;z-index:10000;display:flex;flex-direction:column;gap:10px;width:min(370px,calc(100vw - 32px));pointer-events:none}
+.tradeflow-toast{display:flex;align-items:flex-start;gap:11px;padding:14px 15px;background:#fff;border:1px solid #e5eaf1;border-radius:12px;box-shadow:0 12px 36px #172b4d20;pointer-events:auto;animation:tradeflowToastIn .22s ease-out;transition:opacity .2s,transform .2s}
+.tradeflow-toast-icon{width:25px;height:25px;flex:0 0 25px;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:800;background:#e8f7f0;color:#16875e}
+.tradeflow-toast.info .tradeflow-toast-icon{background:#edf3ff;color:#3269df}
+.tradeflow-toast.warning .tradeflow-toast-icon{background:#fff3e5;color:#b7791f}
+.tradeflow-toast.error .tradeflow-toast-icon{background:#fff0ef;color:#c94f4f}
+.tradeflow-toast-copy{min-width:0;flex:1}
+.tradeflow-toast-title{font-size:12px;font-weight:750;color:#25334a;margin:1px 0 4px}
+.tradeflow-toast-message{font-size:12px;line-height:1.5;color:#66748a;overflow-wrap:anywhere}
+.tradeflow-toast-close{border:0;background:transparent;color:#8a96a8;padding:0 2px;font-size:17px;line-height:1;cursor:pointer}
+.tradeflow-toast-close:hover{color:#26354b}
+@keyframes tradeflowToastIn{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:560px){#tradeflowToastRegion{top:12px;right:12px;width:calc(100vw - 24px)}}
+@media(prefers-reduced-motion:reduce){.tradeflow-toast{animation:none;transition:none}}
 </style>
 </head>
 <body>
@@ -531,6 +547,38 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <div class="toolbar"><span class="muted">Changes are saved in your browser.</span><div class="toolbar-right"><button type="button" class="secondary" onclick="closeJobEditor()">Cancel</button><button type="submit" class="primary">Save job</button></div></div>
 </form></div></div>
 <script>
+
+/* GLOBAL IN-APP FEEDBACK: replaces disruptive browser alert boxes throughout Tradeflow */
+(function(){
+  let region;
+  function toastRegion(){
+    if(region&&document.body.contains(region))return region;
+    region=document.getElementById("tradeflowToastRegion");
+    if(!region){region=document.createElement("div");region.id="tradeflowToastRegion";region.setAttribute("aria-live","polite");region.setAttribute("aria-relevant","additions");region.setAttribute("aria-label","Notifications");document.body.appendChild(region);}
+    return region;
+  }
+  function showTradeflowToast(message){
+    const msg=String(message==null?"":message);
+    const lower=msg.toLowerCase();
+    const kind=/(could not|cannot|can't|unable|invalid|blocked|failed|error|already exists|greater than|cannot be|please choose|please enter|please add|not match|not be before)/i.test(msg)?"error":/(warning|overlap|are you sure|needs attention|outstanding)/i.test(msg)?"warning":/(already linked|already converted|no email address|pop-ups|popup)/i.test(msg)?"info":"success";
+    const title=kind==="error"?"Unable to complete":kind==="warning"?"Please review":kind==="info"?"Just so you know":"All done";
+    const icon=kind==="error"?"!":kind==="warning"?"!":kind==="info"?"i":"✓";
+    const item=document.createElement("div");item.className="tradeflow-toast "+kind;item.setAttribute("role",kind==="error"?"alert":"status");
+    const badge=document.createElement("div");badge.className="tradeflow-toast-icon";badge.textContent=icon;
+    const copy=document.createElement("div");copy.className="tradeflow-toast-copy";
+    const heading=document.createElement("div");heading.className="tradeflow-toast-title";heading.textContent=title;
+    const body=document.createElement("div");body.className="tradeflow-toast-message";body.textContent=msg;
+    const close=document.createElement("button");close.className="tradeflow-toast-close";close.type="button";close.setAttribute("aria-label","Dismiss notification");close.textContent="×";
+    copy.append(heading,body);item.append(badge,copy,close);toastRegion().appendChild(item);
+    let timer=setTimeout(dismiss,kind==="error"?6500:4200);
+    function dismiss(){if(!item.isConnected)return;clearTimeout(timer);item.style.opacity="0";item.style.transform="translateY(-5px)";setTimeout(()=>item.remove(),220);}
+    close.addEventListener("click",dismiss);
+    item.addEventListener("mouseenter",()=>clearTimeout(timer));
+    item.addEventListener("mouseleave",()=>{timer=setTimeout(dismiss,1800);});
+  }
+  window.alert=showTradeflowToast;
+})();
+
 const $=id=>document.getElementById(id);
 const today=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")};
 const makeId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
