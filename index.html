@@ -184,6 +184,19 @@ body.job-focus #jobWorkspace{display:block;min-height:80vh}
 body.job-focus #jobDetail{display:block!important;margin:0!important}
 body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#fff;box-shadow:0 2px 8px #18233812}
 @media(max-width:700px){.job-row-actions{min-width:180px}.job-status-select{min-width:120px}}
+
+.job-action-modal{width:min(480px,calc(100vw - 30px));padding:22px}
+.job-action-fields{display:grid;gap:13px;margin:18px 0}
+.job-action-fields .field{display:grid;gap:6px;font-size:12px;font-weight:650;color:#44516a}
+.job-action-fields input{width:100%;border:1px solid #dce4ef;border-radius:8px;padding:11px 12px;font:inherit;color:#24334a;background:#fff}
+.job-action-fields input:focus{outline:none;border-color:#8eacee;box-shadow:0 0 0 3px #3269df18}
+.job-payment-summary{display:grid;gap:0;border:1px solid var(--line);border-radius:10px;padding:4px 13px;background:#f8fafd}
+.job-payment-summary>div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}
+.job-payment-summary>div:last-child{border:0}
+.job-payment-summary span,.job-action-summary span{color:var(--muted)}
+.job-payment-summary .balance strong{color:#176b50;font-size:15px}
+.job-action-summary{display:grid;gap:5px;padding:12px;border-radius:9px;background:#f5f7fb;font-size:12px}
+.job-action-modal .toolbar{align-items:center;gap:12px}
 </style>
 </head>
 <body>
@@ -372,6 +385,12 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <div class="toolbar"><span class="muted">You can print, email or convert this quote to a job after saving.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeQuote()">Cancel</button><button class="primary" type="button" onclick="saveQuote()">Save quote</button></div></div>
 </div>
 </div>
+<div class="modal-backdrop" id="jobActionModal">
+<div class="modal job-action-modal">
+<div class="modal-head"><div><div class="modal-title" id="jobActionTitle">Job action</div><div class="muted small" id="jobActionSubtitle"></div></div><button class="secondary" type="button" onclick="closeJobActionModal()">Close</button></div>
+<div id="jobActionFields" class="job-action-fields"></div>
+<div class="toolbar"><span class="muted small">Changes are saved to this job record.</span><div class="toolbar-right"><button class="secondary" type="button" onclick="closeJobActionModal()">Cancel</button><button class="primary" type="button" onclick="submitJobAction()">Save changes</button></div></div>
+</div></div>
 <div class="modal-backdrop" id="jobModal">
 <div class="modal wide job-editor">
 <div class="modal-head"><div class="modal-title" id="jobModalTitle">Add job</div><button class="secondary" type="button" onclick="closeJobEditor()">Close</button></div>
@@ -945,40 +964,49 @@ if(status!=="Completed")j.completedDate="";syncJobFollowups(j);
 save();renderJobs();updateDashboard();renderRevenue();renderCalendar();
 if(selectedJobId===id)openJobDetail(id);
 }
-function quickJobSchedule(id){
-const j=data.jobs.find(x=>x.id===id);if(!j)return;
-const start=prompt("Enter the new job start date (YYYY-MM-DD):",j.start||today());
-if(start===null)return;
-if(start&&!/^\d{4}-\d{2}-\d{2}$/.test(start)){alert("Please use YYYY-MM-DD format.");return}
-const end=prompt("Enter the job end date (YYYY-MM-DD), or leave blank:",j.end||j.completion||"");
-if(end===null)return;
-if(end&&!/^\d{4}-\d{2}-\d{2}$/.test(end)){alert("Please use YYYY-MM-DD format.");return}
-if(start&&end&&end<start){alert("The end date cannot be before the start date.");return}
-j.start=start;j.end=end;j.completion=end;syncJobFollowups(j);
-save();renderJobs();renderCalendar();if(selectedJobId===id)openJobDetail(id);
-}
-function quickJobPayment(id,mode){
+function openJobActionModal(type,id){
 const j=data.jobs.find(x=>x.id===id);if(!j)return;
 const total=Math.max(0,Number(j.value)||0),paid=Math.max(0,Number(j.paid)||0),remaining=Math.max(0,total-paid);
-if(remaining<=0){alert("This job is already paid in full.");return}
-let amount=remaining;
-if(mode==="partial"){
-const entered=prompt("Outstanding balance: "+money(remaining)+"\\nEnter the NEW payment received today:",String(remaining/2));
-if(entered===null)return;
-amount=Number(entered);
-if(!Number.isFinite(amount)||amount<=0){alert("Enter a payment amount greater than zero.");return}
-if(amount>remaining){alert("The payment cannot be greater than the outstanding balance of "+money(remaining)+".");return}
+if(type==="payment"&&remaining<=0){alert("This job is already paid in full.");return}
+$("jobActionTitle").textContent=type==="schedule"?"Update job schedule":"Record a payment";
+$("jobActionSubtitle").textContent=(jobCustomer(j)?.name||j.name||"Customer")+" · "+(j.service||"Job");
+$("jobActionFields").innerHTML=type==="schedule"?`
+<div class="job-action-summary"><span>Current schedule</span><strong>${esc(j.start?fmtDate(j.start):"Not scheduled")}${j.end||j.completion?" – "+esc(fmtDate(j.end||j.completion)):""}</strong></div>
+<label class="field">Start date<input id="jobActionStart" type="date" value="${esc(j.start||"")}"></label>
+<label class="field">End date<input id="jobActionEnd" type="date" value="${esc(j.end||j.completion||"")}"></label>
+<div class="muted small">Leave the end date blank if the job has no fixed finish date.</div>`:`
+<div class="job-payment-summary"><div><span>Agreed job price</span><strong>${money(total)}</strong></div><div><span>Already received</span><strong>${money(paid)}</strong></div><div class="balance"><span>Outstanding balance</span><strong>${money(remaining)}</strong></div></div>
+<label class="field">Payment received today (£)<input id="jobActionAmount" type="number" min="0.01" max="${remaining.toFixed(2)}" step="0.01" value="${remaining.toFixed(2)}" autofocus></label>
+<div class="muted small">Enter the new payment only, not the total paid so far.</div>`;
+$("jobActionModal").dataset.jobId=id;$("jobActionModal").dataset.actionType=type;
+$("jobActionModal").style.display="flex";
 }
-j.paid=paid+amount;
+function closeJobActionModal(){$("jobActionModal").style.display="none";$("jobActionFields").innerHTML="";delete $("jobActionModal").dataset.jobId;delete $("jobActionModal").dataset.actionType}
+function submitJobAction(){
+const modal=$("jobActionModal"),id=modal.dataset.jobId,type=modal.dataset.actionType,j=data.jobs.find(x=>x.id===id);if(!j)return;
+if(type==="schedule"){
+const start=$("jobActionStart").value,end=$("jobActionEnd").value;
+if(start&&end&&end<start){alert("The end date cannot be before the start date.");return}
+j.start=start;j.end=end;j.completion=end;syncJobFollowups(j);
+save();closeJobActionModal();renderJobs();renderCalendar();if(selectedJobId===id)openJobDetail(id);return;
+}
+const total=Math.max(0,Number(j.value)||0),paid=Math.max(0,Number(j.paid)||0),remaining=Math.max(0,total-paid);
+const amount=Number($("jobActionAmount").value);
+if(!Number.isFinite(amount)||amount<=0){alert("Enter a payment amount greater than zero.");return}
+if(amount>remaining+0.001){alert("The payment cannot be greater than the outstanding balance of "+money(remaining)+".");return}
+j.paid=Math.min(total,Math.round((paid+amount)*100)/100);
 j.payment=j.paid>=total?"Paid":"Partially paid";
 if(!Array.isArray(j.payments))j.payments=[];
-j.payments.push({id:makeId(),amount,date:today(),recordedAt:new Date().toISOString(),type:mode==="full"?"Paid in full":"Partial payment"});
-syncJobFollowups(j);
-save();renderJobs();updateDashboard();renderRevenue();
-const balance=Math.max(0,total-j.paid);
-if(mode==="partial")alert("Payment recorded: "+money(amount)+"\\nTotal paid so far: "+money(j.paid)+"\\nRemaining balance: "+money(balance));
-else alert("Job marked as paid in full. "+money(amount)+" recorded.");
-if(selectedJobId===id)openJobDetail(id);
+j.payments.push({id:makeId(),amount,date:today(),recordedAt:new Date().toISOString(),type:j.paid>=total?"Paid in full":"Partial payment"});
+syncJobFollowups(j);save();closeJobActionModal();renderJobs();updateDashboard();renderRevenue();if(selectedJobId===id)openJobDetail(id);
+}
+function quickJobSchedule(id){openJobActionModal("schedule",id)}
+function quickJobPayment(id,mode){
+const j=data.jobs.find(x=>x.id===id);if(!j)return;
+const remaining=Math.max(0,(Number(j.value)||0)-(Number(j.paid)||0));
+if(remaining<=0){alert("This job is already paid in full.");return}
+openJobActionModal("payment",id);
+if(mode==="partial")$("jobActionAmount").value=(remaining/2).toFixed(2);
 }
 function quickJobNote(id){
 const j=data.jobs.find(x=>x.id===id);if(!j)return;
