@@ -1488,7 +1488,6 @@ $("jStartTime").value=job?.startTime||"09:00";
 $("jDurationUnit").value=job?.durationUnit||(job?.start&&!job?.startTime?"days":"hours");
 const legacyDays=job?.start?Math.max(1,Math.round((new Date((job.end||job.completion||job.start)+"T00:00:00")-new Date(job.start+"T00:00:00"))/86400000)+1):1;
 $("jDuration").value=job?.durationUnit==="days"?(job.durationDays||legacyDays):job?.durationHours||2;
-$("jEnd").value=job?.end||job?.completion||"";
 updateJobSchedulePreview();
 $("jCompletedDate").value=job?.completedDate||"";
 $("jPaid").value=job?.paid??0;
