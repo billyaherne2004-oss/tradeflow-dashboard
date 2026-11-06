@@ -222,6 +222,13 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 .followup-task-card{display:grid;grid-template-columns:116px minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:11px;background:#fff;transition:border-color .15s,box-shadow .15s}.followup-task-card:hover{border-color:#c4d2e8;box-shadow:0 3px 12px #15233a0b}.followup-task-card.is-completed{background:#fafbfc}.followup-task-date{display:flex;flex-direction:column;gap:5px;border-right:1px solid var(--line);padding-right:12px;font-size:11px;color:var(--muted)}.followup-task-date strong{font-size:13px;color:var(--text);font-weight:700}.followup-task-date.overdue span{color:var(--red);font-weight:750}.followup-task-date.overdue strong{color:var(--red)}.followup-task-date.today span{color:#a66b12;font-weight:750}.followup-task-date.completed span{color:#23804c;font-weight:700}.followup-task-main{min-width:0}.followup-task-heading{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.followup-task-heading>strong{font-size:13px}.followup-kind{font-size:10px;color:#5c6b82;background:#f0f3f8;padding:3px 7px;border-radius:20px}.followup-task-title{font-size:12px;font-weight:600;margin-top:5px}.followup-task-notes{font-size:11px;color:var(--muted);line-height:1.45;margin:5px 0 0}.followup-task-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:8px;font-size:10px;color:var(--muted)}.followup-priority{font-weight:700}.followup-priority.urgent,.followup-priority.high{color:#bd4141}.followup-priority.normal{color:#6b7280}.followup-priority.low{color:#32734d}.followup-task-actions{display:flex;gap:5px;align-items:center;justify-content:flex-end;flex-wrap:wrap}.followup-task-actions .action,.followup-task-actions .primary{white-space:nowrap}.followup-task-actions a.action{text-decoration:none;display:inline-flex;align-items:center}.followup-delete{color:#9b4b4b}.followup-empty{text-align:center;padding:38px 18px;color:var(--muted)}.followup-empty-icon{width:38px;height:38px;margin:0 auto 10px;border-radius:50%;background:#edf7f0;color:#27804b;display:grid;place-items:center;font-size:19px}.followup-empty strong{display:block;color:var(--text);font-size:14px}.followup-empty p{font-size:12px;margin:6px 0 14px}
 @media(max-width:850px){.followup-task-card{grid-template-columns:92px minmax(0,1fr)}.followup-task-actions{grid-column:2;justify-content:flex-start}.followup-list-toolbar{align-items:flex-start;flex-direction:column}.followup-filters{width:100%}.followup-filters .search{flex:1;min-width:160px}}
 @media(max-width:560px){.followup-toolbar{align-items:flex-start;flex-direction:column}.followup-toolbar>.primary{width:100%}.followup-view-tabs{width:100%;overflow-x:auto;flex-wrap:nowrap}.followup-view-tab{white-space:nowrap}.followup-filters{display:grid;grid-template-columns:1fr;width:100%}.followup-filters .search,.followup-filters select{width:100%;min-width:0}.followup-task-card{grid-template-columns:1fr;gap:9px}.followup-task-date{border-right:0;border-bottom:1px solid var(--line);padding:0 0 8px;flex-direction:row;justify-content:space-between}.followup-task-actions{grid-column:1;justify-content:flex-start}.followup-card-list{padding:9px}.followup-task-actions .action,.followup-task-actions .primary{font-size:11px;padding:7px 9px}}
+
+/* REVENUE DASHBOARD REFRESH */
+.revenue-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:16px 0}.revenue-summary .metric{font-size:25px}.revenue-warning{color:#a96c18!important}
+.revenue-chart-panel{padding:18px 20px;margin-bottom:16px}.revenue-section-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:14px}.revenue-section-heading h2{font-size:16px;margin:0 0 4px}.revenue-section-heading p{font-size:11px;margin:0}.revenue-section-heading select{min-width:145px}.revenue-chart-legend{display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--muted);margin:12px 0 2px}.revenue-chart-legend span{display:flex;align-items:center;gap:7px}.revenue-chart-legend i{width:9px;height:9px;border-radius:3px;background:#4c79c8;display:inline-block}.revenue-chart-legend strong{font-size:14px;color:var(--text)}.revenue-bars{min-height:155px;align-items:end;padding:12px 2px 0;gap:7px}.revenue-bars .bar-wrap{min-width:0;flex:1}.revenue-bars .bar{border-radius:5px 5px 2px 2px;min-height:2px}.revenue-bars .bar-wrap small{font-size:9px;white-space:nowrap}.revenue-chart-note{font-size:10px;margin-top:9px;line-height:1.45}.revenue-no-chart{width:100%;padding:45px 10px;text-align:center;color:var(--muted);font-size:12px}
+.revenue-lower-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.revenue-ledger-panel,.revenue-outstanding-panel{padding:17px 18px;min-width:0}.revenue-ledger,.revenue-outstanding-list{display:grid}.revenue-ledger-row,.revenue-outstanding-row{display:grid;grid-template-columns:30px minmax(0,1fr) auto auto;align-items:center;gap:9px;padding:11px 0;border-top:1px solid var(--line)}.revenue-outstanding-row{grid-template-columns:minmax(0,1fr) auto auto}.revenue-ledger-icon{width:27px;height:27px;border-radius:8px;background:#edf4ff;color:#315fae;display:grid;place-items:center;font-size:13px;font-weight:750}.revenue-ledger-main,.revenue-outstanding-main{min-width:0;display:grid;gap:3px}.revenue-ledger-main strong,.revenue-outstanding-main strong{font-size:11px}.revenue-ledger-main span,.revenue-outstanding-main span{font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.revenue-ledger-amount,.revenue-outstanding-amount{font-size:12px;font-weight:750;white-space:nowrap}.revenue-empty{padding:24px 8px;text-align:center;color:var(--muted);font-size:11px;line-height:1.5}.revenue-disclaimer{font-size:10px;color:var(--muted);margin:14px 2px 4px;line-height:1.5}
+@media(max-width:900px){.revenue-summary{grid-template-columns:repeat(2,minmax(0,1fr))}.revenue-lower-grid{grid-template-columns:1fr}}
+@media(max-width:560px){.revenue-summary .metric{font-size:21px}.revenue-chart-panel,.revenue-ledger-panel,.revenue-outstanding-panel{padding:13px}.revenue-section-heading{align-items:flex-start;flex-direction:column}.revenue-ledger-row{grid-template-columns:27px minmax(0,1fr) auto}.revenue-ledger-row .action{grid-column:2 / 4;justify-self:start}.revenue-outstanding-row{grid-template-columns:minmax(0,1fr) auto}.revenue-outstanding-row .action{grid-column:1 / 3;justify-self:start}}
 </style>
 </head>
 <body>
@@ -365,13 +372,23 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 </div>
 </section>
 <section class="page" id="revenue">
-<div class="grid">
-<div class="card"><div class="metric-label">Completed job revenue</div><div class="metric" id="completedRevenue">£0</div></div>
-<div class="card"><div class="metric-label">Active job value</div><div class="metric" id="activeRevenue">£0</div></div>
-<div class="card"><div class="metric-label">Payments received</div><div class="metric" id="receivedRevenue">£0</div></div>
-<div class="card"><div class="metric-label">Outstanding</div><div class="metric" id="outstandingRevenue">£0</div></div>
+<div class="page-intro">A clear picture of money coming in, work still to be paid for and the payments you've recorded.</div>
+<div class="revenue-summary">
+<div class="card"><div class="metric-label">Payments received</div><div class="metric" id="receivedRevenue">£0</div><div class="metric-note">Recorded payments to date</div></div>
+<div class="card"><div class="metric-label">Still outstanding</div><div class="metric revenue-warning" id="outstandingRevenue">£0</div><div class="metric-note">Across all non-cancelled jobs</div></div>
+<div class="card"><div class="metric-label">Completed job value</div><div class="metric" id="completedRevenue">£0</div><div class="metric-note">Value of completed work</div></div>
+<div class="card"><div class="metric-label">Active job value</div><div class="metric" id="activeRevenue">£0</div><div class="metric-note">Scheduled and ongoing work</div></div>
 </div>
-<div class="panel"><div class="card-title">Payments received by month</div><div class="muted" id="revenueChartNote">Monthly totals from recorded payment history.</div><div class="chart" id="bars"></div></div>
+<div class="panel revenue-chart-panel">
+<div class="revenue-section-heading"><div><h2>Payment performance</h2><p class="muted">Money actually recorded as received, grouped by payment date.</p></div><select id="revenuePeriod" onchange="renderRevenue()" aria-label="Payment chart date range"><option value="3">Last 3 months</option><option value="6">Last 6 months</option><option value="12" selected>Last 12 months</option><option value="all">All recorded history</option></select></div>
+<div class="revenue-chart-legend"><span><i></i> Payments received</span><strong id="revenuePeriodTotal">£0</strong></div>
+<div class="chart revenue-bars" id="bars"></div><div class="muted revenue-chart-note" id="revenueChartNote"></div>
+</div>
+<div class="revenue-lower-grid">
+<div class="panel revenue-ledger-panel"><div class="revenue-section-heading"><div><h2>Recent payments</h2><p class="muted">Payments logged against jobs.</p></div></div><div id="revenuePayments" class="revenue-ledger"></div></div>
+<div class="panel revenue-outstanding-panel"><div class="revenue-section-heading"><div><h2>Outstanding balances</h2><p class="muted">Jobs with an unpaid balance.</p></div></div><div id="revenueOutstandingList" class="revenue-outstanding-list"></div></div>
+</div>
+<div class="revenue-disclaimer">These are operational figures based on job values and payment entries in Tradeflow, not formal bookkeeping, profit calculations or tax accounts.</div>
 </section>
 <section class="page" id="website">
 <div class="panel"><div class="card-title">Your business website</div><p class="muted">Manage the business details displayed on your public website.</p>
@@ -1635,21 +1652,26 @@ function renderCalendar(){
 }
 /* REVENUE */
 function renderRevenue(){
-const completed=data.jobs.filter(j=>j.status==="Completed").reduce((s,j)=>s+Number(j.value||0),0);
-const active=data.jobs.filter(j=>!["Completed","Cancelled"].includes(j.status)).reduce((s,j)=>s+Number(j.value||0),0);
-const received=data.jobs.reduce((s,j)=>s+Number(j.paid||0),0);
-const outstanding=data.jobs.reduce((s,j)=>s+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
-$("completedRevenue").textContent=money(completed);
-$("activeRevenue").textContent=money(active);
-$("receivedRevenue").textContent=money(received);
-$("outstandingRevenue").textContent=money(outstanding);
-const now=new Date();const months=[];
-for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({year:d.getFullYear(),month:d.getMonth(),label:d.toLocaleDateString("en-GB",{month:"short"})});}
-const monthly=months.map(function(m){return data.jobs.reduce(function(sum,j){return sum+(Array.isArray(j.payments)?j.payments.reduce(function(p,x){const d=new Date(String(x.date||"")+"T00:00:00");return p+(Number.isFinite(d.getTime())&&d.getFullYear()===m.year&&d.getMonth()===m.month?(Number(x.amount)||0):0);},0):0);},0);});
-const max=Math.max(1,...monthly);
-$("bars").innerHTML=months.map(function(m,i){return '<div class="bar-wrap"><div class="bar" title="'+money(monthly[i])+'" style="height:'+Math.max(3,monthly[i]/max*100)+'%"></div><small class="muted">'+m.label+'</small></div>';}).join("");
-const undated=data.jobs.reduce(function(sum,j){return sum+(!Array.isArray(j.payments)||!j.payments.length?(Number(j.paid)||0):0);},0);
-$("revenueChartNote").textContent=undated>0?"Monthly bars show dated payment records only. "+money(undated)+" in older payment totals has no recorded date, so it is included in total payments received but not assigned to a month.":"Monthly bars show payments recorded with dates over the last 12 months."
+const jobs=data.jobs||[];
+const completed=jobs.filter(j=>j.status==="Completed").reduce((sum,j)=>sum+Number(j.value||0),0);
+const active=jobs.filter(j=>!["Completed","Cancelled"].includes(j.status)).reduce((sum,j)=>sum+Number(j.value||0),0);
+const received=jobs.reduce((sum,j)=>sum+Number(j.paid||0),0);
+const outstanding=jobs.filter(j=>j.status!=="Cancelled").reduce((sum,j)=>sum+Math.max(0,Number(j.value||0)-Number(j.paid||0)),0);
+$("completedRevenue").textContent=money(completed);$("activeRevenue").textContent=money(active);$("receivedRevenue").textContent=money(received);$("outstandingRevenue").textContent=money(outstanding);
+const payments=jobs.flatMap(j=>(Array.isArray(j.payments)?j.payments:[]).map(p=>({job:j,amount:Number(p.amount)||0,date:p.date||"",type:p.type||"Payment"}))).filter(p=>p.amount>0).sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+const period=$("revenuePeriod")?.value||"12",dated=payments.filter(p=>/^\d{4}-\d{2}-\d{2}$/.test(p.date));
+const undated=jobs.reduce((sum,j)=>sum+(!Array.isArray(j.payments)||!j.payments.length?(Number(j.paid)||0):0),0);
+let months=[];
+if(period==="all"){const keys=[...new Set(dated.map(p=>p.date.slice(0,7)))].sort();months=keys.map(key=>{const parts=key.split("-").map(Number);return{key,label:new Date(parts[0],parts[1]-1,1).toLocaleDateString("en-GB",{month:"short",year:"2-digit"})}})}
+else{const count=Number(period)||12,now=new Date();for(let i=count-1;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({key:d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"),label:d.toLocaleDateString("en-GB",{month:"short",year:count>6?"2-digit":undefined})})}}
+const monthly=months.map(m=>dated.reduce((sum,p)=>sum+(p.date.slice(0,7)===m.key?p.amount:0),0)),periodTotal=monthly.reduce((x,y)=>x+y,0),max=Math.max(1,...monthly);
+$("revenuePeriodTotal").textContent=money(periodTotal);
+$("bars").innerHTML=months.length?months.map((m,i)=>'<div class="bar-wrap"><div class="bar" title="'+esc(m.label+": "+money(monthly[i]))+'" style="height:'+Math.max(monthly[i]>0?4:1,monthly[i]/max*100)+'%"></div><small class="muted">'+esc(m.label)+'</small></div>').join(""):'<div class="revenue-no-chart">No dated payments have been recorded yet.</div>';
+$("revenueChartNote").textContent=undated>0?money(undated)+" in older payment totals has no individual payment date, so it is included in the overall received figure but not placed on the chart.":"Chart uses dated payment entries only. Choose All recorded history to see every month with recorded payments.";
+const shown=payments.slice(0,8);
+$("revenuePayments").innerHTML=shown.length?shown.map(p=>{const c=jobCustomer(p.job);return '<div class="revenue-ledger-row"><div class="revenue-ledger-icon">£</div><div class="revenue-ledger-main"><strong>'+esc(c?.name||p.job.name||"Customer")+'</strong><span>'+esc(p.job.service||"Job")+' · '+(p.date?esc(fmtDate(p.date)):"Date not recorded")+'</span></div><div class="revenue-ledger-amount">'+money(p.amount)+'</div><button class="action" data-job="'+esc(p.job.id)+'" onclick="openJobDetail(this.dataset.job)">View job</button></div>'}).join(""):'<div class="revenue-empty">No individual payment entries yet. Record a payment from a job to build your payment history.</div>';
+const owing=jobs.filter(j=>j.status!=="Cancelled"&&Number(j.value||0)-Number(j.paid||0)>0.009).sort((a,b)=>(Number(b.value||0)-Number(b.paid||0))-(Number(a.value||0)-Number(a.paid||0))).slice(0,8);
+$("revenueOutstandingList").innerHTML=owing.length?owing.map(j=>{const c=jobCustomer(j),balance=Math.max(0,Number(j.value||0)-Number(j.paid||0));return '<div class="revenue-outstanding-row"><div class="revenue-outstanding-main"><strong>'+esc(c?.name||j.name||"Customer")+'</strong><span>'+esc(j.service||"Job")+' · '+esc(j.payment||"Unpaid")+'</span></div><div class="revenue-outstanding-amount">'+money(balance)+'</div><button class="action" data-job="'+esc(j.id)+'" onclick="openJobDetail(this.dataset.job)">View job</button></div>'}).join(""):'<div class="revenue-empty">You are all caught up. No outstanding job balances.</div>';
 }
 /* WEBSITE AND SETTINGS */
 function saveWebsite(){
