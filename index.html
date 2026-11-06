@@ -197,6 +197,11 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 .job-payment-summary .balance strong{color:#176b50;font-size:15px}
 .job-action-summary{display:grid;gap:5px;padding:12px;border-radius:9px;background:#f5f7fb;font-size:12px}
 .job-action-modal .toolbar{align-items:center;gap:12px}
+
+/* CALENDAR WORKSPACE REFRESH */
+.calendar-toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:17px 0 10px}.calendar-toolbar-main,.calendar-toolbar-actions,.calendar-nav,.calendar-view-switch,.calendar-tools-row,.calendar-legend,.calendar-filter-label,.selected-day-heading,.selected-day-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.calendar-period-title{font-size:17px;min-width:155px}.calendar-view-switch{padding:3px;background:#f1f4f9;border:1px solid var(--line);border-radius:9px;gap:2px}.calendar-view-btn{border:0;background:transparent;color:#69768a;border-radius:7px;padding:7px 11px;font-size:11px;font-weight:650}.calendar-view-btn.active{background:#fff;color:var(--blue);box-shadow:0 1px 4px #172b4d18}.calendar-tools-row{justify-content:space-between;margin:10px 2px 12px}.calendar-legend{gap:16px;color:var(--muted);font-size:11px}.calendar-legend span{display:flex;align-items:center;gap:6px}.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block}.job-dot{background:#16875e}.event-dot{background:#c47b22}.calendar-filter-label{font-size:11px;color:var(--muted)}.calendar-filter-label select{width:auto;min-width:145px;padding:8px 30px 8px 10px}.calendar-panel{padding:15px}.calendar{grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}.calendar-weekday{padding:8px 5px;text-align:center;color:#8490a2;font-size:10px;font-weight:800;letter-spacing:.5px}.day{min-width:0;min-height:116px;padding:8px;border-radius:9px;cursor:pointer}.day.selected{border-color:#7397e9;background:#f5f8ff;box-shadow:inset 0 0 0 1px #7397e9}.day.today .day-number{display:inline-grid;place-items:center;background:var(--blue);color:#fff;width:24px;height:24px;border-radius:50%}.day-number{min-height:24px}.calendar-item{display:block;width:100%;text-align:left;border:0;cursor:pointer;font-size:10px;padding:5px 6px;border-radius:5px}.calendar-item.job{background:#e8f7f0;color:#176b50}.calendar-item.event{background:#fff3e5;color:#9b641d}.calendar-item:hover{filter:brightness(.97);outline:1px solid currentColor}.calendar-more{font-size:10px;color:var(--muted);padding:3px 4px}.calendar-list{display:grid;gap:8px}.calendar-list-day{border:1px solid var(--line);border-radius:9px;padding:12px}.calendar-list-date{font-size:12px;font-weight:750;margin-bottom:8px}.calendar-list-items{display:grid;gap:6px}.calendar-list-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:7px;background:#f8fafd;font-size:11px;cursor:pointer}.calendar-list-item:hover{background:#f0f4fb}.calendar-list-item .calendar-list-name{font-weight:700;flex:1}.calendar-list-item.job{border-left:3px solid #16875e}.calendar-list-item.event{border-left:3px solid #c47b22}.selected-day-heading{justify-content:space-between;margin-bottom:10px}.selected-day-title{font-size:17px;font-weight:800;margin-top:4px}.selected-calendar-item{display:flex;align-items:center;gap:12px;padding:12px 4px;border-top:1px solid var(--line);font-size:12px}.selected-calendar-time{width:62px;flex-shrink:0;color:var(--muted);font-size:11px}.selected-calendar-main{flex:1;min-width:0}.selected-calendar-main strong{display:block;margin-bottom:3px}.selected-calendar-item .tag{flex-shrink:0}.selected-calendar-empty{padding:16px 0;color:var(--muted);font-size:12px}.calendar-agenda-date{min-width:78px;color:var(--muted);font-size:11px}.calendar-agenda-row{display:flex;align-items:center;gap:12px;padding:12px 4px;border-bottom:1px solid var(--line);font-size:12px;cursor:pointer}.calendar-agenda-row:last-child{border:0}.calendar-agenda-row:hover{background:#fafbfe}.calendar-agenda-main{flex:1;min-width:0}.calendar-agenda-main strong{display:block;margin-bottom:3px}.calendar-agenda-row .action{flex-shrink:0}
+@media(max-width:760px){.calendar-toolbar{align-items:flex-start}.calendar-toolbar-actions{width:100%}.calendar-toolbar-actions>.secondary,.calendar-toolbar-actions>.primary{flex:1}.calendar{gap:3px}.day{min-height:88px;padding:5px 3px}.calendar-item{font-size:9px;padding:4px 3px}.calendar-panel{padding:8px}.calendar-period-title{min-width:120px}.selected-day-actions{width:100%}.selected-day-heading{align-items:flex-start}.calendar-agenda-row{gap:7px}.calendar-agenda-row .action{display:none}}
+@media(max-width:480px){.calendar-view-btn{padding:7px 9px}.calendar-toolbar-actions{gap:6px}.calendar-filter-label select{min-width:125px}.day{min-height:74px}.calendar-item{white-space:nowrap;text-overflow:ellipsis;overflow:hidden}.calendar-list-item{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -302,10 +307,18 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 </section>
 <section class="page" id="jobWorkspace"><div id="jobDetail" style="display:none"></div></section>
 <section class="page" id="calendar">
-<div class="page-intro">Plan appointments, see booked jobs and keep your work schedule organised.</div>
-<div class="toolbar"><div class="toolbar-left"><button class="secondary" onclick="changeCalendarMonth(-1)">← Previous</button><button class="secondary" onclick="goCalendarToday()">Today</button><button class="secondary" onclick="changeCalendarMonth(1)">Next →</button><strong id="monthTitle"></strong></div><div class="toolbar-left"><button class="secondary" onclick="addCalendarJob()">+ Schedule job</button><button class="primary" onclick="addCalendarEvent()">+ Add event</button></div></div>
-<div class="panel"><div class="calendar" id="calendarGrid"></div></div>
-<div class="panel" style="margin-top:16px"><div class="split"><div class="card-title" style="margin:0">Upcoming schedule</div><span class="muted">Next 10 events and jobs</span></div><div id="calendarAgenda" style="margin-top:12px"></div></div>
+<div class="page-intro">A clear view of your booked work, appointments and upcoming schedule.</div>
+<div class="calendar-toolbar">
+ <div class="calendar-toolbar-main">
+  <div class="calendar-nav"><button class="secondary" onclick="changeCalendarMonth(-1)" aria-label="Previous period">←</button><button class="secondary" onclick="goCalendarToday()">Today</button><button class="secondary" onclick="changeCalendarMonth(1)" aria-label="Next period">→</button></div>
+  <strong id="monthTitle" class="calendar-period-title"></strong>
+ </div>
+ <div class="calendar-toolbar-actions"><div class="calendar-view-switch" role="group" aria-label="Calendar view"><button type="button" class="calendar-view-btn active" data-calendar-view="month" onclick="setCalendarView('month')">Month</button><button type="button" class="calendar-view-btn" data-calendar-view="week" onclick="setCalendarView('week')">Week</button><button type="button" class="calendar-view-btn" data-calendar-view="list" onclick="setCalendarView('list')">List</button></div><button class="secondary" onclick="addCalendarJob()">+ Schedule job</button><button class="primary" onclick="addCalendarEvent()">+ Add event</button></div>
+</div>
+<div class="calendar-tools-row"><div class="calendar-legend"><span><i class="legend-dot job-dot"></i> Jobs</span><span><i class="legend-dot event-dot"></i> Events</span></div><label class="calendar-filter-label">Show <select id="calendarFilter" onchange="renderCalendar()"><option value="all">Everything</option><option value="jobs">Jobs only</option><option value="events">Events only</option></select></label></div>
+<div class="panel calendar-panel"><div class="calendar" id="calendarGrid"></div><div id="calendarList" class="calendar-list" style="display:none"></div></div>
+<div class="panel selected-day-panel" style="margin-top:16px"><div class="selected-day-heading"><div><div class="muted">SELECTED DAY</div><div id="selectedCalendarDate" class="selected-day-title">Today</div></div><div class="selected-day-actions"><button class="secondary" onclick="addCalendarEvent()">+ Add event</button><button class="secondary" onclick="addCalendarJob()">+ Schedule job</button></div></div><div id="selectedCalendarItems"></div></div>
+<div class="panel" style="margin-top:16px"><div class="split"><div class="card-title" style="margin:0">Upcoming schedule</div><span class="muted">Next 10 booked items</span></div><div id="calendarAgenda" style="margin-top:12px"></div></div>
 </section>
 <section class="page" id="followups">
 <div class="page-intro">One place for every reminder across enquiries, customers, quotes and jobs.</div>
@@ -1504,35 +1517,74 @@ renderEnquiries();renderQuotes();renderJobs();
 }
 /* CALENDAR */
 let calendarMonthOffset=0;
+let selectedCalendarDate=calendarDateKey(new Date());
+let calendarView="month";
 function calendarDateKey(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
-function changeCalendarMonth(step){calendarMonthOffset+=step;renderCalendar()}
-function goCalendarToday(){calendarMonthOffset=0;renderCalendar()}
-function addCalendarEvent(date=""){openForm("calendar",date?{date}:null)}
-function addCalendarJob(date=""){pendingCustomerId=null;openJobEditor(null);if(date)$("jStart").value=date;}
+function calendarDateFromKey(key){const p=String(key||"").split("-").map(Number);return new Date(p[0],p[1]-1,p[2])}
+function calendarShiftDate(key,days){const d=calendarDateFromKey(key);d.setDate(d.getDate()+days);return calendarDateKey(d)}
+function setCalendarView(view){calendarView=view;renderCalendar()}
+function changeCalendarMonth(step){
+ if(calendarView==="week"){selectedCalendarDate=calendarShiftDate(selectedCalendarDate,step*7)}
+ else if(calendarView==="list"){selectedCalendarDate=calendarShiftDate(selectedCalendarDate,step*7)}
+ else{calendarMonthOffset+=step}
+ renderCalendar();
+}
+function goCalendarToday(){calendarMonthOffset=0;selectedCalendarDate=calendarDateKey(new Date());renderCalendar()}
+function selectCalendarDate(date){selectedCalendarDate=date;renderCalendar()}
+function addCalendarEvent(date=selectedCalendarDate){openForm("calendar",{date})}
+function addCalendarJob(date=selectedCalendarDate){pendingCustomerId=null;openJobEditor(null);setTimeout(()=>{if($("jStart"))$("jStart").value=date;},0)}
 function openCalendarEvent(id){const e=data.events.find(x=>x.id===id);if(e)openForm("calendar",e)}
 function openCalendarJob(id){const j=data.jobs.find(x=>x.id===id);if(!j)return;showPage("jobs");openJobDetail(id);setTimeout(()=>$("jobDetail").scrollIntoView({behavior:"smooth",block:"start"}),50)}
-function renderCalendar(){
-const today=new Date();today.setHours(0,0,0,0);
-const shown=new Date(today.getFullYear(),today.getMonth()+calendarMonthOffset,1);
-const year=shown.getFullYear(),month=shown.getMonth();
-const first=new Date(year,month,1),gridStart=new Date(year,month,1-first.getDay());
-$("monthTitle").textContent=shown.toLocaleString("en-GB",{month:"long",year:"numeric"});
-let html=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="muted" style="font-weight:750;padding:5px">${x}</div>`).join("");
-for(let i=0;i<42;i++){
-const d=new Date(gridStart);d.setDate(gridStart.getDate()+i);
-const date=calendarDateKey(d);
-const ev=data.events.filter(e=>e.date===date).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
-const jobs=data.jobs.filter(j=>{const start=j.start||"",end=j.end||j.completion||start;return start&&date>=start&&date<=end&&j.status!=="Cancelled"}).sort((a,b)=>(a.start||"").localeCompare(b.start||""));
-const items=ev.map(e=>`<button class="calendar-item event" title="${esc(e.name)}" onclick="event.stopPropagation();openCalendarEvent('${e.id}')">${e.time?esc(e.time)+" · ":""}${esc(e.name)}</button>`).join("")+jobs.map(j=>`<button class="calendar-item job" title="Job: ${esc(j.name)}" onclick="event.stopPropagation();openCalendarJob('${j.id}')">Job · ${esc(j.name)}</button>`).join("");
-html+=`<div class="day ${date===calendarDateKey(today)?"today":""} ${d.getMonth()!==month?"other-month":""}" onclick="addCalendarEvent('${date}')"><div class="day-number">${d.getDate()}</div>${items}</div>`;
+function calendarItemsForDate(date,filter){
+ const events=filter==="jobs"?[]:data.events.filter(e=>e.date===date).map(e=>({date:e.date,time:e.time||"",title:e.name,detail:e.service||e.location||"Calendar event",kind:"event",id:e.id}));
+ const jobs=filter==="events"?[]:data.jobs.filter(j=>{const start=j.start||"",end=j.end||j.completion||start;return start&&date>=start&&date<=end&&j.status!=="Cancelled"}).map(j=>({date,time:j.start===date?(j.time||""):"",title:j.name,detail:j.service||"Scheduled job",kind:"job",id:j.id,status:j.status}));
+ return events.concat(jobs).sort((a,b)=>(a.time||"").localeCompare(b.time||"")||a.title.localeCompare(b.title));
 }
-$("calendarGrid").innerHTML=html;
-const agenda=[];
-data.events.filter(e=>e.date>=calendarDateKey(today)).forEach(e=>agenda.push({date:e.date,time:e.time||"",title:e.name,detail:e.service||e.location||"Calendar event",kind:"event",id:e.id}));
-data.jobs.filter(j=>j.start>=calendarDateKey(today)&&j.status!=="Cancelled"&&j.status!=="Completed").forEach(j=>agenda.push({date:j.start,time:"",title:j.name,detail:j.service||"Scheduled job",kind:"job",id:j.id}));
-agenda.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-const next=agenda.slice(0,10);
-$("calendarAgenda").innerHTML=next.length?next.map(a=>`<div class="agenda-row" role="button" tabindex="0" style="cursor:pointer" onclick="${a.kind==="job"?"openCalendarJob":"openCalendarEvent"}('${a.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${a.kind==="job"?"openCalendarJob":"openCalendarEvent"}('${a.id}')}" title="Open ${a.kind==="job"?"job details":"calendar event"}"><div class="agenda-date">${new Date(a.date+"T00:00:00").toLocaleDateString("en-GB",{day:"numeric",month:"short"})}<br>${a.time?esc(a.time):""}</div><div class="agenda-main"><strong>${esc(a.title)}</strong><span class="muted">${esc(a.detail)}</span></div><span class="tag ${a.kind==="job"?"green":""}">${a.kind==="job"?"Job":"Event"}</span><button class="action" onclick="event.stopPropagation();${a.kind==="job"?"openCalendarJob":"openCalendarEvent"}('${a.id}')">${a.kind==="job"?"View job details →":"Edit event →"}</button></div>`).join(""):'<div class="empty">Nothing scheduled yet. Add an event or schedule a job to see it here.</div>';
+function calendarOpenItem(item){if(item.kind==="job")openCalendarJob(item.id);else openCalendarEvent(item.id)}
+function renderCalendar(){
+ const today=calendarDateKey(new Date()),filter=$("calendarFilter")?.value||"all";
+ const selected=calendarDateFromKey(selectedCalendarDate);
+ let dates=[],title="";
+ if(calendarView==="month"){
+  const shown=new Date();shown.setDate(1);shown.setMonth(shown.getMonth()+calendarMonthOffset);
+  title=shown.toLocaleString("en-GB",{month:"long",year:"numeric"});
+  const first=new Date(shown.getFullYear(),shown.getMonth(),1),gridStart=new Date(first);gridStart.setDate(first.getDate()-(first.getDay()+6)%7);
+  dates=Array.from({length:42},(_,i)=>{const d=new Date(gridStart);d.setDate(gridStart.getDate()+i);return d});
+ }else if(calendarView==="week"){
+  const monday=new Date(selected);monday.setDate(selected.getDate()-(selected.getDay()+6)%7);
+  dates=Array.from({length:7},(_,i)=>{const d=new Date(monday);d.setDate(monday.getDate()+i);return d});
+  title=dates[0].toLocaleDateString("en-GB",{day:"numeric",month:"short"})+" – "+dates[6].toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+ }else{
+  title="Schedule overview";
+  dates=Array.from({length:30},(_,i)=>calendarDateFromKey(calendarShiftDate(today,i)));
+ }
+ $("monthTitle").textContent=title;
+ document.querySelectorAll("[data-calendar-view]").forEach(b=>b.classList.toggle("active",b.dataset.calendarView===calendarView));
+ const grid=$("calendarGrid"),list=$("calendarList");
+ if(calendarView==="list"){
+  grid.style.display="none";list.style.display="grid";
+  const days=dates.map(d=>({date:calendarDateKey(d),items:calendarItemsForDate(calendarDateKey(d),filter)})).filter(x=>x.items.length);
+  list.innerHTML=days.length?days.map(day=>'<div class="calendar-list-day"><div class="calendar-list-date">'+calendarDateFromKey(day.date).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})+'</div><div class="calendar-list-items">'+day.items.map(item=>'<div class="calendar-list-item '+item.kind+'" role="button" tabindex="0" onclick="calendarOpenItem({kind:\''+item.kind+'\',id:\''+item.id+'\'})" onkeydown="if(event.key===\'Enter\'){calendarOpenItem({kind:\''+item.kind+'\',id:\''+item.id+'\'})}"><span>'+esc(item.time|| (item.kind==="job"?"Job":"Event"))+'</span><span class="calendar-list-name">'+esc(item.title)+'</span><span class="muted">'+esc(item.detail)+'</span></div>').join("")+'</div></div>').join(""):'<div class="empty">Nothing booked in the next 30 days.</div>';
+ }else{
+  list.style.display="none";grid.style.display="grid";
+  const headers=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  let html=headers.map(x=>'<div class="calendar-weekday">'+x+'</div>').join("");
+  dates.forEach(d=>{
+   const date=calendarDateKey(d),items=calendarItemsForDate(date,filter),isOther=calendarView==="month"&&d.getMonth()!==(new Date(new Date().getFullYear(),new Date().getMonth()+calendarMonthOffset,1)).getMonth();
+   const visible=items.slice(0,3);
+   html+='<div class="day '+(date===today?"today ":"")+(date===selectedCalendarDate?"selected ":"")+(isOther?"other-month":"")+'" role="button" tabindex="0" aria-label="'+d.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})+'" onclick="selectCalendarDate(\''+date+'\')" onkeydown="if(event.key===\'Enter\'){selectCalendarDate(\''+date+'\')}"><div class="day-number">'+d.getDate()+'</div>'+visible.map(item=>'<button class="calendar-item '+item.kind+'" title="'+esc(item.title)+'" onclick="event.stopPropagation();calendarOpenItem({kind:\''+item.kind+'\',id:\''+item.id+'\'})">'+(item.kind==="job"?"Job · ":"")+(item.time?esc(item.time)+" · ":"")+esc(item.title)+'</button>').join("")+(items.length>3?'<div class="calendar-more">+'+(items.length-3)+' more</div>':"")+'</div>';
+  });
+  grid.innerHTML=html;
+ }
+ const selectedItems=calendarItemsForDate(selectedCalendarDate,filter);
+ $("selectedCalendarDate").textContent=selected.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"});
+ $("selectedCalendarItems").innerHTML=selectedItems.length?selectedItems.map(item=>'<div class="selected-calendar-item"><div class="selected-calendar-time">'+(item.time?esc(item.time):item.kind==="job"?"Job":"All day")+'</div><div class="selected-calendar-main"><strong>'+esc(item.title)+'</strong><span class="muted">'+esc(item.detail)+'</span></div><span class="tag '+(item.kind==="job"?"green":"orange")+'">'+(item.kind==="job"?"Job":"Event")+'</span><button class="action" onclick="calendarOpenItem({kind:\''+item.kind+'\',id:\''+item.id+'\'})">'+(item.kind==="job"?"Open job →":"Edit event →")+'</button></div>').join(""):'<div class="selected-calendar-empty">Nothing booked for this day. Use the buttons above to schedule a job or add an event.</div>';
+ const upcoming=[];
+ data.events.filter(e=>e.date>=today&&(filter!=="jobs")).forEach(e=>upcoming.push({date:e.date,time:e.time||"",title:e.name,detail:e.service||e.location||"Calendar event",kind:"event",id:e.id}));
+ if(filter!=="events")data.jobs.filter(j=>j.start>=today&&j.status!=="Cancelled"&&j.status!=="Completed").forEach(j=>upcoming.push({date:j.start,time:j.time||"",title:j.name,detail:j.service||"Scheduled job",kind:"job",id:j.id}));
+ upcoming.sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+ const next=upcoming.slice(0,10);
+ $("calendarAgenda").innerHTML=next.length?next.map(item=>'<div class="calendar-agenda-row" role="button" tabindex="0" onclick="calendarOpenItem({kind:\''+item.kind+'\',id:\''+item.id+'\'})" onkeydown="if(event.key===\'Enter\'){calendarOpenItem({kind:\''+item.kind+'\',id:\''+item.id+'\'})}"><div class="calendar-agenda-date">'+calendarDateFromKey(item.date).toLocaleDateString("en-GB",{day:"numeric",month:"short"})+(item.time?'<br>'+esc(item.time):"")+'</div><div class="calendar-agenda-main"><strong>'+esc(item.title)+'</strong><span class="muted">'+esc(item.detail)+'</span></div><span class="tag '+(item.kind==="job"?"green":"orange")+'">'+(item.kind==="job"?"Job":"Event")+'</span><button class="action" onclick="event.stopPropagation();calendarOpenItem({kind:\''+item.kind+'\',id:\''+item.id+'\'})">'+(item.kind==="job"?"View job details →":"Edit event →")+'</button></div>').join(""):'<div class="empty">Nothing scheduled yet. Add an event or schedule a job to see it here.</div>';
 }
 /* REVENUE */
 function renderRevenue(){
