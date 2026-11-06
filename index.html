@@ -891,7 +891,7 @@ return symbol+Number(v||0).toLocaleString("en-GB",{minimumFractionDigits:0,maxim
 function tag(s){
 let c=["Paid","Completed","Won","Accepted","Done"].includes(s)?"green":
 ["Urgent","Overdue","Lost","Rejected"].includes(s)?"red":
-["New","Pending","Unpaid","Quote Sent"].includes(s)?"orange":
+["New","Pending","Unpaid","Quote Sent","Awaiting scheduling"].includes(s)?"orange":
 ["Draft","Expired"].includes(s)?"grey":"";
 return `<span class="tag ${c}">${esc(s||"—")}</span>`;
 }
@@ -1743,7 +1743,7 @@ $("quotesTable").innerHTML=`<table><thead><tr><th>QUOTE</th><th>CUSTOMER</th><th
 const past=q.validUntil&&q.validUntil<today()&&["Draft","Sent"].includes(q.status);
 const valid=q.validUntil?(past?`<span style="color:var(--red)">${esc(q.validUntil)} (past)</span>`:esc(q.validUntil)):"—";
 const jobExists=q.convertedJobId&&data.jobs.some(j=>j.id===q.convertedJobId);
-const convert=q.status==="Accepted"?(jobExists?'<span class="muted small">Job created</span>':`<button class="action" onclick="quoteToJob('${q.id}')">Convert to job</button>`):"";
+const linkedJob=data.jobs.find(j=>j.id===q.convertedJobId||j.sourceQuoteId===q.id);const convert=q.status==="Accepted"?(linkedJob?'<button class="action" onclick="scheduleQuoteJob(\''+q.id+'\')">'+(linkedJob.status==="Awaiting scheduling"?"Schedule job":"View job")+'</button>':'<button class="action" onclick="quoteToJob(\''+q.id+'\')">Create & schedule job</button>'):"";
 return `<tr><td><strong>${esc(q.number)}</strong><div class="muted">${esc(q.date)}</div></td><td>${esc(q.name)}</td><td>${esc(q.service)}</td><td>${valid}</td><td><strong>${money(q.value)}</strong></td><td><select class="quote-status-select" aria-label="Change quote status" title="Change quote status" onchange="updateQuoteStatus(&quot;${q.id}&quot;,this.value)"><option value="Draft" ${q.status==="Draft"?"selected":""}>Draft</option><option value="Sent" ${q.status==="Sent"?"selected":""}>Sent</option><option value="Accepted" ${q.status==="Accepted"?"selected":""}>Accepted</option><option value="Rejected" ${q.status==="Rejected"?"selected":""}>Rejected</option><option value="Expired" ${q.status==="Expired"?"selected":""}>Expired</option></select></td><td><div class="actions"><button class="action" onclick="openQuote('${q.id}')">Edit</button><button class="action" onclick="duplicateQuote('${q.id}')">Duplicate</button><button class="action" onclick="printQuote('${q.id}')">Print / PDF</button><button class="action" onclick="emailQuote('${q.id}')">Email</button>${convert}<button class="action" onclick="removeRecord('quotes','${q.id}')">Delete</button></div></td></tr>`;
 }).join("")}</tbody></table>`;
 }
