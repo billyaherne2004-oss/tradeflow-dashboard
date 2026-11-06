@@ -685,7 +685,7 @@ body.job-focus .job-back-button{position:sticky;top:10px;z-index:3;background:#f
 <label class="field">Customer<select id="jCustomer" required></select></label>
 <label class="field">Job title<input id="jTitle" required placeholder="e.g. Bathroom installation"></label>
 <label class="field full">Description<textarea id="jDescription" placeholder="Scope of work and important details"></textarea></label>
-<label class="field">Job status<select id="jStatus"><option>Scheduled</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select></label>
+<label class="field">Job status<select id="jStatus"><option>Awaiting scheduling</option><option>Scheduled</option><option>In Progress</option><option>On Hold</option><option>Completed</option><option>Cancelled</option></select></label>
 <label class="field">Agreed job price (£)<input id="jValue" type="number" min="0" step="0.01"></label>
 <label class="field">Start date<input id="jStart" type="date"></label>
 <label class="field">End date<input id="jEnd" type="date"></label>
@@ -1349,7 +1349,7 @@ save();renderTable(type);updateDashboard();renderFollowups();
 
 /* JOB MANAGEMENT */
 let editingJobId=null, selectedJobId=null;
-const jobStatuses=["Scheduled","In Progress","On Hold","Completed","Cancelled"];
+const jobStatuses=["Awaiting scheduling","Scheduled","In Progress","On Hold","Completed","Cancelled"];
 function jobCustomer(j){
 return data.customers.find(c=>c.id===j.customerId)||data.customers.find(c=>String(c.name||"").trim().toLowerCase()===String(j.name||"").trim().toLowerCase())||null;
 }
